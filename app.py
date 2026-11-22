@@ -364,6 +364,7 @@ class App(BaseHTTPRequestHandler):
             # Only explicitly allowed local 3D files; never expose arbitrary paths or workshop state.
             static_3d = {
                 '/viewer3d.js':('viewer3d.js','text/javascript; charset=utf-8'),
+                '/explosion-rig.js':('explosion-rig.js','text/javascript; charset=utf-8'),
                 '/models/e30_reference_m3.glb':('models/e30_reference_m3.glb','model/gltf-binary'),
                 '/models/ix_m20_engine_bay.glb':('models/ix_m20_engine_bay.glb','model/gltf-binary'),
                 '/models/ix_front_axle_workshop.glb':('models/ix_front_axle_workshop.glb','model/gltf-binary'),
@@ -1137,7 +1138,7 @@ class App(BaseHTTPRequestHandler):
             if not j:return self.send_json(404,{'error':'Job not found'})
             obs=[dict(o) for o in db.execute('SELECT * FROM observation WHERE job_id=? ORDER BY id',(id,))]
         j=dict(j); system=j['system']; prompts=GROUP_PROMPTS.get(system,DEFAULT_PROMPTS)
-        md=[f'# BMW 325iX WORK ORDER — IX-{id:04d}', '',f"VIN: {VEHICLE['vin']} | Production: {VEHICLE['build_date']} | Replacement M20B25 #{VEHICLE['engine_number']}",'',
+        md=[f'# BMW 325iX WORK ORDER — IX-{id:04d}', '',f"VIN: {VEHICLE['vin']} | Production: {VEHICLE['build_date']} | Replacement M20B25 #[CONFIGURED_ENGINE_NUMBER]",'',
             f"Opened UTC: {j['created_utc']}",f"System: {system}",f"Assembly ID: {j['assembly_id'] or 'NOT ASSIGNED'}",
             f"Risk: {j['risk']}",f"Status: {j['status']}",f"Qualified sign-off: {j['clearance']}",'',
             '## Symptom',j['symptom'],'','## Context',j['context'] or 'Not recorded','','## Safety and questions',prompts['safety'],'']
@@ -1448,7 +1449,7 @@ class App(BaseHTTPRequestHandler):
         manual_conflicts=self.manual_conflict_data()['conflicts'][:12]
         system_prompt=(
             'You are a cautious BMW 1987-12 production 325iX workshop research assistant, NOT a certified mechanic. '
-            'Installed M20B25 serial is documented in private owner configuration, manual AWD LHD. '
+            'Current owner-confirmed replacement engine is M20B25 serial [CONFIGURED_ENGINE_NUMBER], manual AWD LHD. '
             'Use retrieved ETK part rows for part identity, and explicitly cited user-imported manual text for procedural claims. Manual URL pointers without excerpts are NOT read procedures. '
             'If evidence is insufficient, explicitly say so and request an observable measurement/photo/test. '
             'Always separate observations, hypotheses, discriminating tests, and verified source-backed procedures. '

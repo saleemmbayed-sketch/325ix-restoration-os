@@ -302,3 +302,7 @@ footer{background:#eaf0f4;color:#8193a1;border-top:1px solid #d9e5ec;margin-left
 .ix-mech-static-text{position:absolute;bottom:18px;left:20px;right:20px;color:#d7ebf4;background:#102b3ce8;border:1px solid #567a8994;border-radius:10px;padding:12px 15px;line-height:1.5;font-size:12px;box-shadow:0 8px 28px #00192655}
 .ix-mech-static-text strong{display:inline-block;margin-top:3px;color:#a2f1f3}
 @media(max-width:680px){.ix-mech-static{height:350px}.ix-mech-static-text{font-size:10px;padding:8px;left:9px;right:9px}}
+
+/* RC20: assembly-level explosion uses existing toolbar; no new framework. */
+#ix-explode-scope{min-width:150px;max-width:210px;height:36px;border-radius:8px}#ix-explode-isolate[aria-pressed="true"]{background:#196883;color:white}#ix-alert-demo{border:1px dashed #b47e4c}#ix-explode-reset{font-weight:650}
+@media(max-width:960px){#ix-explode-scope{min-width:130px;max-width:100%}.ix-studio-tools{flex-wrap:wrap}}

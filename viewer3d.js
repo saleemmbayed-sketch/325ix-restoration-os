@@ -7,6 +7,7 @@ import * as THREE from '/vendor/three/build/three.module.js';
 import { OrbitControls } from '/vendor/three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from '/vendor/three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from '/vendor/meshopt_decoder.module.js';
+import { ExplosionRig } from '/explosion-rig.js';
 
 let studio=null;
 const HOTSPOT_HINTS = {
@@ -20,7 +21,15 @@ const HOTSPOT_HINTS = {
  heater_and_air_conditioning:[-.02,.37,.14]
 };
 const $=id=>document.getElementById(id);
-const modelKey=mesh=>/^MX:([a-z0-9_]+):\d+$/.exec(mesh?.name||'')?.[1]||null;
+// GLTFLoader sanitizes ':' in node names; keep the original glTF name when available.
+const modelKey=mesh=>{
+ for(let node=mesh;node;node=node.parent){
+  const name=node.userData?.name||node.name||'';
+  const found=/^MX:([a-z0-9_]+):\d+$/.exec(name)||/^MX_([a-z0-9_]+?)_\d+(?:_\d+)?$/.exec(name);
+  if(found)return found[1];
+ }
+ return null;
+};
 function clearMechanicalHighlight(){
  for(const [mesh,previous,clones] of state.highlighted){mesh.material=previous;for(const mat of clones)mat.dispose();}
  state.highlighted=[];
@@ -37,10 +46,11 @@ function highlightMechanical(key){
 function setupEngineBonnet(model){
  state.hoodPivot=null;state.hoodOpened=false;
  if(state.mechanical?.slug!=='ix_m20_engine_bay')return;
- const hood=[];model.traverse(node=>{if(node.isMesh&&modelKey(node)==='bonnet')hood.push(node)});
- if(!hood.length)return;
- const pivot=new THREE.Group();pivot.name='Bonnet hinge — front edge';pivot.position.set(0,1.28,1.85);model.add(pivot);
- for(const mesh of hood)pivot.attach(mesh);state.hoodPivot=pivot;
+ const hood=state.rig?.components.get('bonnet');if(!hood)return;
+ // Engine-bay bonnet is ONE semantic assembly, not three independently rotating fragments.
+ const pivot=new THREE.Group();pivot.name='Hood_Hinge';pivot.position.set(0,1.28,1.85);model.add(pivot);
+ pivot.attach(hood.node);hood.base.copy(hood.node.position);
+ state.rig.exempt.add('bonnet');state.hoodPivot=pivot;
 }
 function animateBonnet(open){
  if(!state.hoodPivot)return false;
@@ -64,8 +74,10 @@ export function selectMechanicalComponent(key,notify=true){
 export function isolateMechanicalComponent(key){
  if(!state.mechanical)return false;
  state.isolated=state.isolated===key?null:key;
- for(const mesh of state.meshes){const id=modelKey(mesh);mesh.visible=!state.isolated||id===state.isolated||id==='engine_bay'||id==='strut_mount'||id==='subframe'}
- return Boolean(state.isolated);
+ state.rig?.setScope(state.isolated,{isolate:Boolean(state.isolated)});
+ if(state.isolated)state.rig?.setExplodeFactor(Math.max(.68,state.rig.factor));
+ else state.rig?.setExplodeFactor(0);
+ syncExplosionUI();return Boolean(state.isolated);
 }
 export function focusMechanicalComponent(key){
  if(!selectMechanicalComponent(key))return false;
@@ -83,7 +95,7 @@ const REGIONS={
 };
 let region='chassis';
 
-const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:null,explosion:0,wireframe:false,modelCenter:null,modelSize:1,wholeCar:true,mechanical:null,hoodPivot:null,hoodOpened:false,highlighted:[],isolated:null};
+const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:null,explosion:0,wireframe:false,modelCenter:null,modelSize:1,wholeCar:true,mechanical:null,hoodPivot:null,hoodOpened:false,highlighted:[],isolated:null,rig:null};
 const setStatus=(s)=>{const el=$('twinvisualstatus');if(el)el.textContent=s;const hud=$('ix3d-status');if(hud)hud.textContent=s;};
 function showFallback(error){
  const canvas=$('ix3d-stage');if(canvas)canvas.hidden=true;
@@ -155,32 +167,32 @@ function frameModel(){if(!studio||!state.model)return;
  const bbox=new THREE.Box3().setFromObject(state.model);const center=bbox.getCenter(new THREE.Vector3());const dimensions=bbox.getSize(new THREE.Vector3());const radius=Math.max(dimensions.length()*.5,1);
  state.modelCenter=center;state.modelSize=radius;studio.controls.target.copy(center);
  studio.grid.position.y=bbox.min.y-.02*radius;
- studio.camera.position.copy(center).add(new THREE.Vector3(1.6,.85,1.7).multiplyScalar(radius*1.5));
+ // Keep interactive assemblies legible on a laptop; view the opened bonnet from the cabin side.
+ const isEngine=state.mechanical?.slug==='ix_m20_engine_bay';
+ const aim=isEngine?new THREE.Vector3(1.1,1.6,-1.65):new THREE.Vector3(1.6,1.0,1.7);
+ studio.camera.position.copy(center).add(aim.multiplyScalar(radius*(isEngine?1.15:1.12)));
  studio.camera.near=Math.max(radius/1000,.005);studio.camera.far=Math.max(radius*55,200);studio.camera.updateProjectionMatrix();
  studio.controls.minDistance=radius*.4;studio.controls.maxDistance=radius*10;studio.controls.update();
 }
-function setExplosion(fraction){state.explosion=fraction;if(!state.modelCenter||!studio)return;
- for(const mesh of state.meshes){mesh.position.copy(mesh.userData.ixOriginalPosition);
-  if(state.mechanical&&['bonnet','engine_bay','bulkhead','strut_mount','radiator_support'].includes(modelKey(mesh)))continue;const worldDirection=mesh.userData.ixExplodeWorld;
-  if(worldDirection.lengthSq()<.00001)continue;
-  const parent=mesh.parent;parent.updateWorldMatrix(true,false);
-  const a=parent.worldToLocal(worldDirection.clone().add(mesh.userData.ixExplodeOrigin));
-  const b=parent.worldToLocal(mesh.userData.ixExplodeOrigin.clone());
-  mesh.position.add(a.sub(b).multiplyScalar(state.modelSize*.95*fraction));
+function syncExplosionUI(){
+ const f=state.rig?.factor||0;
+ if($('ix3d-explode'))$('ix3d-explode').value=String(Math.round(f*100));
+ if($('ix3d-explode-value'))$('ix3d-explode-value').textContent=Math.round(f*100)+'%';
+ const scope=$('ix-explode-scope');if(scope&&state.rig){
+   const selected=state.rig.scope||'';scope.replaceChildren(new Option('Whole vehicle',''));
+   for(const g of state.rig.groups.values())scope.add(new Option(g.id.replaceAll('_',' '),g.id));
+   for(const c of state.rig.components.values())if(c.label)scope.add(new Option('  ↳ '+c.label,c.id));
+   scope.value=selected;
  }
+ if($('ix-explode-isolate'))$('ix-explode-isolate').setAttribute('aria-pressed',String(state.rig?.isolated||false));
 }
+function setExplosion(fraction){state.explosion=fraction;state.rig?.setExplodeFactor(fraction);syncExplosionUI();}
 function prepareMeshes(model){
- const bbox=new THREE.Box3().setFromObject(model);state.modelCenter=bbox.getCenter(new THREE.Vector3());state.modelSize=Math.max(1,bbox.getSize(new THREE.Vector3()).length()*.5);
- state.meshes=[];
- model.traverse(node=>{if(!node.isMesh)return;
-  node.userData.ixOriginalPosition=node.position.clone();
-  const center=new THREE.Box3().setFromObject(node).getCenter(new THREE.Vector3());
-  const offset=center.clone().sub(state.modelCenter);
-  node.userData.ixExplodeWorld=offset.lengthSq()>.00001?offset.normalize():new THREE.Vector3(0,1,0);
-  node.userData.ixExplodeOrigin=center;
-  node.castShadow=false;node.receiveShadow=false;
-  state.meshes.push(node);
- });
+ const bbox=new THREE.Box3().setFromObject(model);
+ state.modelCenter=bbox.getCenter(new THREE.Vector3());state.modelSize=Math.max(1,bbox.getSize(new THREE.Vector3()).length()*.5);
+ state.meshes=[];model.traverse(node=>{if(node.isMesh){state.meshes.push(node);node.castShadow=false;node.receiveShadow=false}});
+ state.rig=new ExplosionRig(model,state.mechanical||{});
+ for(const listener of subscriptions)state.rig.onChange(listener);
 }
 async function loadBinarySTL(src){
  const response=await fetch(src);
@@ -201,15 +213,14 @@ async function loadBinarySTL(src){
 async function loadModel(src,data,format='glb',wholeCar=true,mechanical=null){
  const s=makeStudio();if(!s)return;
  clearMechanicalHighlight();s.selectMesh(null);
- if(state.model){s.scene.remove(state.model);state.model=null;}
+ if(state.model){s.scene.remove(state.model);state.model=null;state.rig=null;}
  state.mechanical=mechanical;state.isolated=null;state.hoodPivot=null;state.hoodOpened=false;
  setStatus(mechanical?'Preparing inspectable mechanical assembly…':'Loading licensed E30 geometry…');
  const loader=new GLTFLoader();loader.setMeshoptDecoder(MeshoptDecoder);
  try {
   const model=format==='stl'?await loadBinarySTL(src):(await new Promise((resolve,reject)=>loader.load(src,resolve,undefined,reject))).scene;
   state.model=model;state.modelUrl=src;state.wholeCar=wholeCar;s.scene.add(model);
-  if(mechanical)setupEngineBonnet(model);
-  prepareMeshes(model);frameModel();
+  prepareMeshes(model);if(mechanical)setupEngineBonnet(model);frameModel();syncExplosionUI();
   $('ix3d-stage').hidden=false;$('twin-diagram-panel').hidden=true;$('twin-canvas').setAttribute('hidden','');$('ix3d-fallback').hidden=true;const m3=$('ix-mode-3d'),m2=$('twin2d');m3?.classList.add('active');m2?.classList.remove('active');if($('ix-stage-heading'))$('ix-stage-heading').textContent='3D VIEW';
   setExplosion(Number($('ix3d-explode')?.value||0)/100);
   setStatus(mechanical?`${mechanical.components.length} selectable components · ${mechanical.description} · illustrated reference`:
@@ -273,7 +284,12 @@ export async function mount(data){
  renderSystems(data);
  if(!$('ix3d-stage').dataset.ixEvents){
   $('ix3d-stage').dataset.ixEvents='1';
-  $('ix3d-explode')?.addEventListener('input',e=>{setExplosion(Number(e.target.value)/100);$('ix3d-explode-value').textContent=e.target.value+'%';});
+  $('ix3d-explode')?.addEventListener('input',e=>setExplosion(Number(e.target.value)/100));
+  $('ix-explode-scope')?.addEventListener('change',e=>{state.rig?.setScope(e.target.value||null,{isolate:state.rig.isolated});syncExplosionUI()});
+  $('ix-explode-isolate')?.addEventListener('click',()=>{if(!state.rig)return;
+    const scope=$('ix-explode-scope')?.value||'Engine_Assembly';if(!state.rig.groups.has(scope)&&!state.rig.components.has(scope))return;state.rig.setScope(scope,{isolate:!state.rig.isolated});syncExplosionUI()});
+  $('ix-explode-reset')?.addEventListener('click',()=>reset());
+  $('ix-alert-demo')?.addEventListener('click',()=>triggerTelemetryAlert({system:state.rig?.groups.has('Cooling')?'Cooling':'Engine_Assembly',metric:'coolant_temp_c',value:110,severity:'warning',source:'DEMO_ONLY'}));
   $('ix3d-system-select')?.addEventListener('change',pickSystem);
   for(const b of document.querySelectorAll('[data-ix-region]'))b.addEventListener('click',()=>{region=b.dataset.ixRegion;filterRegion();});
   for(const b of document.querySelectorAll('[data-ix3d-view]'))b.addEventListener('click',()=>positionView(b.dataset.ix3dView));
@@ -295,5 +311,28 @@ export async function openMechanical(scene,data){
 }
 
 
-export function reset(){if(studio&&state.modelCenter)studio.controls.target.copy(state.modelCenter);positionView('iso');if($('ix3d-explode')){$('ix3d-explode').value='0';$('ix3d-explode-value').textContent='0%'}setExplosion(0);studio?.selectMesh(null);}
+export function reset(){state.rig?.reset();state.isolated=null;syncExplosionUI();
+ if(studio&&state.modelCenter)studio.controls.target.copy(state.modelCenter);positionView('iso');studio?.selectMesh(null);
+ if(state.hoodPivot&&state.hoodOpened)animateBonnet(false);
+}
+export function setExplodeFactor(factor,options={}){
+ if(options.scope!==undefined)state.rig?.setScope(options.scope,{isolate:options.isolate??false});
+ setExplosion(Math.min(1,Math.max(0,Number(factor)||0)));return getTwinState();
+}
+export function isolateAssembly(id,isolate=true){state.rig?.setScope(id,{isolate});syncExplosionUI();return getTwinState()}
+export function getAssemblyTree(){return state.rig?.getState().assemblies||[]}
+export function getTwinState(){return state.rig?.getState()||{explodeFactor:0,scope:null,isolated:false,assemblies:[]}}
+const subscriptions=new Set();
+export function subscribe(listener){subscriptions.add(listener);state.rig?.onChange(listener);return ()=>{subscriptions.delete(listener);state.rig?.listeners.delete(listener)}}
+export function triggerTelemetryAlert(alert={}){
+ // Only external, explicitly supplied telemetry is acted on; this function creates no sensor readings.
+ const out=state.rig?.triggerAlert(alert)||{handled:false,reason:'Model not loaded'};
+ if(out.handled){syncExplosionUI();const msg=$('ix3d-status');if(msg)msg.textContent=`${alert.source==='DEMO_ONLY'?'DEMO — ':''}${alert.system} isolated · ${alert.metric||'telemetry alert'}`;}
+ return out;
+}
+if(typeof window!=='undefined'){
+ window.ixTwinAPI={setExplodeFactor,isolateAssembly,getAssemblyTree,getTwinState,triggerTelemetryAlert,subscribe,reset};
+ window.addEventListener('bmw:twin-alert',e=>triggerTelemetryAlert(e.detail||{}));
+}
+
 export function selectSystem(id){const select=$('ix3d-system-select');if(select)select.value=id;filterRegion();}

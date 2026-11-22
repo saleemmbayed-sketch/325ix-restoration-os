@@ -24,6 +24,10 @@ def main():
   assert 'ix3d-marker' in view and 'REGIONS' in view
   assert "MODEL_GIT_BLOB='8aaa3daafd53158b63ced92c4c65d520ebce561f'" in prep
   assert 'NOT_APPROVED' in app and 'NOT 325iX CAD' in view
+  assert "'/explosion-rig.js':" in app and "from '/explosion-rig.js'" in view
+  assert 'setExplodeFactor' in view and 'triggerTelemetryAlert' in view
+  assert 'ix-explode-scope' in site and (ROOT/'explosion-rig.js').is_file()
+  assert (ROOT/'scripts/prepare_vehicle_blender.py').is_file()
   # RC17: one external four-door preview and private, catalog-bound local GLB/STL imports.
   assert 'ix-preview-sedan' in site and 'bd0925e21c934a9cbfdb30ccf5584e86' in site
   assert 'PERSONAL_MODELS' in app and "if path=='/api/3d/models'" in app

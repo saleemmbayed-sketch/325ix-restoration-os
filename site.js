@@ -486,7 +486,11 @@ function ensureVisualTwinUI(){
  </div>
  <div class="ix-studio-toolbar">
   <div class="ix-mode-tabs"><button id="ix-preview-sedan" class="ix-mode-btn" type="button">◈ E30 sedan 3D</button><button id="ix-mode-3d" class="ix-mode-btn active" type="button">Local 3D</button><button id="twin2d" class="ix-mode-btn" type="button">▤ OEM drawings</button></div>
-  <div class="ix-studio-tools"><button type="button" id="ix-fullscreen" class="light">⛶ Full screen</button><button type="button" id="twinreset" class="light">Reset camera</button><label class="ix3d-explode-label" title="Separates reference model meshes; not a true mechanical exploded assembly">Separate meshes <input type="range" id="ix3d-explode" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output></label>
+  <div class="ix-studio-tools"><button type="button" id="ix-fullscreen" class="light">⛶ Full screen</button><button type="button" id="twinreset" class="light">Reset camera</button><label class="ix3d-explode-label" title="Deterministic, reversible hierarchical explosion driven by 0–1 factor">Explode assemblies <input type="range" id="ix3d-explode" min="0" max="100" step="1" value="0"><output id="ix3d-explode-value">0%</output></label>
+   <select id="ix-explode-scope" aria-label="Assembly explosion target"><option value="">Whole vehicle</option></select>
+   <button id="ix-explode-isolate" class="light" type="button" aria-pressed="false">Isolate</button>
+   <button id="ix-explode-reset" class="light" type="button">Assemble</button>
+   <button id="ix-alert-demo" class="light" type="button" title="Demonstrates programmatic alert control; not live telemetry">Demo alert</button>
    <select id="ix-view-select" aria-label="Camera angle"><option value="iso">3/4 angle</option><option value="front">Front</option><option value="side">Side</option><option value="top">Top</option></select>
    <label class="ix3d-inline ix-wire">Wireframe <input id="ix3d-wireframe" type="checkbox"></label></div>
  </div>
