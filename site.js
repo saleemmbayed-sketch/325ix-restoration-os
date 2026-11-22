@@ -371,6 +371,11 @@ function renderVisualTwin(d){window.visualTwinData=d;ensureVisualTwinUI();const 
 let activeVisualSystem=null;
 async function selectVisualSystem(system){activeVisualSystem=system;ensureVisualTwinUI();const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Open 2D diagram fallback');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open restoration mission');mission.className='light';mission.onclick=()=>{tab('garage');const domain=$('missiondomain');if(domain&&restorationDomains.length){const d=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));if(d){domain.value=d.id;syncMissionSystems()}}const s=$('missionsystem');if(s)s.value=system.id};root.append(mission)}
 async function loadVisualAssemblies(system,{autoOpen=false}={}){
+ // An OEM drawing replaces the 3D canvas; it is not appended below the model.
+ const model=$('ix3d-stage');if(model)model.hidden=true;
+ $('twin-canvas')?.setAttribute('hidden','');
+ $('ix-mode-3d')?.classList.remove('active');$('twin2d')?.classList.add('active');
+ if($('ix-stage-heading'))$('ix-stage-heading').textContent='ORIGINAL BMW DRAWINGS';
  const panel=$('twin-diagram-panel');panel.hidden=false;
  $('twin-diagram-title').textContent=visualShort(system.id)+' · factory catalog drawings';
  $('twin-diagram-meta').textContent='BMW catalog diagrams and numbered callouts; drawings are illustrative and do not certify installed 325iX fitment.';
