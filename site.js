@@ -6,12 +6,117 @@ const text=(tag,value,cls)=>{const e=document.createElement(tag);if(value!==unde
 const link=(label,url)=>{const a=text('a',label);if(url&&(/^https:\/\//.test(url)||/^\/api\/job\/\d+\.md$/.test(url))){a.href=url;a.target='_blank';a.rel='noopener noreferrer'}return a};
 async function api(path,opts={}){const next={...opts};if((opts.method||'GET').toUpperCase()!=='GET')next.headers={...(opts.headers||{}),'X-Workbench-Request':'same-origin'};const r=await fetch(path,next);const d=await r.json();if(!r.ok)throw Error(d.error||'Request failed');return d}
 function fail(e){alert('Workbench: '+(e.message||e))}
-function tab(name){for(const b of document.querySelectorAll('.tab'))b.classList.toggle('active',b.dataset.tab===name);for(const p of document.querySelectorAll('.page'))p.hidden=p.id!==name;if(name==='garage')loadGarage();if(name==='jobs')loadJobs();if(name==='sources')loadSources();if(name==='chat')loadAIStatus();if(name==='twin'){loadTwin();loadVisualTwin()}}
+const workspaces={
+ garage:['Overview','Your restoration workspace','One place to pick up any repair','+ New mission'],
+ twin:['Vehicle explorer','Explore the car','Select a system to see its assemblies and evidence','Find a system'],
+ lookup:['Parts & drawings','Find the correct component','Search OEM numbers, drawings and verified catalog references','Search parts'],
+ guide:['Diagnostics','Understand the problem','Start with what you can observe; document every test','Start inspection'],
+ jobs:['Work orders','Document workshop work','Inspections, evidence, checkpoints and repair status','New inspection'],
+ chat:['AI mechanic','Ask the mechanic','Answers require sourced evidence and physical verification','Ask a question'],
+ mission:['Restoration mission','Continue your restoration','Keep the selected component and all recorded evidence together','← Overview'],
+ expert:['Front axle pilot','Guided front-axle inspection','Structured workshop evidence from one specialist workflow','Start inspection'],
+ manuals:['Evidence library','Find technical evidence','Trace procedures to authorized documents and actual pages','Search evidence'],
+ program:['Research operations','Catalog research','Monitor exact-number reviews and unresolved conflicts','View batch'],
+ sources:['Source registry','Source and license register','Separate actual examined evidence from discovery leads','Overview']
+};
+let activeWorkspace='garage';
+function tab(name){
+ if(!document.getElementById(name)?.classList.contains('page'))return;
+ activeWorkspace=name;
+ for(const b of document.querySelectorAll('.tab')){
+  const current=b.dataset.tab===name;
+  b.classList.toggle('active',current);
+  if(current)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');
+ }
+ for(const page of document.querySelectorAll('.page'))page.hidden=page.id!==name;
+ const info=workspaces[name]||workspaces.garage;
+ $('workspace-breadcrumb').textContent='325iX / '+info[0];
+ $('workspace-title').textContent=info[1];
+ $('workspace-subtitle').textContent=info[2];
+ $('context-quick-action').textContent=info[3];
+ document.title=info[1]+' · BMW 325iX Restoration OS';
+ const advanced=document.querySelector('.ix-nav-more');
+ if(advanced?.querySelector('.tab.active'))advanced.open=true;
+ document.body.classList.remove('ix-nav-open');$('nav-toggle')?.setAttribute('aria-expanded','false');
+ if(/^https?:$/.test(location.protocol))history.replaceState(null,'',location.pathname+location.search+'#'+name);
+ if(name==='garage')loadGarage();if(name==='jobs')loadJobs();if(name==='sources')loadSources();if(name==='chat')loadAIStatus();if(name==='twin'){loadTwin();loadVisualTwin()}
+ window.scrollTo({top:0,behavior:'instant'});
+}
 for(const b of document.querySelectorAll('.tab'))b.addEventListener('click',()=>tab(b.dataset.tab));
+function openMissionCreate(){tab('garage');const panel=$('mission-create');panel.open=true;panel.scrollIntoView({block:'center',behavior:'smooth'});$('missionsymptom').focus({preventScroll:true})}
+for(const button of document.querySelectorAll('[data-route]'))button.addEventListener('click',()=>tab(button.dataset.route));
+$('open-new-mission').addEventListener('click',openMissionCreate);
+$('nav-toggle').addEventListener('click',()=>{document.body.classList.toggle('ix-nav-open');$('nav-toggle').setAttribute('aria-expanded',String(document.body.classList.contains('ix-nav-open')))});
+$('context-quick-action').addEventListener('click',()=>{
+ switch(activeWorkspace){
+  case 'garage':openMissionCreate();break;
+  case 'lookup':$('search').focus();break;
+  case 'twin':$('ix-system-finder')?.focus();break;
+  case 'guide':$('guidesymptom').focus();break;
+  case 'jobs':$('symptom').focus();break;
+  case 'chat':$('aiquestion').focus();break;
+  case 'mission':tab('garage');break;
+  case 'expert':$('expertsymptom').focus();break;
+  case 'manuals':$('manualq').focus();break;
+  case 'program':$('loadbatch').click();break;
+  default:tab('garage');
+ }
+});
+$('quick-find').addEventListener('submit',e=>{
+ e.preventDefault();const query=$('quick-query').value.trim();
+ if(!query)return;$('search').value=query;$('group').value='';tab('lookup');search();
+});
+document.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('quick-query').focus();$('quick-query').select()}
+ if(e.key==='Escape'){document.body.classList.remove('ix-nav-open');$('nav-toggle').setAttribute('aria-expanded','false');if(document.activeElement===$('quick-query'))$('quick-query').blur()}
+});
+
 function applyUiLanguage(){document.documentElement.dir=uiLanguage==='ar'?'rtl':'ltr';document.documentElement.lang=uiLanguage;$('uilang').textContent=uiLanguage==='ar'?'AR':'EN';$('language-toggle').setAttribute('aria-pressed',uiLanguage==='ar'?'true':'false')}
 if($('language-toggle')){$('language-toggle').addEventListener('click',()=>{uiLanguage=uiLanguage==='ar'?'en':'ar';localStorage.setItem('325ix-ui-language',uiLanguage);applyUiLanguage()});applyUiLanguage()}
 function syncMissionSystems(){const domain=restorationDomains.find(x=>x.id===$('missiondomain').value),select=$('missionsystem');select.replaceChildren();for(const g of domain?.groups||[]){const o=document.createElement('option');o.value=g.group_name;o.textContent=g.group_name.replaceAll('_',' ')+' · '+g.assemblies+' assemblies';select.append(o)}if(domain?.default_system)select.value=domain.default_system}
-async function loadGarage(){try{const [coverage,missions]=await Promise.all([api('/api/restoration/domains'),api('/api/missions')]);restorationDomains=coverage.domains;const domainSelect=$('missiondomain'),selected=domainSelect.value;domainSelect.replaceChildren();for(const d of restorationDomains){const o=document.createElement('option');o.value=d.id;o.textContent=d.priority+' · '+d.label;domainSelect.append(o)}if(selected&&restorationDomains.some(x=>x.id===selected))domainSelect.value=selected;syncMissionSystems();const cards=$('domaincards');cards.replaceChildren();for(const d of restorationDomains){const card=text('article',null,'domaincard');card.append(text('div',d.priority+' · '+d.label,'title'),text('p',d.promise),text('div',`${d.assembly_count} assemblies · ${d.mission_count} missions`,'code'),text('div',d.groups.map(x=>x.group_name.replaceAll('_',' ')).join(' · '),'meta'));cards.append(card)}const list=$('missionlist');list.replaceChildren();if(!missions.missions.length)list.append(text('p','No restoration missions yet. Start with the highest-priority observed issue or inspection objective.','info'));for(const m of missions.missions){const row=text('div',null,'source');row.append(text('div',`IX-${String(m.job_id).padStart(4,'0')} · ${m.domain_label} · ${m.mission_status}`,'title'),text('p',m.symptom),text('div',`${m.priority} · ${m.system.replaceAll('_',' ')} · ${m.risk} · clearance ${m.clearance}`,'info'));const resume=text('button','Resume mission','light');resume.addEventListener('click',()=>resumeMission(m));row.append(resume);list.append(row)}}catch(e){$('missionlist').replaceChildren(text('p','Garage unavailable: '+e.message,'risk'))}}
+async function loadGarage(){
+ try{
+  const [coverage,missions]=await Promise.all([api('/api/restoration/domains'),api('/api/missions')]);
+  restorationDomains=coverage.domains||[];
+  const domainSelect=$('missiondomain'),selected=domainSelect.value;
+  domainSelect.replaceChildren();
+  for(const d of restorationDomains){const option=new Option(d.priority+' · '+d.label,d.id);domainSelect.add(option)}
+  if(selected&&restorationDomains.some(d=>d.id===selected))domainSelect.value=selected;
+  syncMissionSystems();
+  const systems=new Set(restorationDomains.flatMap(d=>(d.groups||[]).map(g=>g.group_name)));
+  const assemblies=allGroups.length?allGroups.reduce((sum,g)=>sum+Number(g.assemblies||0),0):restorationDomains.reduce((sum,d)=>sum+Number(d.assembly_count||0),0);
+  const missionsList=missions.missions||[];
+  $('garage-metrics').replaceChildren(...[
+   [systems.size||21,'Mapped systems'],
+   [assemblies.toLocaleString(),'Indexed assemblies'],
+   [missionsList.length,'Documented missions'],
+   ['Not approved','Road clearance']
+  ].map(([number,label])=>{const tile=text('div',null,'ix-metric');tile.append(text('strong',number),text('span',label));return tile}));
+  const cards=$('domaincards');cards.replaceChildren();
+  for(const d of restorationDomains){
+   const card=text('button',null,'domaincard');card.type='button';
+   card.append(text('div',d.priority+' · '+d.label,'title'),text('p',d.promise),
+    text('div',`${d.assembly_count} assemblies · ${d.mission_count} missions`,'code'));
+   card.addEventListener('click',()=>{
+    tab('lookup');const group=$('group');
+    if(d.default_system)group.value=d.default_system;
+    $('search').value='';search();
+   });cards.append(card)
+  }
+  const list=$('missionlist');list.replaceChildren();
+  if(!missionsList.length){
+   const empty=text('div',null,'ix-empty-mission');
+   empty.append(text('strong','No restoration missions started'),text('p','Your first documented repair will appear here, with its history and next steps.'));
+   const b=text('button','Start a mission','light');b.onclick=openMissionCreate;empty.append(b);list.append(empty)
+  }
+  for(const m of missionsList){
+   const row=text('article',null,'ix-mission-row');
+   const top=text('div',null,'ix-mission-head');top.append(text('strong','IX-'+String(m.job_id).padStart(4,'0')+' · '+m.domain_label),text('span',m.mission_status||'ACTIVE','ix-mission-status'));
+   row.append(top,text('p',m.symptom),text('div',`${m.system.replaceAll('_',' ')} · ${m.risk} · safety ${m.clearance}`,'info'));
+   const resume=text('button','Resume →','light');resume.onclick=()=>resumeMission(m);row.append(resume);list.append(row)
+  }
+ }catch(e){$('missionlist').replaceChildren(text('p','Garage unavailable: '+e.message,'risk'))}
+}
 async function resumeMission(m){currentJob=m.job_id;livingMission=m;tab('mission');await loadLivingMission(m)}
 async function loadLivingMission(m){
  const jobId=m.job_id;const root=$('livingmissionevidence');root.replaceChildren(text('p','Loading connected mission evidence…','info'));
@@ -55,23 +160,51 @@ try{
  try{const h=await api('/api/integration/health'),m=await api('/api/manuals/status');$('launchstatus').textContent=`${h.status} · ${m.indexed_documents} evidence documents / ${m.indexed_pages} searchable sections · safety clearance NOT APPROVED`;}catch(e){$('launchstatus').textContent='Subsystem status unavailable: '+e.message}
  await loadGarage();
 }
-function presentResult(x){const c=text('div',null,'item');c.append(text('div',x.group_name?.replaceAll('_',' '),'group'));
+function presentResult(x){
+ const c=text('article',null,'item ix-part-result');
+ c.append(text('div',x.group_name?.replaceAll('_',' '),'group'));
  if(x.part_number)c.append(text('div',x.part_number,'partnum'));
  c.append(text('div',x.description||x.slug?.replaceAll('_',' ')||'Assembly','desc'));
- if(x.callout_position)c.append(text('div',`Callout ${x.callout_position} · Qty ${x.quantity_raw||'?'} · ${x.date_condition_raw||'No date noted'}`,'info'));
+ if(x.callout_position)c.append(text('div',`Callout ${x.callout_position} · Qty ${x.quantity_raw||'?'} · ${x.date_condition_raw||'Date not stated'}`,'info'));
  if(x.part_count!==undefined)c.append(text('div',`${x.part_count} catalog rows`,'info'));
  const actions=text('div',null,'actions');const btn=text('button','Open parts & diagram');btn.addEventListener('click',()=>openAssembly(x.assembly_id||x.id));actions.append(btn);
- if(x.anchor)actions.append(document.createTextNode('  '),link('Catalog row',x.anchor));c.append(actions);return c
+ if(x.anchor)actions.append(document.createTextNode('  '),link('Catalog row',x.anchor));c.append(actions);
+ const variants=x.occurrences||[];
+ if(variants.length>1){
+  const details=document.createElement('details');details.className='ix-occurrences';
+  const summary=document.createElement('summary');summary.textContent=variants.length+' catalog occurrences — review applicability';details.append(summary);
+  const list=text('div',null,'ix-occurrence-list');
+  for(const row of variants){
+   const item=text('button',null,'ix-occurrence');item.type='button';
+   item.append(text('span',(row.slug||'Assembly').replaceAll('_',' ')),text('small',`#${row.callout_position||'?'} · ${row.date_condition_raw||'no date condition'}`));
+   item.onclick=()=>openAssembly(row.assembly_id||row.id);list.append(item)
+  }
+  details.append(list);c.append(details)
+ }
+ return c;
 }
-async function search(){const q=$('search').value.trim(),g=$('group').value;if(!q&&!g){$('results').replaceChildren();$('searchmeta').textContent='Enter a term or select a system.';return}
- $('searchmeta').textContent='Searching local catalog…';try{
- const d=await api('/api/search?q='+encodeURIComponent(q)+'&group='+encodeURIComponent(g));$('searchmeta').textContent=`${d.results.length} results returned. ${d.scope||''}`;
- const frag=document.createDocumentFragment();for(const x of d.results)frag.append(presentResult(x));$('results').replaceChildren(frag);
- if(!d.results.length)$('results').append(text('p','No matching records. Try a broader keyword or change system.'));
-}catch(e){fail(e)} }
+async function search(){
+ const q=$('search').value.trim(),g=$('group').value;
+ if(!q&&!g){$('results').replaceChildren();$('searchmeta').textContent='Enter a term or select a system.';return}
+ $('searchmeta').textContent='Searching local catalog…';
+ try{
+  const d=await api('/api/search?q='+encodeURIComponent(q)+'&group='+encodeURIComponent(g));
+  const rows=d.results||[],unique=new Map();
+  for(const row of rows){
+   // Preserve every exact catalog occurrence; group visually by BMW part number only.
+   const key=row.part_number||row.assembly_id||row.id;
+   if(!unique.has(key))unique.set(key,{...row,occurrences:[]});
+   unique.get(key).occurrences.push(row)
+  }
+  $('searchmeta').textContent=rows.length===unique.size?`${rows.length} matches · ${d.scope||''}`:`${unique.size} distinct results across ${rows.length} catalog occurrences · expand a result to inspect dates and variants`;
+  const frag=document.createDocumentFragment();for(const row of unique.values())frag.append(presentResult(row));$('results').replaceChildren(frag);
+  if(!rows.length)$('results').append(text('p','No matching records. Try a broader keyword or change system.'));
+ }catch(e){fail(e)}
+}
 $('searchbtn').addEventListener('click',search);$('search').addEventListener('keydown',e=>{if(e.key==='Enter')search()});$('group').addEventListener('change',search);
 function addPartsTable(parts){const tbody=$('partstable').querySelector('tbody');tbody.replaceChildren();for(const p of parts){const tr=text('tr');tr.className='partrow';tr.title='Click to inspect this component';tr.tabIndex=0;tr.addEventListener('click',e=>{if(e.target.tagName!=='A')openPart(p.id)});tr.addEventListener('keydown',e=>{if(e.key==='Enter')openPart(p.id)});for(const v of [p.callout_position,p.part_number,p.description,p.quantity_raw,p.date_condition_raw]){const td=text('td',v||'—');tr.append(td)}if(p.anchor){const a=link('Catalog',p.anchor);tr.lastChild.append(' ',a)}tbody.append(tr)}}
 async function openAssembly(id){try{const d=await api('/api/assembly?id='+encodeURIComponent(id));activeAssembly=d.assembly;
+ $('workspace-subtitle').textContent='Selected assembly: '+d.assembly.slug.replaceAll('_',' ')+' · '+d.parts.length+' catalog rows';
  $('detailtitle').textContent=d.assembly.slug.replaceAll('_',' ');$('detailmeta').replaceChildren(text('span',`${d.assembly.group_name} · ${d.parts.length} table rows · `),link('Original catalog page',d.assembly.source_url));
  const target=$('diagrams');target.replaceChildren();for(const f of d.figures){const fig=text('div',null,'diagram');const img=document.createElement('img');img.alt='Exploded diagram (unverified diagram pixel positions)';img.loading='lazy';img.src='/api/diagram?asset='+encodeURIComponent(f.image_asset_id);img.onerror=()=>{
   if(/^https:\/\/ills\.bmwfans\.info\/[a-z0-9-]+\.webp(?:\?.*)?$/.test(f.figure_url||'')){
@@ -137,7 +270,10 @@ let activePart=null;
 function fieldRow(k,v,status){const row=text('div',null,'factrow');const lab=text('div',k,'factlabel');const value=text('div',v===null||v===undefined||v===''?'Not verified / not supplied':v,'factvalue');const badge=text('span',status||'UNKNOWN','factstatus');row.append(lab,value,badge);return row}
 async function openPart(id){
  try{
-  const d=await api('/api/part-dossier?id='+encodeURIComponent(id));activePart=d.part;
+  const d=await api('/api/part-dossier?id='+encodeURIComponent(id));
+  // Opening a part from the 3D viewer must also reveal its parent assembly.
+  if(d.part.assembly_id&&($('detailpanel').hidden||activeAssembly?.id!==d.part.assembly_id))await openAssembly(d.part.assembly_id);
+  activePart=d.part; $('workspace-subtitle').textContent='Selected BMW part: '+(d.part.part_number||'number unknown')+' · '+(d.part.description||'Component')+' · verify variant before fitment';
   const e=d.curated||{};
   $('parttitle').textContent=(d.part.part_number||'Unknown number')+' · '+(e.label||d.part.description||'Component');
   $('partscope').textContent='Callout '+(d.part.callout_position||'?')+' · '+d.part.group_name+' / '+d.part.slug.replaceAll('_',' ')+' · catalog evidence, not certified fitment';
@@ -190,6 +326,20 @@ async function openPart(id){
     const row=text('p');row.append(link('Part-number search',reg.candidate_research_links.web_evidence_lookup),
        document.createTextNode(' · '),link('Product-photo search',reg.candidate_research_links.web_image_lookup));ev.append(row);
   }
+  let actions=$('partworkflowactions');if(!actions){actions=text('div',null,'ix-part-workflow');actions.id='partworkflowactions';$('partscope').after(actions)}
+  actions.replaceChildren();
+  const work=text('button','Create inspection for this part');work.type='button';work.onclick=()=>{
+   tab('jobs');$('jobgroup').value=d.part.group_name;
+   $('symptom').value='Inspect '+(d.part.description||'component')+' (BMW '+(d.part.part_number||'unknown')+'); confirm actual condition and fitment';
+   $('context').value='Catalog reference '+(d.part.slug||'')+'; part identity and installed geometry unverified.';
+   $('jobassembly').textContent='Catalog assembly: '+(d.part.slug||'')+' · not yet verified on vehicle';$('symptom').focus();
+  };
+  const ask=text('button','Ask mechanic about this part','light');ask.type='button';ask.onclick=()=>{
+   tab('chat');$('aigroup').value=d.part.group_name;
+   $('aiquestion').value='For BMW part '+(d.part.part_number||'?')+' ('+(d.part.description||'component')+'), list verified facts, applicability uncertainties, inspection evidence required, and repair-first options. Do not assume fitment.';
+   $('aiquestion').focus();
+  };
+  actions.append(work,ask);
   $('partdossier').hidden=false;$('partdossier').scrollIntoView({behavior:'smooth',block:'start'});
  }catch(e){fail(e)}
 }
@@ -434,7 +584,10 @@ function chooseVisualSystem(system){
    else activate2DFallback(false);
  }else if($('twin2d')?.classList.contains('active'))loadVisualAssemblies(system,{autoOpen:true});
 }
-async function selectVisualSystem(system){activeVisualSystem=system;updatePersonalModelButton();ensureVisualTwinUI();if($('ix-model-slot'))$('ix-model-slot').value=system.id;const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');for(const b of $('ix-system-results').querySelectorAll('button'))b.classList.toggle('active',b.dataset.system===system.id);root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Inspect OEM assemblies');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open restoration mission');mission.className='light';mission.onclick=()=>{tab('garage');const domain=$('missiondomain');if(domain&&restorationDomains.length){const d=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));if(d){domain.value=d.id;syncMissionSystems()}}const s=$('missionsystem');if(s)s.value=system.id};root.append(mission)}
+async function selectVisualSystem(system){activeVisualSystem=system; $('workspace-subtitle').textContent=system.label+' · '+system.assembly_count+' indexed assemblies · catalog fitment unverified';updatePersonalModelButton();ensureVisualTwinUI();if($('ix-model-slot'))$('ix-model-slot').value=system.id;const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');for(const b of $('ix-system-results').querySelectorAll('button'))b.classList.toggle('active',b.dataset.system===system.id);root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Inspect OEM assemblies');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open restoration mission');mission.className='light';mission.onclick=()=>{tab('garage');const domain=$('missiondomain');if(domain&&restorationDomains.length){const d=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));if(d){domain.value=d.id;syncMissionSystems()}}const s=$('missionsystem');if(s)s.value=system.id};root.append(mission);
+ const parts=text('button','Find these parts','light');parts.onclick=()=>{tab('lookup');$('group').value=system.id;$('search').value='';search()};root.append(parts);
+ const inspect=text('button','Create inspection job','light');inspect.onclick=()=>{tab('jobs');$('jobgroup').value=system.id;$('symptom').focus()};root.append(inspect)
+}
 let visualSearchToken=0;
 async function loadVisualAssemblies(system,{autoOpen=false}={}){
  hideHosted3D();
@@ -597,3 +750,6 @@ async function loadVisualTwin(){
   $('twinvisualstatus').className='risk';
  }
 }
+
+// Restore the visible workspace on reload without changing the underlying job state.
+const initialWorkspace=location.hash.slice(1);if(initialWorkspace&&workspaces[initialWorkspace])tab(initialWorkspace);
