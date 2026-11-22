@@ -1,0 +1,24 @@
+{
+  "release": "RC0.6.1",
+  "status": "STAGED_INTERNAL_ONLY",
+  "sha256_files": {
+    "README_RC061.md": "7a88727539dc724c64c25bb73cf964ce66f5b88959f4b156b9bcf8e277e57afd",
+    "README_V06.md": "be28f5dd66aa6b423c87b330e9965119f79f71b76f67fe2473b7d7eefe6cda14",
+    "app.py": "456ecaef8d57f8c9f7a9a41fa59900d941964dbb953180f477c0b13a7fec1af7",
+    "catalog_research_registry.json": "0610623c85913351f93aaddf9eee5fbf84762d97a0b967d2ad15dc4bcc515335",
+    "curated_evidence.json": "f7facea7ba2403ed5ceccb92514057d19495e675beec383728deeff6004f5471",
+    "index.html": "efe4111317fc892b231ea294ecc642c6077793d74726f8ef7dc8d19ed7cbba91",
+    "index_manuals.py": "41e50960cd3569eb4c5b6c826102f3605e20c6b3ef94800fdf569c6b56740920",
+    "install_upgrade.sh": "5667ea9fc18ffe522979cf75c43adb048582319f364d8731ef3d06969c264c24",
+    "rollback_061.py": "72c35dd7f9255bd96368fd3f68dc56827c3c8649fc6a25b16ce344fad3de4679",
+    "rollback_upgrade.sh": "2b0c3b99120cf0496197db563944172c07e96c8d603264b49998fa601020ebef",
+    "site.css": "dcecc4be786f43927a05efe172974b2bac66ca691d216ea9fdaeb86ddd8e87b5",
+    "site.js": "3face538ed49085caf18c794880426d4c152a4659c8c076afb6a8e475b3b6cad",
+    "sources_extra.json": "4a010cc0f94206bcedfe5d09d3ab5eade52fa89e670074e372a487715bb12583",
+    "test_rc061.py": "de268c8ac136e735ebc1a1993453418c9cab4b0fbe45c194a47e787f0fb54865",
+    "upgrade_061.py": "0cab9ca82b87da2937e80c2523d53603c287b69d469a475448ddd22eedd286cf"
+  },
+  "api_test_pass": 28,
+  "api_test_fail": 0,
+  "full_mechanic_gate": "HOLD"
+}

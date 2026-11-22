@@ -1,0 +1,32 @@
+name: Engineering delivery slice
+description: Bounded restoration OS change with testable acceptance
+labels: [engineering]
+body:
+  - type: dropdown
+    id: lane
+    attributes:
+      label: Lane
+      options: ['S1 Parts', 'S2 Manuals', 'S3 Photos', 'S4 Fitment', 'S5 Diagnostics', 'S6 Workbench QA', 'S7 Integration', '3D Visual Studio', 'Operations']
+    validations: {required: true}
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User-visible complete outcome
+      description: One end-to-end promise, not just a subsystem task
+    validations: {required: true}
+  - type: textarea
+    id: existing
+    attributes:
+      label: Existing evidence and canonical paths
+      description: Reuse Drive original and released code; avoid duplicate storage
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria and tests
+      description: Include UI, provenance, state recovery, safety gates and failure cases
+    validations: {required: true}
+  - type: textarea
+    id: blockers
+    attributes:
+      label: Access or physical verification blocker
+      description: Ask the owner only if no alternative exists

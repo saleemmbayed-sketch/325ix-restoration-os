@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+"""Offline 3D integration contract smoke checks; not a WebGL browser test."""
+from pathlib import Path
+import re,subprocess,sys,json,hashlib,zipfile,tempfile,shutil
+ROOT=Path(__file__).resolve().parent
+
+def main():
+  app=(ROOT/'app.py').read_text()
+  site=(ROOT/'site.js').read_text()
+  view=(ROOT/'viewer3d.js').read_text()
+  prep=(ROOT/'scripts/prepare_3d_assets.py').read_text()
+  assert "'/viewer3d.js':" in app and "'/models/e30_reference_m3.glb':" in app
+  assert 'import(\'/viewer3d.js\')' in site and 'ixSelectVisualSystemById' in site
+  assert "loadVisualAssemblies(system)" in site and "loadVisualAssembly" in site and "selectVisualPart" in site
+  assert "MeshoptDecoder" in view and "GLTFLoader" in view and "OrbitControls" in view
+  assert "setExplosion" in view and "selectMesh" in view and "positionView" in view
+  assert "MODEL_GIT_BLOB='8aaa3daafd53158b63ced92c4c65d520ebce561f'" in prep
+  assert 'NOT_APPROVED' in app and 'NOT 325iX CAD' in view
+  if shutil.which('node'):
+    for path in ('viewer3d.js','site.js'):
+      result=subprocess.run(['node','--check',path],cwd=ROOT,capture_output=True,text=True)
+      if result.returncode:raise AssertionError(path+': '+result.stderr)
+  result=subprocess.run([sys.executable,'-m','py_compile','app.py','launch_rc12_trial.py','scripts/prepare_3d_assets.py'],cwd=ROOT,capture_output=True,text=True)
+  assert result.returncode==0,result.stderr
+  assert json.loads((ROOT/'docs/runtime_rc13_sha256.json').read_text())['sha256_files']['04_SEARCH/325ix_multimodal.sqlite3']
+  print('PASS: JS/Python parse; local asset routes; source pin; 3D/2D integration contract; no safety clearance')
+  print('LIMIT: no installed real GLB/Three.js in this offline execution environment; device visual test still pending.')
+  return 0
+if __name__=='__main__':sys.exit(main())

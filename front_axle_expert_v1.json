@@ -1,0 +1,151 @@
+{
+  "id": "IX_FRONT_WHEEL_PLAY_V1",
+  "title": "Front wheel play & steering looseness",
+  "vehicle_scope": "BMW E30 325iX sedan, original 1987-12 Swiss/ECE; vehicle-specific configuration still requires inspection",
+  "purpose": "Document and narrow an observed play/looseness complaint, not diagnose it remotely or authorize repair.",
+  "road_clearance": "NOT_APPROVED",
+  "warning": "Steering and front-axle movement may be safety-critical. Do not drive if instability, abnormal looseness, binding or component damage is suspected. Lifting, wheel-play checks and suspension loading require a trained professional and appropriate equipment; do not improvise methods.",
+  "sources": [
+    {
+      "id": "BMW_TIS_SI_STEER_7",
+      "title": "BMW AG TIS — Aid to Diagnosing the Steering System",
+      "source_page": "7 of 10",
+      "status": "SOURCE_PAGE_READ; GENERIC SERVICE-INFORMATION CONTENT; E30 iX PAGE INDEX DOES NOT VERIFY EVERY LISTED CONFIGURATION",
+      "url": "https://workshop-manuals.com/bmw/3_series_e30/325ix_m20_sal/1_service_information/32__steering_and_wheel_alignment/2_si__aid_to_diagnosing_the_steering_system/page_92/",
+      "summary": "Source lists steering-column behavior and inspection of suspension/steering joints, strut mount, steering-shaft joints, track rods and rubber mounts for wear or play. It also refers to separate BMW repair procedures.",
+      "accessed_utc": "2026-11-21"
+    },
+    {
+      "id": "BMW_TIS_ALIGN_PRECHECK",
+      "title": "BMW AG TIS — Test Conditions for Chassis/Wheel Alignment",
+      "source_page": "1 of 1",
+      "status": "SOURCE_PAGE_READ; PRECONDITIONS ONLY; NOT AN ALIGNMENT OR REPAIR PROCEDURE",
+      "url": "https://workshop-manuals.com/bmw/3_series_e30/325ix_m20_sal/2_repair_instructions/32__steering_and_wheel_alignment/0__electronic_chassis_alignment/1_ra__test_conditions_for_chassis_wheel_alignment_check/",
+      "summary": "Before alignment the source requires appropriate wheels/tyres/pressure and acceptable wheel-bearing clearance, steering backlash, suspension and shock absorber condition.",
+      "accessed_utc": "2026-11-21"
+    }
+  ],
+  "assemblies": [
+    {
+      "id": "A-776c8e5f755bc176",
+      "label": "Front support / control arms",
+      "system": "front_axle"
+    },
+    {
+      "id": "A-26eb660e7170ed83",
+      "label": "Front wheel bearing",
+      "system": "front_axle"
+    },
+    {
+      "id": "A-d9c1652de5fb8cfa",
+      "label": "Front strut / shock absorber",
+      "system": "front_axle"
+    },
+    {
+      "id": "A-6746b0e5032fcf50",
+      "label": "Steering linkage / tie rods",
+      "system": "steering"
+    },
+    {
+      "id": "A-b6733a082f6080e2",
+      "label": "Mechanical steering",
+      "system": "steering"
+    }
+  ],
+  "parts": [
+    {
+      "number": "31121701059",
+      "label": "Left control arm"
+    },
+    {
+      "number": "31121701060",
+      "label": "Right control arm"
+    },
+    {
+      "number": "32211701039",
+      "label": "Left tie rod"
+    },
+    {
+      "number": "32211701040",
+      "label": "Right tie rod"
+    },
+    {
+      "number": "31211132284",
+      "label": "Front wheel bearing candidate, check catalog conditions"
+    }
+  ],
+  "steps": [
+    {
+      "code": "SYMPTOM",
+      "title": "1. Describe the symptom",
+      "purpose": "Write what was actually noticed before diagnosing its cause.",
+      "prompt": "Which wheel/corner, when does play occur, what changed, and is the car currently being driven?",
+      "evidence": "Owner description, date, side and operating condition.",
+      "source_ids": [],
+      "kind": "OBSERVATION"
+    },
+    {
+      "code": "IDENTIFY",
+      "title": "2. Find the correct iX assembly",
+      "purpose": "Match the suspected area to the E30 325iX catalog drawing; a catalog row is not VIN-fitment proof.",
+      "prompt": "Open the relevant exploded assembly; record catalog callout and stamped or measured identifiers of the actual installed component.",
+      "evidence": "Assembly ID, part markings, original catalog link and photo ID.",
+      "source_ids": [],
+      "kind": "IDENTITY"
+    },
+    {
+      "code": "PHOTOS",
+      "title": "3. Photograph the actual hardware",
+      "purpose": "Distinguish the car’s physical parts from vendor catalog images and exploded schematics.",
+      "prompt": "Add overall and close-up images where safely accessible; capture boots, joints, mounts and part numbers without dismantling.",
+      "evidence": "Workshop photograph filename, person, timestamp, source; supplier images labeled separately.",
+      "source_ids": [
+        "BMW_TIS_SI_STEER_7"
+      ],
+      "kind": "PHOTO"
+    },
+    {
+      "code": "TRIAGE",
+      "title": "4. Qualified steering/front-axle inspection",
+      "purpose": "Record a trained mechanic’s inspection findings on steering joints, wheel bearings, strut mounts and suspension connections.",
+      "prompt": "Ask a qualified mechanic to identify the location of play or binding using suitable equipment and the applicable BMW method. Do not perform unsupervised lifting or joint-loading tests.",
+      "evidence": "Component inspected, physical finding, mechanic, source/procedure and any unresolved safety concern.",
+      "source_ids": [
+        "BMW_TIS_SI_STEER_7",
+        "BMW_TIS_ALIGN_PRECHECK"
+      ],
+      "kind": "MECHANIC"
+    },
+    {
+      "code": "MEASURE",
+      "title": "5. Preserve actual measurements",
+      "purpose": "Avoid judging wear or tolerances from unsourced values or photos alone.",
+      "prompt": "Record numeric measurements with unit, tool/calibration, conditions and the relevant original BMW reference. Missing limits remain unknown.",
+      "evidence": "Measured values, unit, tool, responsible person and BMW source; do not fill guessed tolerances.",
+      "source_ids": [
+        "BMW_TIS_ALIGN_PRECHECK"
+      ],
+      "kind": "MEASUREMENT"
+    },
+    {
+      "code": "DECIDE",
+      "title": "6. Evaluate repair before replacement",
+      "purpose": "Prefer rebuilding existing OEM parts where practicable and safe; compare sourced alternatives only after fitment and material verification.",
+      "prompt": "Document repairability, cost and technical implications of rebuild, used/refurbished OEM, specification-verified cross-fit, and new parts. Do not choose without evidence.",
+      "evidence": "Candidate part numbers, verified dimensions/supplier sources, condition, estimated costs and unresolved constraints.",
+      "source_ids": [],
+      "kind": "REPAIR_DECISION"
+    },
+    {
+      "code": "REVIEW",
+      "title": "7. Review, export and safety hold",
+      "purpose": "Reopen the saved job, review missing evidence and export the record. The software never grants road-use approval.",
+      "prompt": "Confirm an independent qualified review is still required. Record the reviewer and final test evidence once physically available; unresolved items remain open.",
+      "evidence": "Reviewer name/role, outstanding source pages and open issues.",
+      "source_ids": [
+        "BMW_TIS_ALIGN_PRECHECK"
+      ],
+      "kind": "QA"
+    }
+  ]
+}

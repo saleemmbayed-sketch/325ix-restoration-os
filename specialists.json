@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "vehicle_vin": "VIN_NOT_CONFIGURED",
+  "agents": [
+    {"id":"part_identity","label":"Part identification","input":["photo","stamp","diagram","description"],"output":"candidate identity with provenance","approval":"human_review"},
+    {"id":"diagnostics","label":"Diagnostics","input":["symptom","inspection","measurements"],"output":"ranked hypotheses and discriminating tests","approval":"qualified_inspection"},
+    {"id":"repair_rebuild","label":"Repair / rebuilding","input":["condition","measurements","safety_class"],"output":"repair-first option comparison","approval":"human_review"},
+    {"id":"fitment","label":"AWD fitment","input":["variant","geometry","interfaces","measurements"],"output":"fitment status and gaps","approval":"physical_verification"},
+    {"id":"sourcing","label":"Sourcing","input":["part_number","condition","market"],"output":"ranked source options with provenance","approval":"human_review"},
+    {"id":"qa","label":"Workshop QA","input":["evidence","procedure","as_built_record"],"output":"release and sign-off checklist","approval":"qualified_signoff"}
+  ],
+  "routing_policy": "local_routine_cloud_complex_when_configured",
+  "safety_policy": "AI_NEVER_SELF_CERTIFIES_SAFETY_CRITICAL_REPAIR"
+}

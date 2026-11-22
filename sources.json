@@ -1,0 +1,26 @@
+[
+  {
+    "id": "BMW_TIS_SI_STEER_7",
+    "title": "BMW AG TIS — Aid to Diagnosing the Steering System",
+    "system": "steering",
+    "source_page": "7 of 10",
+    "status": "SOURCE_PAGE_READ; GENERIC SERVICE-INFORMATION CONTENT",
+    "url": "https://workshop-manuals.com/bmw/3_series_e30/325ix_m20_sal/1_service_information/32__steering_and_wheel_alignment/2_si__aid_to_diagnosing_the_steering_system/page_92/"
+  },
+  {
+    "id": "BMW_TIS_ALIGN_PRECHECK",
+    "title": "BMW AG TIS — Test Conditions for Chassis/Wheel Alignment",
+    "system": "front_axle",
+    "source_page": "1 of 1",
+    "status": "SOURCE_PAGE_READ; PRECONDITIONS ONLY",
+    "url": "https://workshop-manuals.com/bmw/3_series_e30/325ix_m20_sal/2_repair_instructions/32__steering_and_wheel_alignment/0__electronic_chassis_alignment/1_ra__test_conditions_for_chassis_wheel_alignment_check/"
+  },
+  {
+    "id": "BMW_ETK_V3_CORPUS",
+    "title": "BMW 325iX EU assembly corpus V3",
+    "system": "catalog",
+    "source_page": "805 assemblies / 13,845 occurrences",
+    "status": "CATALOG_INDEXED; READ-ONLY; NOT FITMENT PROOF",
+    "url": "LOCAL_DRIVE_SOURCE_NOT_PUBLIC"
+  }
+]

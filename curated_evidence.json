@@ -1,0 +1,959 @@
+{
+  "schema_version": "0.6",
+  "scope": "BMW 325iX exact part-number research overlay; not OEM certification",
+  "verified_count": 23,
+  "evidence": {
+    "31101130503": {
+      "label": "Front control arm rubber mounting — centered, 325iX",
+      "kind": "RUBBER_BUSHING",
+      "orientation": "LEFT_OR_RIGHT",
+      "sources": [
+        {
+          "label": "E30 325iX centered front control arm bushing",
+          "url": "https://www.bimmerworld.com/Suspension-Steering/Control-Arm-Bushings/BMW-Front-Control-Arm-Bushing-FCAB-Centered-Rubber-E30-325iX.html",
+          "status": "NUMBER_AND_CENTERED_ORIENTATION_IN_LISTING"
+        },
+        {
+          "label": "Genuine BMW bushing FCP Euro",
+          "url": "https://www.fcpeuro.com/BMW-parts/Control-Arm-Bushing/?e=180&m=20&position=Front",
+          "status": "LISTING_SAYS_NO_LONGER_AVAILABLE; POINT_IN_TIME_ONLY"
+        }
+      ],
+      "photos": [
+        {
+          "url": "https://www.bimmerworld.com/31101130503-Meyle-E30-325ix-FCAB.jpg",
+          "source_url": "https://www.bimmerworld.com/Suspension-Steering/Control-Arm-Bushings/BMW-Front-Control-Arm-Bushing-FCAB-Centered-Rubber-E30-325iX.html",
+          "label": "BimmerWorld illustration — appears MEYLE-marked; listing describes Delphi: VERIFY BRAND",
+          "kind": "SUPPLIER_REFERENCE_IMAGE",
+          "status": "PHOTO_LABEL_CONFLICT; DO_NOT_IDENTIFY_BRAND_FROM_PART_NUMBER"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Bushing orientation",
+          "value": "Centered (as cataloged for 325iX)",
+          "status": "SOURCE_LISTING; VERIFY_INSTALLED_COMPONENT",
+          "source_url": "https://www.bimmerworld.com/Suspension-Steering/Control-Arm-Bushings/BMW-Front-Control-Arm-Bushing-FCAB-Centered-Rubber-E30-325iX.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Supplier image filename references Meyle while product listing mentions Delphi; identify exact branded item before ordering."
+      ],
+      "inspection_questions": [
+        "Measure actual bore/outer diameter and note bonding/condition if considering industrial cross-fit.",
+        "Inspect for oil contamination, tears, offset/centered configuration, and correct bracket interface."
+      ],
+      "evidence_status": "NUMBER_ORIENTATION_SUPPLIER_REPORTED; PHOTOGRAPH_BRAND_UNCERTAIN",
+      "part_number": "31101130503",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31121139789": {
+      "label": "Control-arm bushing bracket — LEFT",
+      "kind": "BUSHING_BRACKET",
+      "orientation": "LEFT",
+      "sources": [
+        {
+          "label": "Genuine BMW left bracket reference",
+          "url": "https://www.ecstuning.com/b-genuine-bmw-parts/control-arm-bracket-left/31121139789/",
+          "status": "LEFT_SIDE_PART_NUMBER_LISTED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Position",
+          "value": "Front LEFT bracket",
+          "status": "PART_NUMBER_SIDE_LISTED",
+          "source_url": "https://www.ecstuning.com/b-genuine-bmw-parts/control-arm-bracket-left/31121139789/",
+          "note": ""
+        }
+      ],
+      "inspection_questions": [
+        "Verify bracket bend, bushing center and installed arm geometry; check correct variant."
+      ],
+      "evidence_status": "PART_NUMBER_SIDE_LISTED; FITMENT_NOT_PHYSICALLY_CHECKED",
+      "part_number": "31121139789",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED",
+      "conflicts": []
+    },
+    "31121139790": {
+      "label": "Control-arm bushing bracket — RIGHT",
+      "kind": "BUSHING_BRACKET",
+      "orientation": "RIGHT",
+      "sources": [
+        {
+          "label": "Matched right bracket number listing",
+          "url": "https://premierbavarian.com/products/1984-1991-bmw-e30-lower-control-arm-bracket-set-31121139789-31121139790",
+          "status": "PAIR_REFERENCES_RIGHT_SIDE; DETAILS_NEED_CONFIRMATION"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Position",
+          "value": "RIGHT bracket (cross-reference of right-hand pair)",
+          "status": "SUPPLIER_PAIR_REFERENCE",
+          "source_url": "https://premierbavarian.com/products/1984-1991-bmw-e30-lower-control-arm-bracket-set-31121139789-31121139790",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Raw BMWFans catalog calls both brackets LEFT; verify casting/hand before replacement."
+      ],
+      "inspection_questions": [
+        "Record actual bracket orientation and rubber mount before ordering."
+      ],
+      "evidence_status": "PART_NUMBER_SIDE_INFERRED_FROM_PAIR_LISTING; REQUIRES_CONFIRMATION",
+      "part_number": "31121139790",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31121701059": {
+      "label": "Front lower control arm — LEFT",
+      "kind": "CONTROL_ARM",
+      "orientation": "LEFT",
+      "sources": [
+        {
+          "label": "Genuine BMW control arm listing — left",
+          "url": "https://www.bimmerworld.com/Suspension-Steering/E30-325ix-Front-Control-Arm-Left-Side.html",
+          "status": "CATALOG_PART_NUMBER_AND_SIDE_CONFIRMED_IN_LISTING"
+        },
+        {
+          "label": "Dealer-style model parts cross-reference",
+          "url": "https://www.bmwpartsdeal.com/oem-bmw-325ix-control_arm.html",
+          "status": "SECONDARY_FITMENT_LISTING"
+        }
+      ],
+      "photos": [
+        {
+          "url": "https://www.bimmerworld.com/31121701059.jpg",
+          "source_url": "https://www.bimmerworld.com/Suspension-Steering/E30-325ix-Front-Control-Arm-Left-Side.html",
+          "label": "BimmerWorld product photo — left 325iX lower control arm",
+          "kind": "SUPPLIER_EXACT_PART",
+          "status": "SOURCE_IMAGE_REFERENCE_NOT_LOCALLY_DOWNLOADED"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Position",
+          "value": "Front LEFT lower control arm",
+          "status": "CROSS_CHECKED_PART_NUMBER_POSITION",
+          "source_url": "https://www.bmwpartsdeal.com/oem-bmw-325ix-control_arm.html",
+          "note": ""
+        }
+      ],
+      "inspection_questions": [
+        "Examine actual arm and joints for damage/wear and photograph stamps.",
+        "Compare ball-joint geometry and suspension mounting interfaces; no generic 325i assumption.",
+        "Use a qualified mechanic for any suspension or joint service."
+      ],
+      "evidence_status": "NUMBER_AND_SIDE_CROSS_CHECKED; VEHICLE_FIT_NOT_PHYSICALLY_CONFIRMED",
+      "part_number": "31121701059",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED",
+      "conflicts": []
+    },
+    "31121701060": {
+      "label": "Front lower control arm — RIGHT",
+      "kind": "CONTROL_ARM",
+      "orientation": "RIGHT",
+      "sources": [
+        {
+          "label": "Genuine BMW right control arm product listing",
+          "url": "https://www.bimmerworld.com/Suspension-Steering/E30-325ix-Front-Control-Arm-Right-Side.html",
+          "status": "CATALOG_PART_NUMBER_AND_SIDE_CONFIRMED_IN_LISTING"
+        },
+        {
+          "label": "BMW classic ETK-derived right control arm listing",
+          "url": "https://www.hubauer-shop.de/de/querlenker-rechts-31121701060.html",
+          "status": "SECOND_SOURCE_CONFIRMS_RIGHT_SIDE"
+        }
+      ],
+      "photos": [
+        {
+          "url": "https://i.ebayimg.com/images/g/GxMAAOSwL8NdoEIq/s-l1200.jpg",
+          "source_url": "https://www.ebay.com/itm/254385930354",
+          "label": "Seller photograph of used right 325iX arm (example, not your car)",
+          "kind": "SUPPLIER_USED_EXAMPLE",
+          "status": "SELLER_CLAIM; EXACT_PHOTOGRAPHED_PART_NOT_INDEPENDENTLY_VALIDATED"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Position",
+          "value": "Front RIGHT lower control arm",
+          "status": "CROSS_CHECKED_PART_NUMBER_POSITION",
+          "source_url": "https://www.hubauer-shop.de/de/querlenker-rechts-31121701060.html",
+          "note": ""
+        },
+        {
+          "name": "Mass of shipped unit",
+          "value": "4.185 kg (reported shipping weight, NOT component mass)",
+          "status": "SHIPPING_WEIGHT_ONLY",
+          "source_url": "https://www.hubauer-shop.de/de/querlenker-rechts-31121701060.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Raw imported BMWFans catalog describes 31121701060 as left; supplier and ETK references identify RIGHT. Preserve original, display corrected label."
+      ],
+      "inspection_questions": [
+        "Confirm right-hand orientation on the installed part; compare to 31121701059.",
+        "Use correct iX front suspension-specific inspection and alignment procedures."
+      ],
+      "evidence_status": "NUMBER_AND_SIDE_CROSS_CHECKED; VEHICLE_FIT_NOT_PHYSICALLY_CONFIRMED",
+      "part_number": "31121701060",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31321133563": {
+      "label": "Front suspension shock-absorber insert — BMW catalog",
+      "kind": "STRUT_INSERT",
+      "orientation": "PAIR",
+      "sources": [
+        {
+          "label": "BMW 325iX insert catalog cross-reference",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0140&id=1571-EUR---E30-BMW-325ix",
+          "status": "LISTED_FOR_325IX; BUILD_DATE_SPECIFIC_FITMENT_REQUIRES_CONFIRMATION"
+        },
+        {
+          "label": "Genuine BMW insert source listing",
+          "url": "https://www.baum-bmwshop24.de/p/bmw-stossdaempfer-einsatz-31321133563",
+          "status": "OE_NUMBER_PRODUCT_REFERENCE"
+        },
+        {
+          "label": "Aftermarket 325iX Bilstein B6 photo listing (not OEM identity)",
+          "url": "https://www.turnermotorsport.com/p-2567-bilstein-b6-performance-front-strut-insert-e30-325ix-1987-1991/",
+          "status": "ALTERNATIVE_CANDIDATE; NEVER_TREAT_AS_DIRECT_FIT_CERTIFICATION"
+        }
+      ],
+      "photos": [
+        {
+          "url": "https://3a663eb0fef48c6d2d60-a88f8ebfcdb877ad223e888bfcb7f7ec.ssl.cf1.rackcdn.com/792845_x800.jpg",
+          "source_url": "https://www.turnermotorsport.com/p-2567-bilstein-b6-performance-front-strut-insert-e30-325ix-1987-1991/",
+          "label": "Bilstein B6 P36-0251 example — AFTERMARKET ALTERNATIVE, NOT BMW OE 31321133563",
+          "kind": "ALTERNATIVE_REFERENCE",
+          "status": "NOT_IDENTICAL_TO_OE; GEOMETRY_UNVERIFIED"
+        }
+      ],
+      "facts": [
+        {
+          "name": "OE number",
+          "value": "31321133563 BMW 325iX insert listing",
+          "status": "CATALOG_PART_NUMBER",
+          "source_url": "https://www.baum-bmwshop24.de/p/bmw-stossdaempfer-einsatz-31321133563",
+          "note": ""
+        },
+        {
+          "name": "Aftermarket candidate",
+          "value": "Bilstein B6 P36-0251; compatibility and actual dimensions NOT checked",
+          "status": "CANDIDATE_ONLY_NOT_FITMENT_APPROVED",
+          "source_url": "https://www.turnermotorsport.com/p-2567-bilstein-b6-performance-front-strut-insert-e30-325ix-1987-1991/",
+          "note": ""
+        }
+      ],
+      "inspection_questions": [
+        "Record original strut housing inner bore and insert dimensions using appropriate disassembly and measuring procedure.",
+        "Confirm gland nut, rod, extended/compressed stroke and installed spring/housing compatibility.",
+        "Do not buy generic rear-wheel-drive E30 insert by external similarity."
+      ],
+      "evidence_status": "OE_CATALOG_REFERENCE_PLUS_UNVERIFIED_ALTERNATIVE",
+      "part_number": "31321133563",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED",
+      "conflicts": []
+    },
+    "32211701037": {
+      "label": "Steering outer ball joint — LEFT (catalog entry)",
+      "kind": "STEERING_JOINT",
+      "orientation": "LEFT",
+      "sources": [
+        {
+          "label": "1989 BMW 325iX steering part diagram",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=32_0326&id=1571-EUR-09-1989-E30-BMW-325ix",
+          "status": "PART_NUMBER_AND_SIDE_SUPPORTED_IN_LATER_1989_DIAGRAM"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Listed position",
+          "value": "LEFT steering outer ball joint",
+          "status": "MODEL_LISTING; DATE_NOT_VERIFIED",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=32_0326&id=1571-EUR-09-1989-E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "inspection_questions": [
+        "Review supersession and production data before buying separate ball joint."
+      ],
+      "evidence_status": "CATALOG_LISTED; 1987_FITMENT_NOT_INDEPENDENTLY_VERIFIED",
+      "part_number": "32211701037",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED",
+      "conflicts": []
+    },
+    "32211701038": {
+      "label": "Steering outer ball joint — RIGHT (catalog entry)",
+      "kind": "STEERING_JOINT",
+      "orientation": "RIGHT",
+      "sources": [
+        {
+          "label": "1989 BMW 325iX steering part diagram",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=32_0326&id=1571-EUR-09-1989-E30-BMW-325ix",
+          "status": "PART_NUMBER_AND_SIDE_SUPPORTED_IN_LATER_1989_DIAGRAM"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Listed position",
+          "value": "RIGHT steering outer ball joint",
+          "status": "MODEL_LISTING; DATE_NOT_VERIFIED",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=32_0326&id=1571-EUR-09-1989-E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Original imported catalog calls this LEFT, while alternate model-specific listing calls it RIGHT; variant and supersession remain open."
+      ],
+      "inspection_questions": [
+        "Check whether joint is separately serviceable/available for specific rack and production date."
+      ],
+      "evidence_status": "SIDE_CROSS_REFERENCED; 1987_FITMENT_NOT_VERIFIED",
+      "part_number": "32211701038",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "32211701039": {
+      "label": "Steering tie rod assembly — LEFT",
+      "kind": "TIE_ROD",
+      "orientation": "LEFT",
+      "sources": [
+        {
+          "label": "BMW genuine part cross-reference",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-left_tie_rod-32211701039.html",
+          "status": "PART_NUMBER_SIDE_CONFIRMED"
+        },
+        {
+          "label": "Used/replacement 325iX left tie rod listing",
+          "url": "https://www.rageitparts.com/products/bmw-e30-325ix-awd-inner-outer-tie-rod-left-32211701039",
+          "status": "SUPPLIER_PHOTO_LISTING"
+        }
+      ],
+      "photos": [
+        {
+          "url": "https://www.rageitparts.com/cdn/shop/files/20251216_130641.jpg?v=1765926466",
+          "source_url": "https://www.rageitparts.com/products/bmw-e30-325ix-awd-inner-outer-tie-rod-left-32211701039",
+          "label": "Rage It Parts — left 325iX tie rod listing",
+          "kind": "SUPPLIER_USED_OR_REPLACEMENT",
+          "status": "LISTING_MAY_OFFER_MULTIPLE_BRANDS; NOT_AS_BUILT"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Position",
+          "value": "Steering linkage LEFT",
+          "status": "CROSS_CHECKED_PART_NUMBER_POSITION",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-left_tie_rod-32211701039.html",
+          "note": ""
+        }
+      ],
+      "inspection_questions": [
+        "Locate whether free play is within inner tie-rod, outer joint, or rack before ordering.",
+        "Photograph stamped marks and verify thread/length against physically installed assembly."
+      ],
+      "evidence_status": "NUMBER_AND_SIDE_CONFIRMED; NOT_DIAGNOSED",
+      "part_number": "32211701039",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED",
+      "conflicts": []
+    },
+    "32211701040": {
+      "label": "Steering tie rod assembly — RIGHT",
+      "kind": "TIE_ROD",
+      "orientation": "RIGHT",
+      "sources": [
+        {
+          "label": "BMW genuine right tie rod listing",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-right_tie_rod-32211701040.html",
+          "status": "PART_NUMBER_SIDE_CONFIRMED"
+        },
+        {
+          "label": "Secondary ETK-style diagram cross-reference",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=32_0322&id=AG95-EUR---E30-BMW-325ix",
+          "status": "SECOND_SOURCE_CONFIRMS_RIGHT"
+        }
+      ],
+      "photos": [
+        {
+          "url": "https://www.rageitparts.com/cdn/shop/files/20251216_130625.jpg?v=1765926651&width=1946",
+          "source_url": "https://www.rageitparts.com/products/bmw-e30-325ix-awd-inner-outer-tie-rod-left-32211701040",
+          "label": "Rage It Parts — right 325iX tie rod listing (photo reference)",
+          "kind": "SUPPLIER_USED_OR_REPLACEMENT",
+          "status": "LISTING_MAY_OFFER_MULTIPLE_BRANDS; NOT_AS_BUILT"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Position",
+          "value": "Steering linkage RIGHT",
+          "status": "CROSS_CHECKED_PART_NUMBER_POSITION",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-right_tie_rod-32211701040.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Raw imported catalog describes 32211701040 as left; other model-specific parts references identify RIGHT."
+      ],
+      "inspection_questions": [
+        "Observe steering linkage; distinguish tie-rod joint wear from rack movement.",
+        "Do not set alignment or certify steering repair from supplier listing."
+      ],
+      "evidence_status": "NUMBER_AND_SIDE_CROSS_CHECKED; NOT_DIAGNOSED",
+      "part_number": "32211701040",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "33121210295": {
+      "label": "Front differential output shaft seal",
+      "kind": "SHAFT_SEAL",
+      "orientation": "AXLE_OUTPUT",
+      "sources": [
+        {
+          "label": "BMW genuine E30 325iX front differential output seal",
+          "url": "https://www.bimmerworld.com/Driveline-Shifter/Differentials-Accessories/Front-Differential-Output-Seal-Genuine-BMW-E30-325ix.html",
+          "status": "PART_NUMBER_FRONT_DIFF_325IX_LISTED"
+        },
+        {
+          "label": "Seal dimensions reported on merchant listing",
+          "url": "https://sierramadrecollection.com/products/bmw-seal-differential-output-flange-35-x-55-x-8-7-mm-1975-1991-33-12-1-210-295",
+          "status": "REPORTED_DIMENSIONS_NOT_INDEPENDENTLY_MEASURED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Supplier-listed seal dimensions",
+          "value": "35 × 55 × 8/7 mm (verify by inspecting actual seal and housing)",
+          "status": "SUPPLIER_LISTING_NOT_OEM_DRAWING",
+          "source_url": "https://sierramadrecollection.com/products/bmw-seal-differential-output-flange-35-x-55-x-8-7-mm-1975-1991-33-12-1-210-295",
+          "note": ""
+        }
+      ],
+      "inspection_questions": [
+        "Photograph the installed seal stamping and output flange before sourcing.",
+        "Measure journal/housing and seal lip arrangement; do not select solely on nominal dimensions.",
+        "Inspect differential flange wear, bearings and vent before considering repair."
+      ],
+      "evidence_status": "NUMBER_AND_APPLICATION_LISTED; DIMENSIONS_SUPPLIER_ONLY",
+      "part_number": "33121210295",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED",
+      "conflicts": []
+    },
+    "31311701049": {
+      "part_number": "31311701049",
+      "label": "Front spring strut housing — LEFT",
+      "kind": "FRONT_STRUT_HOUSING",
+      "orientation": "LEFT",
+      "sources": [
+        {
+          "label": "RealOEM BMW 325iX spring strut drawing",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0139&id=AG95-EUR-12-1992-E30-BMW-325ix",
+          "status": "NUMBER AND SIDE LISTED; MODEL/YEAR MAY DIFFER"
+        },
+        {
+          "label": "BimmerWorld genuine BMW left front strut housing",
+          "url": "https://www.bimmerworld.com/Suspension-Steering/OEM-BMW-Shocks-Struts/Genuine-BMW-Left-Front-Spring-Strut-31311701049-E30.html",
+          "status": "EXACT NUMBER AND LEFT-HAND SIDE; SELLER LISTS E30 325IX 1987-1991"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Position",
+          "value": "Left front strut housing",
+          "status": "EXACT PART NUMBER/SUPPLIER NUMBER MATCH",
+          "source_url": "https://www.bimmerworld.com/Suspension-Steering/OEM-BMW-Shocks-Struts/Genuine-BMW-Left-Front-Spring-Strut-31311701049-E30.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify actual front strut housing casting, spring perch condition, tube diameter and iX axle clearance before repair or donor sourcing."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCES_REVIEWED; NO_SAFETY_SPECS_CERTIFIED; PHOTOS_NOT_ARCHIVED",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31311701050": {
+      "part_number": "31311701050",
+      "label": "Front spring strut housing — RIGHT",
+      "kind": "FRONT_STRUT_HOUSING",
+      "orientation": "RIGHT",
+      "sources": [
+        {
+          "label": "RealOEM E30 325iX spring strut drawing",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0140&id=1571-EUR---E30-BMW-325ix",
+          "status": "CATALOG SHOWS FRONT RIGHT 31311701050"
+        },
+        {
+          "label": "BimmerWorld genuine BMW right front strut housing",
+          "url": "https://www.bimmerworld.com/Suspension-Steering/OEM-BMW-Shocks-Struts/Genuine-BMW-Front-Right-Spring-Strut-31311701050-E30.html",
+          "status": "EXACT NUMBER AND SIDE; SELLER LISTS 325IX 1987-1991"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Position",
+          "value": "Right front strut housing",
+          "status": "EXACT PART NUMBER/SUPPLIER NUMBER MATCH",
+          "source_url": "https://www.bimmerworld.com/Suspension-Steering/OEM-BMW-Shocks-Struts/Genuine-BMW-Front-Right-Spring-Strut-31311701050-E30.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Use original iX strut body geometry and measure the existing insert; ordinary RWD E30 struts are not automatically interchangeable."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCES_REVIEWED; NO_SAFETY_SPECS_CERTIFIED; PHOTOS_NOT_ARCHIVED",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31601226816": {
+      "part_number": "31601226816",
+      "label": "Front axle output shaft / CV axle assembly — RIGHT",
+      "kind": "FRONT_CV_AXLE",
+      "orientation": "RIGHT",
+      "sources": [
+        {
+          "label": "BimmerWorld E30 iX front right OEM axle",
+          "url": "https://www.bimmerworld.com/Driveline-Shifter/Driveshafts-Accessories/Axle-Shaft-Front-Right-E30-325ix-OEM-BMW-31601226816.html",
+          "status": "EXACT PART NUMBER AND RIGHT SIDE"
+        },
+        {
+          "label": "1988 325iX sedan front axle output-shaft catalog",
+          "url": "https://www.bmwpartsdeal.com/parts-list/1988-bmw-325ix-sedan_e30/front_rear_axle/final_drive_front_axle_output_shaft_4wheel.html",
+          "status": "EXACT PART NUMBER IN MODEL 1988 SEDAN"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Side",
+          "value": "Front right axle assembly",
+          "status": "MULTIPLE EXACT-NUMBER SELLER/CATALOG REFERENCES",
+          "source_url": "https://www.bimmerworld.com/Driveline-Shifter/Driveshafts-Accessories/Axle-Shaft-Front-Right-E30-325ix-OEM-BMW-31601226816.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Inspect both CV joints, splines, boots and overall shaft dimensions; compare actual iX bearing and differential interfaces before donor matching."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCES_REVIEWED; NO_SAFETY_SPECS_CERTIFIED; PHOTOS_NOT_ARCHIVED",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31211132284": {
+      "part_number": "31211132284",
+      "label": "Front wheel ball bearing — BMW iX",
+      "kind": "FRONT_WHEEL_BEARING",
+      "orientation": "LEFT_OR_RIGHT",
+      "sources": [
+        {
+          "label": "RealOEM E30 325iX wheel bearing drawing",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0198&id=1581-EUR---E30-BMW-325ix",
+          "status": "SPEC SHOWS 42x75.05x37; SOURCE INDICATES ENDED"
+        },
+        {
+          "label": "FCP Euro Schaeffler front bearing listing",
+          "url": "https://www.fcpeuro.com/products/bmw-wheel-bearing-front-e30-325ix-31211132284",
+          "status": "EXACT PART NUMBER AND E30 325IX FRONT"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalog nominal dimensions",
+          "value": "42 × 75.05 × 37 mm",
+          "status": "CATALOG-PUBLISHED; MEASURE INSTALLED BEARING FOR CROSS-FIT",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0198&id=1581-EUR---E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Record bearing outer/inner diameters and width with calibrated tooling before any equivalence decision; inspect retained structure and axle preload specification from service source."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCES_REVIEWED; NO_SAFETY_SPECS_CERTIFIED; PHOTOS_NOT_ARCHIVED",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "32311158686": {
+      "part_number": "32311158686",
+      "label": "Steering column/spindle bearing — steel",
+      "kind": "STEERING_COLUMN_BEARING",
+      "orientation": "UNKNOWN",
+      "sources": [
+        {
+          "label": "BMW Parts Deal exact BMW number and bearing description",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-steering_spindle_bearing_steel-32311158686.html",
+          "status": "EXACT PART NUMBER AND BEARING DESCRIPTION"
+        },
+        {
+          "label": "FCP Euro exact number genuine BMW listing",
+          "url": "https://www.fcpeuro.com/products/bmw-steering-spindle-bearing-steel-32311158686",
+          "status": "EXACT PART NUMBER SOURCE"
+        },
+        {
+          "label": "RealOEM 325iX steering spindle diagram",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=32_0440&id=1291-EUR---E30-BMW-325ix",
+          "status": "EXACT NUMBER IN 325IX CATALOG"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Type",
+          "value": "Steering spindle bearing, steel",
+          "status": "SOURCE NUMBER AND DESCRIPTION",
+          "source_url": "https://www.fcpeuro.com/products/bmw-steering-spindle-bearing-steel-32311158686",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Determine actual bearing location/condition and compare bearing size/interface before substitution; steering checks require professional inspection."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCES_REVIEWED; NO_SAFETY_SPECS_CERTIFIED; PHOTOS_NOT_ARCHIVED",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31331129880": {
+      "part_number": "31331129880",
+      "label": "Front coil spring — variant-dependent",
+      "kind": "FRONT_COIL_SPRING",
+      "orientation": "LEFT_OR_RIGHT",
+      "sources": [
+        {
+          "label": "RealOEM E30 325iX front coil springs EUR",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0101&id=1571-EUR---E30-BMW-325ix",
+          "status": "NUMBER PRESENT; VARIANT/DATE AND SPRING APPLICATION CONDITIONAL"
+        },
+        {
+          "label": "RealOEM E30 325i spring example",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0098&id=1532-EUR-08-1988-E30-BMW-325i",
+          "status": "SAME NUMBER APPEARS FOR NON-IX 325I, NOT DIRECT FITMENT CERTIFICATE"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalog number",
+          "value": "31331129880 spring variant",
+          "status": "VARIANT-PROVISIONAL; SPRING RATE NOT VERIFIED",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0101&id=1571-EUR---E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Confirm spring color marks, length, wire diameter, option/axle load and VIN date applicability; do not assume identical spring rate because part numbers appear in multiple model catalogs."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCES_REVIEWED; NO_SAFETY_SPECS_CERTIFIED; PHOTOS_NOT_ARCHIVED",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31331133543": {
+      "part_number": "31331133543",
+      "label": "Front coil spring — alternative catalog listing",
+      "kind": "FRONT_COIL_SPRING",
+      "orientation": "LEFT_OR_RIGHT",
+      "sources": [
+        {
+          "label": "RealOEM front springs 325iX",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0099&id=1203-USA---E30-BMW-325ix",
+          "status": "EXACT NUMBER LISTED AS ENDED; NOT SWISS FITMENT"
+        },
+        {
+          "label": "BMW Parts Deal 1988 325iX parts list",
+          "url": "https://www.bmwpartsdeal.com/parts-list/1988-bmw-325ix-coupe_e30/front_rear_axle/coil_spring.html",
+          "status": "NUMBER AND VEHICLE FAMILY APPEAR; COUPE/US VARIANT"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Availability history",
+          "value": "Reported ENDED in a RealOEM listing",
+          "status": "HISTORICAL NOT CURRENT INVENTORY STATUS",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0099&id=1203-USA---E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Production and package options distinguish springs; verify the installed spring markings and exact axle loads before using this catalog listing."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCES_REVIEWED; NO_SAFETY_SPECS_CERTIFIED; PHOTOS_NOT_ARCHIVED",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31521212190": {
+      "part_number": "31521212190",
+      "label": "Front differential crowngear set",
+      "kind": "FRONT_DIFFERENTIAL",
+      "orientation": "UNKNOWN",
+      "sources": [
+        {
+          "label": "BMWFans exact part number and model",
+          "url": "https://bmwfans.info/parts-catalog/31521212190/",
+          "status": "EXACT NUMBER AND 325IX ASSOCIATION"
+        },
+        {
+          "label": "BMW Mobile Tradition listing of 3.91 crowngear ratio",
+          "url": "https://www.bmwmobiletradition-online.com/bmw/showparts.do?btnr=31_0193&fg=15&hg=31&model=1203&mospid=47311",
+          "status": "43:11 RATIO IN LISTING, JULY 1988 DATE SHOWN"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Source ratio",
+          "value": "43:11 (~3.91)",
+          "status": "SOURCE LISTING; NOT VERIFIED INSTALLED 1987 FRONT DIFFERENTIAL",
+          "source_url": "https://www.bmwmobiletradition-online.com/bmw/showparts.do?btnr=31_0193&fg=15&hg=31&model=1203&mospid=47311",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Determine current front/rear final drive ratios before ordering; front and rear AWD ratios must match design requirements. 1988 production-date listing must not be applied to Dec 1987 without verification."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCES_REVIEWED; NO_SAFETY_SPECS_CERTIFIED; PHOTOS_NOT_ARCHIVED",
+      "reviewed_utc": "2026-11-21",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "LISTINGS_NOT_BMW_CERTIFIED"
+    },
+    "31331125341": {
+      "part_number": "31331125341",
+      "label": "Front coil spring, 31331125341",
+      "kind": "FRONT_SPRING",
+      "orientation": "AXLE_PAIR_UNSPECIFIED_BY_SUPPLIER",
+      "sources": [
+        {
+          "label": "BMWPartsDeal exact-number OE listing",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331125341.html",
+          "status": "LIVE_PAGE_TEXT_INSPECTED_2026_11_21; DIRECT_NAME_AND_NUMBER_MATCH; VEHICLE_FITMENT_SUPPLIER_REPORTED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Description",
+          "value": "Coil spring",
+          "status": "SUPPLIER_LISTING",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331125341.html",
+          "note": ""
+        },
+        {
+          "name": "Reported replacement numbers",
+          "value": "31-33-1-125-342; 31-33-1-125-343",
+          "status": "SUPPLIER_CLAIM_NOT_OEM_SUPERSESSION_VALIDATION",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331125341.html",
+          "note": ""
+        },
+        {
+          "name": "Reported model range",
+          "value": "BMW 325iX 1988–1991 coupe/sedan",
+          "status": "SUPPLIER_FITMENT_NOT_VIN_VERIFIED",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331125341.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Different E30 spring options in catalog: 1987-12 Swiss VIN requires suspension option and date screening."
+      ],
+      "inspection_questions": [
+        "Check current spring markings, color paint dots, suspension height and VIN/option variant before selecting a replacement."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; NO_SPRING_RATE_OR_DIMENSIONS_VERIFIED; SUPPLIER_ILLUSTRATION_NOT_PRODUCT_PHOTO",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SOURCED_NOT_BMW_CERTIFIED",
+      "reviewed_utc": "2026-11-21"
+    },
+    "31331127503": {
+      "part_number": "31331127503",
+      "label": "Front coil spring, 31331127503",
+      "kind": "FRONT_SPRING",
+      "orientation": "AXLE_PAIR_UNSPECIFIED_BY_SUPPLIER",
+      "sources": [
+        {
+          "label": "BMWPartsDeal exact-number OE listing",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331127503.html",
+          "status": "LIVE_PAGE_TEXT_INSPECTED_2026_11_21; EXACT_NUMBER_AND_1988_1991_IX_RANGE_IN_LISTING"
+        }
+      ],
+      "photos": [
+        {
+          "url": "https://www.bmwpartsdeal.com/resources/encry/actual-picture/bpd/large/90dfe211e27de054e6c756974e73a285/9fb566e63a16f08d7f34af283d0c64ea.jpg",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331127503.html",
+          "label": "Seller labels photo as 31331127503 actual product; archival usage rights unconfirmed",
+          "kind": "SUPPLIER_REFERENCE_IMAGE",
+          "status": "LISTING_LABELLED_ACTUAL_PHOTO; NOT_INDEPENDENTLY_MEASURED_OR_RIGHTS_CLEARED"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Description",
+          "value": "Coil spring",
+          "status": "SUPPLIER_LISTING",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331127503.html",
+          "note": ""
+        },
+        {
+          "name": "Reported BMW 325iX model range",
+          "value": "1988–1991 coupe/sedan",
+          "status": "SUPPLIER_FITMENT_NOT_VIN_VERIFIED",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331127503.html",
+          "note": ""
+        },
+        {
+          "name": "Stock status",
+          "value": "Currently unavailable on inspected page",
+          "status": "SELLER_STOCK_STATUS_AT_OBSERVATION_DATE_ONLY",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331127503.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Catalog contains multiple spring alternatives; cannot infer correct load class for Swiss manual car."
+      ],
+      "inspection_questions": [
+        "Confirm installed spring marks and matched axle pair; obtain spring free length and rate from a verified engineering source, not seller item weight."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; PHYSICAL_PRODUCT_PHOTO_URL_CANDIDATE; NO_DIMENSIONS_OR_VIN_FITMENT_VERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SOURCED_NOT_BMW_CERTIFIED",
+      "reviewed_utc": "2026-11-21"
+    },
+    "31331128349": {
+      "part_number": "31331128349",
+      "label": "Coil spring BMW 31331128349",
+      "kind": "FRONT_SPRING",
+      "orientation": "AXLE_PAIR_UNSPECIFIED_BY_SUPPLIER",
+      "sources": [
+        {
+          "label": "Hubauer exact-number dealer listing",
+          "url": "https://www.hubauer-shop.de/en/coil-spring-31331128349.html",
+          "status": "LIVE_PAGE_TEXT_INSPECTED_2026_11_21; DIRECT_NUMBER_MATCH"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Description",
+          "value": "Coil spring",
+          "status": "DEALER_CATALOG_LISTING",
+          "source_url": "https://www.hubauer-shop.de/en/coil-spring-31331128349.html",
+          "note": ""
+        },
+        {
+          "name": "Seller-listed piece weight",
+          "value": "2.62 kg",
+          "status": "SHIPPING_OR_PART_WEIGHT_NOT_DIMENSION_OR_SPRING_RATE",
+          "source_url": "https://www.hubauer-shop.de/en/coil-spring-31331128349.html",
+          "note": ""
+        },
+        {
+          "name": "Seller-listed price",
+          "value": "EUR 141.42 at observation",
+          "status": "TIME_SENSITIVE_VENDOR_PRICE_NOT_PERSISTENT",
+          "source_url": "https://www.hubauer-shop.de/en/coil-spring-31331128349.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "The web page breadcrumbs include 318iA E30: not proof the item belongs on this exact 325iX VIN, even if cross-fitted to some variants."
+      ],
+      "inspection_questions": [
+        "Do not order based only on the exact-number listing; verify BMW E30 325iX-specific application with date/option and physical spring identification."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; DIAGRAM_ONLY; NO_VIN_FITMENT_OR_SPRING_RATE_VERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SOURCED_NOT_BMW_CERTIFIED",
+      "reviewed_utc": "2026-11-21"
+    },
+    "07119981036": {
+      "part_number": "07119981036",
+      "label": "Front differential grooved ball bearing BMW 07119981036",
+      "kind": "BALL_BEARING",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "RealOEM 325iX front differential component drawing",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0183&id=1581-EUR---E30-BMW-325ix",
+          "status": "LIVE_PAGE_TEXT_INSPECTED_2026_11_21; EXACT_NUMBER_AND_DIAGRAM_POSITION_MATCH"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalog nominal bearing dimensions",
+          "value": "30×55×13 mm",
+          "status": "SECONDARY_CATALOG_SPECIFICATION; ACTUAL_BEARING_DESIGN_AND_TOLERANCE_NOT_VERIFIED",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0183&id=1581-EUR---E30-BMW-325ix",
+          "note": ""
+        },
+        {
+          "name": "Diagram position",
+          "value": "No.03 grooved ball bearing, front differential",
+          "status": "SECONDARY_325IX_ASSEMBLY_LIST",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0183&id=1581-EUR---E30-BMW-325ix",
+          "note": ""
+        },
+        {
+          "name": "Quantity in drawing",
+          "value": "1",
+          "status": "SECONDARY_CATALOG_QUANTITY",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0183&id=1581-EUR---E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Nominal size alone is insufficient to substitute bearing: verify internal clearance, seal/shield, rating, tolerance, cage and installed marking."
+      ],
+      "inspection_questions": [
+        "Inspect stamped bearing markings and take independent shaft/housing/bearing measurements before proposing industrial cross-fit."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; CATALOG_NOMINAL_SIZE_ONLY; NO_CROSS_FIT_OR_REPAIR_SIGNOFF",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SOURCED_NOT_BMW_CERTIFIED",
+      "reviewed_utc": "2026-11-21"
+    }
+  }
+}

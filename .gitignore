@@ -1,0 +1,35 @@
+# Mutable local workshop records, user photos, backups and trial copies.
+__pycache__/
+*.py[cod]
+.DS_Store
+workshop_jobs*.sqlite3*
+part_photos.sqlite3*
+actual_part_photos/
+rc12_trial_state/
+workshop_jobs_backups/
+*.sqlite3-wal
+*.sqlite3-shm
+# Immutable derived research/catalog data loaded from the approved archive.
+04_SEARCH/
+01_DIAGRAM_IMAGES/
+03_MANIFESTS/
+maintenance_web_gap_input/
+data/
+maintenance_manual_index.sqlite3
+catalog_research_registry.json
+OFFLINE_VISUAL_ATLAS.html
+# Third party CC BY / MIT assets are downloaded locally at pinned versions.
+models/
+vendor/
+# Machine-local source archives, editor and temp files.
+*.zip
+.env
+*.log
+
+# Vehicle and private credentials/data (public repository)
+local_vehicle.json
+*.env
+*.key
+*.pem
+*.p12
+*_private.*

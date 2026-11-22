@@ -1,0 +1,56 @@
+[
+  {
+    "id": "BMW-E30IX-ETM-1988-PDF",
+    "system": "electrical",
+    "title": "1988 BMW 325iX Electrical Troubleshooting Manual — 130-page model-specific document",
+    "url": "https://www.armchair.mb.ca/~dave/BMW/e30/e30ix_88.pdf",
+    "evidence_tier": "BMW-original-document on third-party host",
+    "status": "PDF_URL_IDENTIFIED; CONTENT_NOT_IMPORTED; SWISS_MARKET_VARIATIONS_NOT_CHECKED",
+    "market_caveat": "Production year 1988 does not guarantee Swiss/ECE circuit or option identity; inspect pages before using pinouts"
+  },
+  {
+    "id": "BMW-E30IX-RA-31",
+    "system": "front_axle",
+    "title": "BMW repair scan index, Group 31 — AWD-labeled pages within E30 M3/320is collection",
+    "url": "https://e30mpower.com/31%20-%20Front%20Axle/",
+    "evidence_tier": "BMW-workshop-manual secondary index",
+    "status": "INDEX_TITLES_FOUND; MODEL_APPLICABILITY_UNVERIFIED; ORIGINAL PROCEDURES NOT REVIEWED",
+    "market_caveat": "Collection is explicitly headed E30 M3/320is (S14), NOT 325iX. AWD-labeled index titles are discovery leads only; independently verify 325iX applicability before use."
+  },
+  {
+    "id": "BMW-E30IX-TIS-SAL",
+    "system": "steering",
+    "title": "BMW 325iX M20 saloon workshop information — steering and wheel alignment index",
+    "url": "https://workshop-manuals.com/bmw/3_Series_E30/325ix_M20_SAL/fullindex/chapter-2/",
+    "evidence_tier": "BMW TIS rendered by third party",
+    "status": "INDEX_PAGE_IDENTIFIED; PROCEDURES_NOT_IMPORTED",
+    "market_caveat": "Select saloon variant and inspect original figures/safety cautions"
+  },
+  {
+    "id": "BMW-E30IX-TOOLS",
+    "system": "front_axle",
+    "title": "BMW technical bulletin — Special Tools for the 325iX (4-wheel drive)",
+    "url": "https://charm.li/BMW/1987/325e%20%28E30%29%20L6-2693cc%202.7L%20SOHC%20%28M20%29/Repair%20and%20Diagnosis/Technical%20Service%20Bulletins/All%20Technical%20Service%20Bulletins/Special%20Tools%20For%20the%20325IX%20%284-Wheel%20Drive%29/",
+    "evidence_tier": "BMW dealer bulletin reproduced online",
+    "status": "BULLETIN_DESCRIPTION_IDENTIFIED; TOOL APPLICABILITY REQUIRES REVIEW",
+    "market_caveat": "Listing is filed under 325e while bulletin is for 325iX; verify actual tool/operation"
+  },
+  {
+    "id": "BMW-E30IX-BULLETIN-INDEX",
+    "system": "transfer_box_electric_gearbox",
+    "title": "BMW E30 service bulletin index, including 325iX transfer-case venting and axle final-drive items",
+    "url": "https://www.rtsauto.com/bmw-e30-service-bulletin-index-complete-list-by-system-group/",
+    "evidence_tier": "Third-party BMW service bulletin index",
+    "status": "INDEX_DESCRIPTIONS_FOUND; BULLETINS_NOT_READ",
+    "market_caveat": "Technical bulletin details require BMW source before applying; no quantities/torques inferred"
+  },
+  {
+    "id": "BMW-E30IX-SAL-REPAIR",
+    "system": "front_axle",
+    "title": "BMW E30 325iX M20 saloon repair instructions index",
+    "url": "https://workshop-manuals.com/bmw/3_Series_E30/325ix_M20_SAL/fullindex/chapter-176/",
+    "evidence_tier": "BMW TIS-style pages, third-party presentation",
+    "status": "MODEL_SPECIFIC_REPAIR_INDEX_IDENTIFIED; ACTUAL PROCEDURES NOT YET INDEXED",
+    "market_caveat": "Production, market, variant and revision details must be checked on each technical page."
+  }
+]
