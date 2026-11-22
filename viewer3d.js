@@ -20,7 +20,15 @@ const HOTSPOT_HINTS = {
  heater_and_air_conditioning:[-.02,.37,.14]
 };
 const $=id=>document.getElementById(id);
-const modelKey=mesh=>/^MX:([a-z0-9_]+):\d+$/.exec(mesh?.name||'')?.[1]||null;
+// GLTFLoader sanitizes ':' in node names; recover original glTF names first.
+const modelKey=mesh=>{
+ for(let node=mesh;node;node=node.parent){
+  const name=node.userData?.name||node.name||'';
+  const found=/^MX:([a-z0-9_]+):\d+$/.exec(name)||/^MX_([a-z0-9_]+?)_\d+(?:_\d+)?$/.exec(name);
+  if(found)return found[1];
+ }
+ return null;
+};
 function clearMechanicalHighlight(){
  for(const [mesh,previous,clones] of state.highlighted){mesh.material=previous;for(const mat of clones)mat.dispose();}
  state.highlighted=[];
