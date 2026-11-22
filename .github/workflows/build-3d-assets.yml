@@ -101,7 +101,7 @@ jobs:
           <div id="ix3d-mesh-name"></div><div id="ix3d-selection-info" hidden></div>
           <button id="ix-mode-3d">3D</button><button id="twin2d">OEM</button>
           </div><script type="module">import * as studio from './viewer3d.js';window.ixStudio3D=studio;
-          window.visualTwinData={systems:[{id:'front_axle',label:'Front Axle',assembly_count:14}]};
+          window.visualTwinData={systems:["engine","radiator","fuel_preparation_system","fuel_supply","exhaust_system","manual_transmission","clutch","gearshift","pedals","transfer_box_electric_gearbox","drive_shaft","front_axle","rear_axle","steering","wheels","brakes","vehicle_electrical_system","engine_electrical_system","lighting","instruments_measuring_systems","heater_and_air_conditioning"].map(id=>({id,label:id.replaceAll('_',' '),assembly_count:1}))};
           await studio.mount(window.visualTwinData);</script></body></html>
           HTML
           (cd kit && python3 -m http.server 8115 --bind 127.0.0.1 > /tmp/ix-smoke-server.log 2>&1 &)
