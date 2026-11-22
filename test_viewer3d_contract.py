@@ -11,6 +11,9 @@ def main():
   prep=(ROOT/'scripts/prepare_3d_assets.py').read_text()
   assert "'/viewer3d.js':" in app and "'/models/e30_reference_m3.glb':" in app
   assert 'import(\'/viewer3d.js\')' in site and 'ixSelectVisualSystemById' in site
+  assert 'activate2DFallback' in site and 'local_available===true' in site
+  assert 'if(!status.ready)' in site and "'/api/3d/status'" in site
+  assert 'missing=[n for n in required' in app
   assert "loadVisualAssemblies(system)" in site and "loadVisualAssembly" in site and "selectVisualPart" in site
   assert "MeshoptDecoder" in view and "GLTFLoader" in view and "OrbitControls" in view
   assert "setExplosion" in view and "selectMesh" in view and "positionView" in view

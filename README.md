@@ -36,3 +36,7 @@ The existing API, local SQLite mission records, V4 multimodal research graph, te
 ## Public repository privacy
 
 This public source repository intentionally omits the owner's actual VIN/engine number, local workshop state, private Drive folder IDs, licensed third-party binary assets and manuals. At runtime, set optional local environment variables `BMW_325IX_VIN` and `BMW_325IX_ENGINE_NUMBER` to show a specific car's identifiers. Do not commit these values. The original RC13 ZIP and all owner data stay private; `scripts/import_runtime_from_rc13.py` verifies permitted runtime assets locally.
+
+## RC14.1 — 3D module setup and 2D fallback repair
+
+RC14.1 fixes the blank SVG fallback caused by the SVG `hidden` attribute, automatically selects the first cached catalog drawing when 3D assets are unavailable, and checks the complete local Three.js import graph before dynamic import. The launcher retries incomplete installs; the model installer has CDN mirrors. The owner Mac/WebGL signoff is still pending; see [Issue #1](https://github.com/saleemmbayed-sketch/325ix-restoration-os/issues/1).

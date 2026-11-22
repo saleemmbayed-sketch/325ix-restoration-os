@@ -26,9 +26,22 @@ MODEL_GIT_BLOB='8aaa3daafd53158b63ced92c4c65d520ebce561f'
 JS_SUFFIX='.js'
 
 def get(url):
-    req=Request(url,headers={'User-Agent':'BMW-325iX-Local-Viewer/0.1 (rights-preserving reference download)'})
-    with urlopen(req,timeout=45) as res:
-        return res.read()
+    """Try two pinned source mirrors; never accept an unverified replacement model."""
+    mirrors=[url]
+    if url.startswith('https://cdn.jsdelivr.net/npm/'):
+        mirrors.append(url.replace('https://cdn.jsdelivr.net/npm/','https://unpkg.com/',1))
+    elif url.startswith('https://raw.githubusercontent.com/ahnuchen/auto-atlas/master/'):
+        mirrors.append(url.replace('https://raw.githubusercontent.com/ahnuchen/auto-atlas/master/',
+                       'https://github.com/ahnuchen/auto-atlas/raw/refs/heads/master/',1))
+    last=None
+    for candidate in mirrors:
+        try:
+            req=Request(candidate,headers={'User-Agent':'BMW-325iX-Local-Viewer/0.2 (licensed reference asset installer)'})
+            with urlopen(req,timeout=22) as res:return res.read()
+        except (HTTPError,URLError,TimeoutError,OSError) as exc:
+            last=exc
+            print('  Source failed:',candidate,':',str(exc)[:120],flush=True)
+    raise URLError('No pinned source mirror reachable: '+str(last))
 
 def install():
     report={'installed_utc':datetime.now(timezone.utc).isoformat(),'files':{},'source':'ahnuchen/auto-atlas; Martin Trafas CC BY 4.0','status':'partial'}

@@ -24,7 +24,7 @@ const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:n
 const setStatus=(s)=>{const el=$('twinvisualstatus');if(el)el.textContent=s;const hud=$('ix3d-status');if(hud)hud.textContent=s;};
 function showFallback(error){
  const canvas=$('ix3d-stage');if(canvas)canvas.hidden=true;
- const svg=$('twin-canvas');if(svg)svg.hidden=false;
+ const svg=$('twin-canvas');if(svg)svg.removeAttribute('hidden');
  const msg=$('ix3d-fallback');if(msg){msg.hidden=false;msg.textContent=error+' · 2D evidence and catalog remain available.';}
  setStatus('3D unavailable · verified 2D catalog fallback active');
 }
@@ -108,7 +108,7 @@ async function loadModel(src, data){
  try {
   const result=await new Promise((resolve,reject)=>loader.load(src,resolve,undefined,reject));
   state.model=result.scene;state.modelUrl=src;s.scene.add(result.scene);prepareMeshes(result.scene);frameModel();
-  $('ix3d-stage').hidden=false;$('twin-canvas').hidden=true;$('ix3d-fallback').hidden=true;
+  $('ix3d-stage').hidden=false;$('twin-canvas').setAttribute('hidden','');$('ix3d-fallback').hidden=true;
   setExplosion(Number($('ix3d-explode')?.value||0)/100);
   setStatus(`${state.meshes.length} pickable reference meshes · 3D active · NOT 325iX CAD`);
   renderSystems(data);

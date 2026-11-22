@@ -5,9 +5,16 @@ Extends immutable RC13. Code integration exists and legacy end-to-end catalog/mi
 1. Extract this ZIP into a NEW directory; never overwrite earlier releases or your active workshop database.
 2. Start `bash RUN_325IX_3D_STUDIO.command` (macOS double-click may require right-click → Open). Requires Python 3.10+. The launcher performs first-time dependency/model download, makes an isolated job DB, starts the local server and opens your browser.
 3. Choose **Digital Twin**. If the E30 mesh is loaded, use mouse orbit/wheel zoom, explosion slider, camera presets and mesh picking. Select an iX system to inspect its indexed drawings, exact callouts, part dossier and mission links.
-4. If 3D assets are not downloaded, use the 2D fallback without losing any catalog/work-order functions. Run `python3 scripts/prepare_3d_assets.py` again when network access is available, then restart.
+4. If 3D assets are not downloaded, the 2D fallback automatically opens the first locally available BMW catalog drawing (front axle by default), with numbered OEM callouts and source links. Some original figures are indexed but not cached in this preview; these are clearly identified rather than shown as blank images. Run `python3 scripts/prepare_3d_assets.py` again when network access is available, then restart. RC14.1 automatically retries incomplete downloads on subsequent launches and reports the exact missing files in the browser.
 5. Test `python3 release_check_rc14.py`; check `3D_RELEASE_STATUS.json` before calling anything production-ready.
 
 The downloadable model is an **E30 M3 reference by Martin Trafas, CC BY 4.0**, not dimensional mechanical or body accuracy for the four-door AWD 325iX. Mesh picks are not part-number identities. See `docs/3D_ASSETS.md`.
 
-**Known blockers:** Model retrieval and webGL on owner Mac not observed; four-door 325iX mesh not available at a verified reuse source; GitHub repository created; source publication and verification tracked separately. Safe operating status remains NOT_APPROVED.
+**Known blockers:** Model retrieval and webGL on owner Mac not observed; four-door 325iX mesh not available at a verified reuse source; GitHub repository created and public source published; owner device acceptance remains pending. Safe operating status remains NOT_APPROVED.
+
+## RC14.1 2D/3D recovery patch
+
+- Confirmed fault: 3D module imports failed because pinned GLB and Three.js vendor files were absent; the original launcher could skip retry after a failed attempt.
+- The launcher now checks the complete 3D module graph and retries missing files on start. The installer tries jsDelivr/unpkg mirrors and pinned GitHub geometry sources. No third-party files are committed to public GitHub.
+- A failed 3D preflight no longer shows an empty view: the 2D mode opens a real available catalog diagram and its callouts, or shows an explicit missing-media/source state.
+- Browser/device WebGL acceptance remains pending; use a new extracted directory and keep any original workshop database unchanged.

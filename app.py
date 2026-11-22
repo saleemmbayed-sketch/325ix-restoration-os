@@ -370,7 +370,14 @@ class App(BaseHTTPRequestHandler):
                 '/vendor/meshopt_decoder.module.js':('vendor/meshopt_decoder.module.js','text/javascript; charset=utf-8'),
             }
             if path in static_3d:return self.file(*static_3d[path])
-            if path=='/api/3d/status':return self.send_json(200,{'viewer':'Three.js GLB studio','model_installed':(APP/'models/e30_reference_m3.glb').exists(),'three_installed':(APP/'vendor/three/build/three.module.js').exists(),'reference_model':'BMW M3 E30 (not 325iX)', 'source_license':'CC BY 4.0', 'source_creator':'Martin Trafas (TinoD2)', 'safety_clearance':'NOT_APPROVED'})
+            if path=='/api/3d/status':
+                required=[n for n,_mime in static_3d.values()]
+                missing=[n for n in required if not (APP/n).is_file() or (APP/n).stat().st_size==0]
+                return self.send_json(200,{'viewer':'Three.js GLB studio','ready':not missing,'missing':missing,
+                  'model_installed':(APP/'models/e30_reference_m3.glb').is_file(),
+                  'three_installed':(APP/'vendor/three/build/three.module.js').is_file(),
+                  'reference_model':'BMW M3 E30 (not 325iX)', 'source_license':'CC BY 4.0',
+                  'source_creator':'Martin Trafas (TinoD2)', 'safety_clearance':'NOT_APPROVED'})
             if path=='/api/vehicle':return self.send_json(200,VEHICLE)
             if path=='/api/restoration/domains':return self.restoration_domains()
             if path=='/api/visual/twin':return self.visual_twin()
@@ -514,6 +521,10 @@ class App(BaseHTTPRequestHandler):
                 parts=[dict(x) for x in db.execute('''SELECT p.id,p.assembly_id,p.part_number,p.callout AS callout_position,
                     p.description,p.quantity AS quantity_raw,p.date_raw AS date_condition_raw,p.supplement,
                     '' AS anchor,'' AS notes FROM part_record p WHERE p.assembly_id=? ORDER BY CAST(p.callout AS INTEGER),p.description''',(id,))]
+            for figure in f:
+                asset=self.server.assets.get(figure.get('image_asset_id'),{})
+                root=self.server.v4root
+                figure['local_available']=bool(root and asset.get('local_file') and (root/asset['local_file']).is_file())
             ad=dict(a);ad['slug']=ad.get('title');ad['downloaded_at']=ad.get('source_status')
             return self.send_json(200,{'assembly':ad,'figures':f,'parts':parts,'scope':'V3/V4 catalog identity only; exact installed fitment and callout pixels require verification'})
         with self.get_db() as db:
@@ -521,6 +532,10 @@ class App(BaseHTTPRequestHandler):
             if not a:return self.send_json(404,{'error':'Assembly not found'})
             f=[dict(r) for r in db.execute('SELECT * FROM figure WHERE assembly_id=?',(id,))]
             parts=[dict(r) for r in db.execute('SELECT * FROM part_row WHERE assembly_id=? ORDER BY CAST(callout_position AS INTEGER),description',(id,))]
+        for figure in f:
+            asset=self.server.assets.get(figure.get('image_asset_id'),{})
+            root=self.server.v4root
+            figure['local_available']=bool(root and asset.get('local_file') and (root/asset['local_file']).is_file())
         return self.send_json(200,{'assembly':dict(a),'figures':f,'parts':parts,'scope':'Identity/fitment requires inspection; exact callout pixel coordinates unavailable'})
     def part_dossier(self):
         pid=trim(self.one(self.get_params(),'id'),45)

@@ -48,9 +48,16 @@ def main():
     if port!=args.port:print(f'Port {args.port} is already in use; RC12 will use port {port} instead.')
     if source.is_file():print('Original job database remains unchanged:',source)
     if not args.skip_3d:
-        installed=(ROOT/'models/e30_reference_m3.glb').is_file() and (ROOT/'vendor/three/build/three.module.js').is_file()
-        attempted=(ROOT/'models/asset-install-report.json').exists()
-        if (not installed) and (not attempted or args.retry_3d):
+        required=(
+            'models/e30_reference_m3.glb', 'vendor/three/build/three.module.js',
+            'vendor/three/examples/jsm/controls/OrbitControls.js',
+            'vendor/three/examples/jsm/loaders/GLTFLoader.js',
+            'vendor/three/examples/jsm/utils/BufferGeometryUtils.js',
+            'vendor/meshopt_decoder.module.js',
+        )
+        missing=[name for name in required if not (ROOT/name).is_file() or (ROOT/name).stat().st_size==0]
+        if missing or args.retry_3d:
+            print('3D installation missing:', ', '.join(missing) if missing else 'forced recheck', flush=True)
             print('One-time 3D asset preparation (network needed); 2D remains available if unavailable.',flush=True)
             try:
                 prep=subprocess.run([sys.executable,str(ROOT/'scripts/prepare_3d_assets.py')],cwd=ROOT,timeout=150,check=False)
