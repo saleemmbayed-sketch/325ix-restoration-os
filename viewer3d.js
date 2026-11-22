@@ -20,15 +20,7 @@ const HOTSPOT_HINTS = {
  heater_and_air_conditioning:[-.02,.37,.14]
 };
 const $=id=>document.getElementById(id);
-// GLTFLoader sanitizes ':' in node names; recover original glTF names first.
-const modelKey=mesh=>{
- for(let node=mesh;node;node=node.parent){
-  const name=node.userData?.name||node.name||'';
-  const found=/^MX:([a-z0-9_]+):\d+$/.exec(name)||/^MX_([a-z0-9_]+?)_\d+(?:_\d+)?$/.exec(name);
-  if(found)return found[1];
- }
- return null;
-};
+const modelKey=mesh=>/^MX:([a-z0-9_]+):\d+$/.exec(mesh?.name||'')?.[1]||null;
 function clearMechanicalHighlight(){
  for(const [mesh,previous,clones] of state.highlighted){mesh.material=previous;for(const mat of clones)mat.dispose();}
  state.highlighted=[];
@@ -163,10 +155,7 @@ function frameModel(){if(!studio||!state.model)return;
  const bbox=new THREE.Box3().setFromObject(state.model);const center=bbox.getCenter(new THREE.Vector3());const dimensions=bbox.getSize(new THREE.Vector3());const radius=Math.max(dimensions.length()*.5,1);
  state.modelCenter=center;state.modelSize=radius;studio.controls.target.copy(center);
  studio.grid.position.y=bbox.min.y-.02*radius;
- // Keep assemblies legible on a laptop and view the bonnet from the cabin side.
- const isEngine=state.mechanical?.slug==='ix_m20_engine_bay';
- const aim=isEngine?new THREE.Vector3(1.1,1.6,-1.65):new THREE.Vector3(1.6,1.0,1.7);
- studio.camera.position.copy(center).add(aim.multiplyScalar(radius*(isEngine?1.15:1.12)));
+ studio.camera.position.copy(center).add(new THREE.Vector3(1.6,.85,1.7).multiplyScalar(radius*1.5));
  studio.camera.near=Math.max(radius/1000,.005);studio.camera.far=Math.max(radius*55,200);studio.camera.updateProjectionMatrix();
  studio.controls.minDistance=radius*.4;studio.controls.maxDistance=radius*10;studio.controls.update();
 }
