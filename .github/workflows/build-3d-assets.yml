@@ -75,6 +75,35 @@ jobs:
           node --check kit/vendor/three/examples/jsm/loaders/GLTFLoader.js
           node --check kit/vendor/meshopt_decoder.module.js
           test "$(stat -c '%s' kit/models/e30_reference_m3.glb)" -gt 2500000
+      - name: Real browser smoke: rendered GLB, mesh selection and explode control
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/ixdeps --ignore-scripts --no-save --no-audit --no-fund playwright@1.57.0
+          /tmp/ixdeps/node_modules/.bin/playwright install chromium
+          cp viewer3d.js kit/viewer3d.js
+          cat > kit/__3d_smoke.html <<'HTML'
+          <!doctype html><html><head><meta charset="utf-8"><style>
+          body{margin:0;background:#09172a;color:white;font-family:Arial}
+          #twin{display:block} #ix3d-stage{width:1200px;height:640px;margin:60px auto 0}
+          #ix3d-stage canvas{display:block}
+          #ix3d-fallback[hidden],#twin-canvas[hidden],#twin-diagram-panel[hidden]{display:none!important}
+          #ix3d-status{position:absolute;top:8px;left:18px;font-size:16px}
+          </style></head><body><div id="twin"><div id="ix3d-status">Waiting for model…</div><div id="ix3d-stage"></div>
+          <svg id="twin-canvas" hidden></svg><div id="ix3d-fallback" hidden></div><div id="twin-diagram-panel" hidden></div>
+          <span id="twinvisualstatus"></span><span id="ix-stage-heading"></span>
+          <input id="ix3d-explode" type="range" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output>
+          <select id="ix3d-system-select"></select><label><input type="checkbox" id="ix3d-wireframe"></label>
+          <div id="ix3d-mesh-name"></div><div id="ix3d-selection-info" hidden></div>
+          <button id="ix-mode-3d">3D</button><button id="twin2d">OEM</button>
+          </div><script type="module">import * as studio from './viewer3d.js';window.ixStudio3D=studio;
+          window.visualTwinData={systems:[{id:'front_axle',label:'Front Axle',assembly_count:14}]};
+          await studio.mount(window.visualTwinData);</script></body></html>
+          HTML
+          (cd kit && python3 -m http.server 8115 --bind 127.0.0.1 > /tmp/ix-smoke-server.log 2>&1 &)
+          sleep 2
+          NODE_PATH=/tmp/ixdeps/node_modules node scripts/browser_3d_smoke.cjs
+          rm -f kit/__3d_smoke.html kit/viewer3d.js
       - name: Publish single-click 3D runtime ZIP
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,7 +114,7 @@ jobs:
           BMW M3 E30 reference GLB (Martin Trafas / TinoD2, CC BY 4.0 as documented upstream), Three.js 0.159.0 and Meshoptimizer 0.22.0 with MIT licenses. Model integrity validated to Git blob 8aaa3daafd53158b63ced92c4c65d520ebce561f. Extract the ZIP into the Restoration OS installation folder; includes `models/` and `vendor/` at archive root. Not a 325iX CAD model. Geometry and mesh selection cannot establish real vehicle fitment or part identity.
           NOTES
           if gh release view rc15-3d-runtime >/dev/null 2>&1; then
-            gh release upload rc15-3d-runtime out/325ix_3d_assets_v1.zip --clobber
+            gh release upload rc15-3d-runtime out/325ix_3d_assets_v1.zip out/rc15_3d_smoke.png --clobber
           else
-            gh release create rc15-3d-runtime out/325ix_3d_assets_v1.zip --title 'RC15 · E30 3D Runtime Asset Kit' --notes-file /tmp/asset-notes.md --latest=false --target "$GITHUB_SHA"
+            gh release create rc15-3d-runtime out/325ix_3d_assets_v1.zip out/rc15_3d_smoke.png --title 'RC15 · E30 3D Runtime Asset Kit' --notes-file /tmp/asset-notes.md --latest=false --target "$GITHUB_SHA"
           fi
