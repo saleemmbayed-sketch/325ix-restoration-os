@@ -25,11 +25,5 @@ vendor/
 *.zip
 .env
 *.log
-
-# Vehicle and private credentials/data (public repository)
-local_vehicle.json
-*.env
-*.key
-*.pem
-*.p12
-*_private.*
+# Personal-use 3D models, original source licensing and private attributions.
+local_models/

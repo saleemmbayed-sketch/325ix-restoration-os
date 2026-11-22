@@ -24,6 +24,13 @@ def main():
   assert 'ix3d-marker' in view and 'REGIONS' in view
   assert "MODEL_GIT_BLOB='8aaa3daafd53158b63ced92c4c65d520ebce561f'" in prep
   assert 'NOT_APPROVED' in app and 'NOT 325iX CAD' in view
+  # RC17: one external four-door preview and private, catalog-bound local GLB/STL imports.
+  assert 'ix-preview-sedan' in site and 'bd0925e21c934a9cbfdb30ccf5584e86' in site
+  assert 'PERSONAL_MODELS' in app and "if path=='/api/3d/models'" in app
+  assert 'def personal_model_save' in app and 'def personal_slot_valid' in app
+  assert 'frame-src https://sketchfab.com' in app
+  assert 'async function openPersonal' in view and 'loadBinarySTL' in view
+  assert 'local_models/' in (ROOT/'.gitignore').read_text()
   if shutil.which('node'):
     for path in ('viewer3d.js','site.js'):
       result=subprocess.run(['node','--check',path],cwd=ROOT,capture_output=True,text=True)

@@ -32,7 +32,7 @@ def main():
     p.add_argument('--trial-dir',type=Path,default=ROOT/'rc12_trial_state')
     p.add_argument('--port',type=int,default=8765)
     p.add_argument('--no-browser',action='store_true',help='Do not open the selected URL automatically')
-    p.add_argument('--retry-3d',action='store_true',help='Reattempt licensed viewer asset preparation')
+    p.add_argument('--retry-3d',action='store_true',help='Explicitly install/retry local Three.js/GLB kit (not required for free hosted 3D)')
     p.add_argument('--skip-3d',action='store_true',help='Start with 2D fallback without downloading 3D assets')
     args=p.parse_args();source=args.source_jobs.expanduser().resolve();trial=args.trial_dir.expanduser().resolve()
     if not source.is_file():print('No existing owner job database was found; a NEW isolated trial database will be created. No live owner records touched.')
@@ -47,7 +47,7 @@ def main():
     port=choose_port(args.port)
     if port!=args.port:print(f'Port {args.port} is already in use; RC12 will use port {port} instead.')
     if source.is_file():print('Original job database remains unchanged:',source)
-    if not args.skip_3d:
+    if args.retry_3d and not args.skip_3d:
         required=(
             'models/e30_reference_m3.glb', 'vendor/three/build/three.module.js',
             'vendor/three/examples/jsm/controls/OrbitControls.js',

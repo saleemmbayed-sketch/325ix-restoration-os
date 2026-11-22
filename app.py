@@ -22,6 +22,7 @@ from urllib.parse import urlsplit as parse_url
 from urllib.parse import parse_qs, urlsplit
 
 APP=Path(__file__).resolve().parent
+PERSONAL_MODELS=APP/'local_models'  # private local files, never added to Git
 VEHICLE={
     'vin':os.environ.get('BMW_325IX_VIN','VIN_NOT_CONFIGURED'), 'build_date':'1987-12-10',
     'model':'1988 BMW E30 325iX', 'market':'Swiss/ECE owner-reported',
@@ -339,7 +340,7 @@ class App(BaseHTTPRequestHandler):
         self.send_header('Content-Type',mime)
         self.send_header('X-Content-Type-Options','nosniff')
         self.send_header('Cache-Control','no-store')
-        self.send_header('Content-Security-Policy',"default-src 'self'; img-src 'self' https://ills.bmwfans.info https://www.bimmerworld.com https://i.ebayimg.com https://www.rageitparts.com https://3a663eb0fef48c6d2d60-a88f8ebfcdb877ad223e888bfcb7f7ec.ssl.cf1.rackcdn.com data:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
+        self.send_header('Content-Security-Policy',"default-src 'self'; img-src 'self' https://ills.bmwfans.info https://www.bimmerworld.com https://i.ebayimg.com https://www.rageitparts.com https://3a663eb0fef48c6d2d60-a88f8ebfcdb877ad223e888bfcb7f7ec.ssl.cf1.rackcdn.com data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-src https://sketchfab.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
         if filename:self.send_header('Content-Disposition','attachment; filename="'+filename+'"')
         self.send_header('Content-Length',str(len(raw)));self.end_headers()
         try:self.wfile.write(raw)
@@ -350,7 +351,8 @@ class App(BaseHTTPRequestHandler):
     def get_db(self,readonly=True):return db_connect(self.server.catalog if readonly else self.server.jobs,readonly)
     def get_json(self):
         n=int(self.headers.get('Content-Length','0'))
-        if n<1 or n>4500000:raise ValueError('Request must contain JSON smaller than 4.5 MB')
+        limit=45000000 if urlsplit(self.path).path=='/api/3d/model' else 4500000
+        if n<1 or n>limit:raise ValueError('Request exceeds allowed JSON size')
         return json.loads(self.rfile.read(n).decode('utf-8'))
     def do_GET(self):
         if not self.require_request_policy():return
@@ -370,6 +372,8 @@ class App(BaseHTTPRequestHandler):
                 '/vendor/meshopt_decoder.module.js':('vendor/meshopt_decoder.module.js','text/javascript; charset=utf-8'),
             }
             if path in static_3d:return self.file(*static_3d[path])
+            if path=='/api/3d/models':return self.send_json(200,{'models':self.personal_models()})
+            if path=='/api/3d/model':return self.personal_model_get()
             if path=='/api/3d/status':
                 required=[n for n,_mime in static_3d.values()]
                 missing=[n for n in required if not (APP/n).is_file() or (APP/n).stat().st_size==0]
@@ -424,6 +428,7 @@ class App(BaseHTTPRequestHandler):
         path=urlsplit(self.path).path
         try:
             data=self.get_json()
+            if path=='/api/3d/model':return self.personal_model_save(data)
             if path=='/api/jobs':return self.new_job(data)
             if path=='/api/missions/start':return self.start_mission(data)
             if path=='/api/twin/event':return self.new_twin_event(data)
@@ -450,6 +455,49 @@ class App(BaseHTTPRequestHandler):
         f=APP/name
         if not f.is_file():return self.send_json(404,{'error':'Not found'})
         self.send_blob(200,f.read_bytes(),mime)
+    def personal_slot_valid(self,slot):
+        return slot=='body' or (bool(re.fullmatch('[a-z][a-z0-9_]{1,75}',slot or '')) and slot in self.server.groups)
+    def personal_models(self):
+        path=PERSONAL_MODELS/'registry.json'
+        if not path.is_file():return {}
+        try:return json.loads(path.read_text(encoding='utf-8'))
+        except (OSError,json.JSONDecodeError):return {}
+    def personal_model_get(self):
+        slot=self.one(self.get_params(),'slot')
+        if not self.personal_slot_valid(slot):return self.send_json(400,{'error':'Invalid catalog system'})
+        info=self.personal_models().get(slot)
+        if not info:return self.send_json(404,{'error':'Local model not found'})
+        fmt=info.get('format')
+        if fmt not in ('glb','stl'):return self.send_json(404,{'error':'Unsupported local model'})
+        path=PERSONAL_MODELS/(slot+'.'+fmt)
+        if not path.is_file():return self.send_json(404,{'error':'Saved model missing'})
+        self.send_blob(200,path.read_bytes(),'model/gltf-binary' if fmt=='glb' else 'model/stl')
+    def personal_model_save(self,d):
+        import struct
+        slot=str(d.get('slot',''));fmt=str(d.get('format','')).lower()
+        if not self.personal_slot_valid(slot):raise ValueError('Choose a catalog system or body')
+        if fmt not in ('glb','stl'):raise ValueError('Use GLB or binary STL')
+        try:raw=base64.b64decode(str(d.get('base64','')),validate=True)
+        except (ValueError,binascii.Error):raise ValueError('Invalid model data')
+        if not 84<=len(raw)<=30000000:raise ValueError('Model limit is 30 MB')
+        if fmt=='glb':
+            if raw[:4]!=b'glTF' or len(raw)<20 or struct.unpack_from('<I',raw,8)[0]!=len(raw):
+                raise ValueError('Invalid GLB file')
+        elif 84+struct.unpack_from('<I',raw,80)[0]*50!=len(raw):
+            raise ValueError('STL must be binary; export ASCII STL as GLB or binary STL')
+        PERSONAL_MODELS.mkdir(parents=True,exist_ok=True)
+        tmp=PERSONAL_MODELS/(slot+'.incoming');tmp.write_bytes(raw)
+        os.replace(tmp,PERSONAL_MODELS/(slot+'.'+fmt))
+        (PERSONAL_MODELS/(slot+'.'+('stl' if fmt=='glb' else 'glb'))).unlink(missing_ok=True)
+        models=self.personal_models()
+        models[slot]={'format':fmt,'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest(),
+            'label':str(d.get('label','')).strip()[:120],
+            'source':str(d.get('source','')).strip()[:500],
+            'rights':'Owner-supplied personal reference; no redistribution',
+            'fitment':'UNVERIFIED','saved_utc':now()}
+        tmp=PERSONAL_MODELS/'registry.tmp';tmp.write_text(json.dumps(models,indent=2),encoding='utf-8')
+        os.replace(tmp,PERSONAL_MODELS/'registry.json')
+        self.send_json(201,{'slot':slot,**models[slot]})
     def sources(self):return self.server.sources
     def mm_db(self):
         return getattr(self.server,'multimodal',None)
@@ -470,7 +518,7 @@ class App(BaseHTTPRequestHandler):
                     data=[dict(x) for x in db.execute('''SELECT a.id,a.group_name,a.title AS slug,a.source_url,count(p.id) AS part_count
                         FROM assembly a LEFT JOIN part_record p ON p.assembly_id=a.id WHERE a.group_name=?
                         GROUP BY a.id ORDER BY a.title LIMIT 75''',(group,))]
-                    # One group lookup replaces serial diagram probes.
+                    # One grouped query replaces up to 30 serial browser calls looking for a cached drawing.
                     available={r['assembly_id'] for r in db.execute('''SELECT fo.assembly_id,fo.image_asset_id
                         FROM figure_occurrence fo JOIN assembly a ON a.id=fo.assembly_id
                         WHERE a.group_name=?''',(group,))
@@ -1080,7 +1128,7 @@ class App(BaseHTTPRequestHandler):
             if not j:return self.send_json(404,{'error':'Job not found'})
             obs=[dict(o) for o in db.execute('SELECT * FROM observation WHERE job_id=? ORDER BY id',(id,))]
         j=dict(j); system=j['system']; prompts=GROUP_PROMPTS.get(system,DEFAULT_PROMPTS)
-        md=[f'# BMW 325iX WORK ORDER — IX-{id:04d}', '',f"VIN: {VEHICLE['vin']} | Production: {VEHICLE['build_date']} | Replacement M20B25 #ENGINE_NUMBER_NOT_CONFIGURED",'',
+        md=[f'# BMW 325iX WORK ORDER — IX-{id:04d}', '',f"VIN: {VEHICLE['vin']} | Production: {VEHICLE['build_date']} | Replacement M20B25 #{VEHICLE['engine_number']}",'',
             f"Opened UTC: {j['created_utc']}",f"System: {system}",f"Assembly ID: {j['assembly_id'] or 'NOT ASSIGNED'}",
             f"Risk: {j['risk']}",f"Status: {j['status']}",f"Qualified sign-off: {j['clearance']}",'',
             '## Symptom',j['symptom'],'','## Context',j['context'] or 'Not recorded','','## Safety and questions',prompts['safety'],'']
@@ -1391,7 +1439,7 @@ class App(BaseHTTPRequestHandler):
         manual_conflicts=self.manual_conflict_data()['conflicts'][:12]
         system_prompt=(
             'You are a cautious BMW 1987-12 production 325iX workshop research assistant, NOT a certified mechanic. '
-            'Current owner-confirmed replacement engine is M20B25 serial ENGINE_NUMBER_NOT_CONFIGURED, manual AWD LHD. '
+            'Current installed replacement engine is reported as M20B25, manual AWD LHD; serial kept in private configuration. '
             'Use retrieved ETK part rows for part identity, and explicitly cited user-imported manual text for procedural claims. Manual URL pointers without excerpts are NOT read procedures. '
             'If evidence is insufficient, explicitly say so and request an observable measurement/photo/test. '
             'Always separate observations, hypotheses, discriminating tests, and verified source-backed procedures. '

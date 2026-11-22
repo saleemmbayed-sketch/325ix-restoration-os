@@ -170,3 +170,32 @@ body:has(#twin.page:not([hidden])) main>.tabs{flex-wrap:nowrap;overflow-x:auto;p
  background:#f3f7fa;padding:10px 0;margin-bottom:12px;scrollbar-width:thin}
 body:has(#twin.page:not([hidden])) main>.tabs .tab{white-space:nowrap;padding:10px 12px;font-size:12px}
 @media(max-width:680px){body:has(#twin.page:not([hidden])) header.top .tag{display:none}}
+
+/* RC17 / Ponytail: only two viewers (hosted real four-door mesh or locally owned
+   GLB/STL); authoritative OEM diagrams remain a third, independent tab. */
+.ix3d-hosted[hidden]{display:none!important}
+.ix3d-hosted{height:505px;display:flex;flex-direction:column;background:#0a1727;color:#eaf5f9}
+.ix3d-hosted iframe{display:block;width:100%;min-height:0;flex:1;border:0;background:#101c2e}
+.ix-hosted-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 17px;background:#12283e;font-size:11px;letter-spacing:.05em}
+.ix-hosted-banner strong{font-weight:750;color:#cce7f5}
+.ix-hosted-banner a{color:#8bd9eb!important;font-size:11px!important;margin:0!important}
+.ix3d-hosted p{font-size:10px;line-height:1.5;color:#aac2d2;padding:8px 16px;margin:0}
+.ix-personal-vault{display:grid;gap:8px;margin-top:18px;padding:14px;border-radius:12px;border:1px solid #c8dce9;background:#f4f9fc}
+.ix-personal-vault .small{margin:0 0 5px;color:#52718a}
+.ix-personal-vault label{font-weight:700;font-size:11px;color:#37566f}
+.ix-personal-vault input,.ix-personal-vault select{width:100%;min-width:0;font-size:12px;max-width:100%}
+.ix-personal-vault button{width:100%;margin:4px 0!important;text-align:center!important;padding:11px!important}
+.ix-personal-vault button:disabled{opacity:.54;cursor:not-allowed}
+.ix3d-advanced p{margin:9px 0}
+.ix3d-advanced a{display:inline!important;color:#156482!important;font-weight:600!important}
+.ix-mode-tabs{flex-wrap:wrap}
+.ix-mode-btn{white-space:nowrap}
+.ix-mode-tabs #ix-preview-sedan{color:#0b5a70;font-weight:800}
+.ix-mode-tabs #ix-preview-sedan.active{background:#ccecf1;color:#0b4253}
+.ix-studio-v2:has(#ix-preview-sedan.active) .ix-studio-tools{display:none}
+.ix-studio-v2:has(#ix-preview-sedan.active) .ix3d-hud,.ix-studio-v2:has(#ix-preview-sedan.active) .ix3d-regions{display:none}
+@media(max-width:720px){.ix3d-hosted{height:360px}.ix-hosted-banner{flex-wrap:wrap}.ix-mode-btn{font-size:11px;padding:9px}}
+/* Fullscreen is native and needs no new viewer or dependency. */
+.ix-studio-stage:fullscreen{width:100vw;height:100vh;min-height:100vh;border-radius:0;background:#0a1828}
+.ix-studio-stage:fullscreen .ix3d-hosted,.ix-studio-stage:fullscreen .ix3d-stage{height:calc(100vh - 52px)}
+.ix-studio-stage:fullscreen .twin-diagram-panel{height:calc(100vh - 52px);overflow:auto}

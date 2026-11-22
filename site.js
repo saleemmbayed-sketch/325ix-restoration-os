@@ -327,15 +327,20 @@ function ensureVisualTwinUI(){
   <span class="ix-ref-chip">REFERENCE GEOMETRY · NOT DIMENSIONAL CAD</span>
  </div>
  <div class="ix-studio-toolbar">
-  <div class="ix-mode-tabs"><button id="ix-mode-3d" class="ix-mode-btn active" type="button">◈ 3D model</button><button id="twin2d" class="ix-mode-btn" type="button">▤ OEM drawings</button></div>
-  <div class="ix-studio-tools"><button type="button" id="twinreset" class="light">Reset camera</button><label class="ix3d-explode-label" title="Separates reference model meshes; not a true mechanical exploded assembly">Separate meshes <input type="range" id="ix3d-explode" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output></label>
+  <div class="ix-mode-tabs"><button id="ix-preview-sedan" class="ix-mode-btn" type="button">◈ E30 sedan 3D</button><button id="ix-mode-3d" class="ix-mode-btn active" type="button">Local 3D</button><button id="twin2d" class="ix-mode-btn" type="button">▤ OEM drawings</button></div>
+  <div class="ix-studio-tools"><button type="button" id="ix-fullscreen" class="light">⛶ Full screen</button><button type="button" id="twinreset" class="light">Reset camera</button><label class="ix3d-explode-label" title="Separates reference model meshes; not a true mechanical exploded assembly">Separate meshes <input type="range" id="ix3d-explode" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output></label>
    <select id="ix-view-select" aria-label="Camera angle"><option value="iso">3/4 angle</option><option value="front">Front</option><option value="side">Side</option><option value="top">Top</option></select>
    <label class="ix3d-inline ix-wire">Wireframe <input id="ix3d-wireframe" type="checkbox"></label></div>
  </div>
  <div class="twin-layout ix-studio-layout">
- <div class="twin-stage ix-studio-stage">
+ <div id="ix-studio-stage" class="twin-stage ix-studio-stage">
    <div class="ix3d-hud"><span class="ix3d-kicker">BMW E30 · INTERACTIVE REFERENCE</span><strong id="ix-stage-heading">3D VIEW</strong><span id="ix3d-status">Checking reference assets…</span></div>
    <div id="ix3d-stage" class="ix3d-stage" aria-label="Interactive 3D viewer"></div>
+   <div id="ix3d-hosted" class="ix3d-hosted" hidden>
+     <div class="ix-hosted-banner"><strong>4-door E30 · FREE ONLINE REFERENCE</strong><a href="https://sketchfab.com/3d-models/bmw-3-series-e30-sedan-bd0925e21c934a9cbfdb30ccf5584e86" target="_blank" rel="noopener noreferrer">Open source model ↗</a></div>
+     <iframe id="ix3d-hosted-frame" title="BMW E30 four-door 3D reference via Sketchfab" loading="lazy" allow="fullscreen; xr-spatial-tracking" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+     <p>Hosted public viewer requires internet. If the embed is blocked, use the source link. The local OEM catalog remains independent.</p>
+   </div>
    <nav id="ix3d-regions" class="ix3d-regions" aria-label="3D inspection regions">
     <button type="button" data-ix-region="chassis" class="active">Chassis</button>
     <button type="button" data-ix-region="drivetrain">AWD / Drive</button>
@@ -360,17 +365,37 @@ function ensureVisualTwinUI(){
    <p class="info">3D markers locate reference zones; choose any system for its indexed OEM assemblies. Physical part identity and fitment require evidence.</p>
    <div id="ix3d-selection-info" hidden class="ix-mesh-selection"><strong>Selected reference mesh</strong><p id="ix3d-mesh-name"></p></div>
    <div id="twin-system-list" class="ix-system-details"></div>
-   <details class="ix3d-advanced"><summary>Use another licensed 3D model</summary><input id="ix3d-local-model" type="file" accept=".glb,.gltf"><p class="info">Only geometry you have permission to use. No automatic OEM identification.</p></details>
+   <section class="ix-personal-vault"><div class="ix-eyebrow">PERSONAL 3D ASSET LIBRARY</div>
+    <p class="small">Attach a downloaded GLB or binary STL to the whole car or any of the 21 systems. Files remain local to this installation, never published.</p>
+    <div id="ix-vault-status" class="info">Checking local models…</div>
+    <button id="ix-view-system-model" type="button" class="light">Inspect saved model for this system</button>
+    <label for="ix-model-slot">Assign model to</label><select id="ix-model-slot"><option value="body">Whole vehicle</option></select>
+    <label for="ix3d-local-model">Select downloaded model · max 30 MB</label><input id="ix3d-local-model" type="file" accept=".glb,.stl">
+    <label for="ix-model-source">Source or author (recommended)</label><input id="ix-model-source" placeholder="Original source link / author">
+    <button id="ix-save-model" type="button">Save privately & inspect</button><p id="ix-model-message" class="info" role="status"></p>
+   </section>
+   <details class="ix3d-advanced"><summary>Free mechanical 3D references</summary>
+      <p><a href="https://sketchfab.com/OsamaMaddani/collections/bmw-e30-5eea3c5286de4c58b7de7c2eb48597a5" target="_blank" rel="noopener noreferrer">1989 325iX strut / spindle scan · E30 collection</a></p>
+      <p><a href="https://renn.design/products/e30-front-strut-3d-scan" target="_blank" rel="noopener noreferrer">Free E30 front strut sample · check availability and iX applicability</a></p>
+      <p><a href="https://automeshclub.com/parts" target="_blank" rel="noopener noreferrer">Free E30 suspension STEP references · check variants</a></p>
+      <p><a href="https://sketchfab.com/3d-models/bmw-e30-410-lsd-rear-differential-v1-09dec653aa4b4c0eb45f3f3159b9a77a" target="_blank" rel="noopener noreferrer">E30 rear diff · online scan reference</a></p>
+   </details>
  </aside>
  </div>`;
  $('twin').prepend(panel);
  $('twinreset').onclick=()=>window.ixStudio3D?.reset();
+ $('ix-fullscreen').onclick=async()=>{try{await $('ix-studio-stage').requestFullscreen()}catch(e){$('twinvisualstatus').textContent='Fullscreen unavailable: '+e.message}};
  $('twin2d').onclick=()=>activate2DFallback(false);
+ $('ix-preview-sedan').onclick=()=>showHosted3D();
+ $('ix-save-model').onclick=savePersonalModel;
+ $('ix-view-system-model').onclick=()=>showPersonalModel(activeVisualSystem?.id); 
  $('ix-mode-3d').onclick=async()=>{
+   hideHosted3D();
    const status=await api('/api/3d/status');
-   if(!status.ready){const s=$('ix3d-fallback');s.hidden=false;s.textContent='3D asset kit is not installed. Showing the available OEM drawing.';return;}
+   if(!status.ready){const s=$('ix3d-fallback');s.hidden=false;s.textContent='Local 3D kit missing. Use the free online sedan or original BMW drawings.';await activate2DFallback(false);return;}
    $('twin-diagram-panel').hidden=true;$('ix3d-stage').hidden=false;$('ix-mode-3d').classList.add('active');$('twin2d').classList.remove('active');
-   if(window.ixStudio3D&&window.visualTwinData)await window.ixStudio3D.mount(window.visualTwinData);
+   if(!window.ixStudio3D)window.ixStudio3D=await import('/viewer3d.js');
+   if(window.visualTwinData){if(personalModels.body){await window.ixStudio3D.openPersonal('/api/3d/model?slot=body',personalModels.body.format,window.visualTwinData,true);activePersonalSlot='body';}else{await window.ixStudio3D.mount(window.visualTwinData);activePersonalSlot=null;}}
  };
  $('ix-view-select').onchange=e=>document.querySelector(`[data-ix3d-view="${e.target.value}"]`)?.click()||window.ixStudio3D?.positionView?.(e.target.value);
 }
@@ -383,6 +408,7 @@ function renderVisualTwin(d){
  $('twinvisualstatus').textContent=`${d.systems.length} indexed systems · reference geometry only`;
  $('twin-system-list').replaceChildren(text('p','Choose a vehicle zone or search for a system to open indexed assemblies.','info'));
  renderVisualSystemFinder(d.systems);
+ const slots=$('ix-model-slot');if(slots){const value=slots.value;slots.replaceChildren(new Option('Whole vehicle','body'));for(const s of d.systems)slots.add(new Option(s.label,s.id));if([...slots.options].some(o=>o.value===value))slots.value=value;}
 }
 function renderVisualSystemFinder(systems){
  const finder=$('ix-system-finder'),list=$('ix-system-results');
@@ -391,21 +417,27 @@ function renderVisualSystemFinder(systems){
   list.replaceChildren();
   for(const system of matches){
    const b=text('button',null,'ix-zone-item');b.type='button';b.dataset.system=system.id;
-   b.append(text('strong',system.label),text('small',`${system.assembly_count} assemblies · ${system.priority}`));
+   b.append(text('strong',system.label),text('small',`${system.assembly_count} assemblies · ${personalModels[system.id]?'3D+2D':'2D'}`));
    b.onclick=()=>chooseVisualSystem(system);list.append(b);
   }
   $('ix-system-count').textContent=`${matches.length} / ${systems.length} systems`;
  };
  finder.oninput=show;show();
 }
-let activeVisualSystem=null;
+let activeVisualSystem=null,activePersonalSlot=null;
 function chooseVisualSystem(system){
+ const previous=activePersonalSlot;
  selectVisualSystem(system);
- if($('twin2d')?.classList.contains('active'))loadVisualAssemblies(system,{autoOpen:true});
+ // Changing systems must not present old assembly geometry as the new system.
+ if(previous&&previous!=='body'&&previous!==system.id){
+   if(personalModels[system.id])showPersonalModel(system.id);
+   else activate2DFallback(false);
+ }else if($('twin2d')?.classList.contains('active'))loadVisualAssemblies(system,{autoOpen:true});
 }
-async function selectVisualSystem(system){activeVisualSystem=system;ensureVisualTwinUI();const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');for(const b of $('ix-system-results').querySelectorAll('button'))b.classList.toggle('active',b.dataset.system===system.id);root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Inspect OEM assemblies');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open restoration mission');mission.className='light';mission.onclick=()=>{tab('garage');const domain=$('missiondomain');if(domain&&restorationDomains.length){const d=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));if(d){domain.value=d.id;syncMissionSystems()}}const s=$('missionsystem');if(s)s.value=system.id};root.append(mission)}
+async function selectVisualSystem(system){activeVisualSystem=system;updatePersonalModelButton();ensureVisualTwinUI();if($('ix-model-slot'))$('ix-model-slot').value=system.id;const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');for(const b of $('ix-system-results').querySelectorAll('button'))b.classList.toggle('active',b.dataset.system===system.id);root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Inspect OEM assemblies');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open restoration mission');mission.className='light';mission.onclick=()=>{tab('garage');const domain=$('missiondomain');if(domain&&restorationDomains.length){const d=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));if(d){domain.value=d.id;syncMissionSystems()}}const s=$('missionsystem');if(s)s.value=system.id};root.append(mission)}
 let visualSearchToken=0;
 async function loadVisualAssemblies(system,{autoOpen=false}={}){
+ hideHosted3D();
  const token=++visualSearchToken;
  // An OEM drawing replaces the 3D canvas; it is not appended below the model.
  const model=$('ix3d-stage');if(model)model.hidden=true;
@@ -473,6 +505,7 @@ async function loadVisualAssembly(id){
  }catch(e){target.replaceChildren(text('p','Assembly could not load: '+e.message,'risk'))}
 }
 async function activate2DFallback(scroll=false,reason=''){
+ activePersonalSlot=null;hideHosted3D();
  ensureVisualTwinUI();
  $('ix3d-stage').hidden=true;
  $('twin-canvas').setAttribute('hidden',''); // The old label map is not the fallback.
@@ -489,26 +522,76 @@ async function activate2DFallback(scroll=false,reason=''){
  if(scroll)$('visualtwin').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function selectVisualPart(p,assembly){const root=$('twin-system-list');root.replaceChildren(text('h3',p.description||'Selected catalog part'),text('p',`${p.part_number||'OEM number not recorded'} · callout ${p.callout_position||'?'} · ${assembly.slug||assembly.title}`,'title'),text('p','Catalog identity is linked. Installed identity, variant fitment and condition still require evidence.','risk'));const b=text('button','Open full part dossier');b.onclick=()=>{tab('lookup');openPart(p.id)};root.append(b)}
+
+// Ponytail: private local model slots; the server stores them outside Git, not in the catalog.
+let personalModels={};
+function hideHosted3D(){const e=$('ix3d-hosted');if(e)e.hidden=true;$('ix-preview-sedan')?.classList.remove('active');}
+function showHosted3D(){
+ activePersonalSlot=null;ensureVisualTwinUI();
+ const panel=$('ix3d-hosted');panel.hidden=false;
+ const iframe=$('ix3d-hosted-frame');
+ if(!iframe.src || iframe.src==='about:blank')iframe.src='https://sketchfab.com/models/bd0925e21c934a9cbfdb30ccf5584e86/embed?autostart=1&ui_infos=0&ui_controls=1';
+ $('twin-diagram-panel').hidden=true;$('ix3d-stage').hidden=true;$('ix3d-fallback').hidden=true;$('ix-preview-sedan').classList.add('active');
+ $('ix-mode-3d').classList.remove('active');$('twin2d').classList.remove('active');
+ $('twinvisualstatus').textContent='4-door E30 online reference · geometry and installed fitment unverified';
+}
+async function refreshPersonalModels(){
+ try{personalModels=(await api('/api/3d/models')).models||{};}catch(_){personalModels={}}
+ updatePersonalModelButton();
+ if(window.visualTwinData?.systems)renderVisualSystemFinder(window.visualTwinData.systems);
+}
+function updatePersonalModelButton(){
+ const id=activeVisualSystem?.id;const b=$('ix-view-system-model');if(!b)return;
+ b.disabled=!(id&&personalModels[id]);
+ b.textContent=b.disabled?'No saved 3D for selected system':'Inspect saved '+activeVisualSystem.label+' 3D';
+ const n=Object.keys(personalModels).length;
+ $('ix-vault-status').textContent=n+' private model slot'+(n===1?'':'s')+' available · '+(personalModels[id]?.label||'no model for this system');
+}
+async function savePersonalModel(){
+ const file=$('ix3d-local-model').files?.[0],message=$('ix-model-message'),slot=$('ix-model-slot').value;
+ if(!file){message.textContent='Choose a GLB or binary STL first.';return;}
+ const format=file.name.split('.').at(-1).toLowerCase();
+ if(!['glb','stl'].includes(format)||file.size>30000000){message.textContent='Only GLB/binary STL, max 30 MB.';return;}
+ const button=$('ix-save-model');button.disabled=true;message.textContent='Saving to private workshop library…';
+ try{
+  const data=new Uint8Array(await file.arrayBuffer());let binary='';
+  for(let i=0;i<data.length;i+=32768)binary+=String.fromCharCode(...data.subarray(i,i+32768));
+  const saved=await api('/api/3d/model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slot,format,base64:btoa(binary),label:file.name,source:$('ix-model-source').value})});
+  await refreshPersonalModels();message.textContent='Saved '+file.name+' · checksum '+saved.sha256.slice(0,12)+' · no fitment assertion.';
+  await showPersonalModel(slot);
+ }catch(e){message.textContent='Import failed: '+e.message}finally{button.disabled=false}
+}
+async function showPersonalModel(slot){
+ if(!slot||!personalModels[slot])return;
+ hideHosted3D();const message=$('ix-model-message');
+ try{
+  const status=await api('/api/3d/status');
+  if(!status.ready){message.textContent='Local 3D runtime missing; install the verified kit. Saved model stays available.';return;}
+  if(!window.ixStudio3D)window.ixStudio3D=await import('/viewer3d.js');
+  await window.ixStudio3D.openPersonal('/api/3d/model?slot='+encodeURIComponent(slot),personalModels[slot].format,window.visualTwinData,slot==='body');
+  activePersonalSlot=slot;
+  $('ix3d-stage').hidden=false;$('twin-diagram-panel').hidden=true;
+  $('ix-mode-3d').classList.add('active');$('twin2d').classList.remove('active');
+  $('twinvisualstatus').textContent='Private '+personalModels[slot].format.toUpperCase()+' reference · source '+(personalModels[slot].source||'not supplied');
+ }catch(e){activePersonalSlot=null;message.textContent='Cannot open saved model: '+e.message}
+}
+
 let ixStudioLoading=null;
 window.ixSelectVisualSystemById=id=>{const s=window.visualTwinData?.systems?.find(x=>x.id===id);if(s)selectVisualSystem(s)};
 async function loadVisualTwin(){
  ensureVisualTwinUI();
  try{
-  const d=await api('/api/visual/twin');renderVisualTwin(d);
+  const d=await api('/api/visual/twin');renderVisualTwin(d);await refreshPersonalModels();
   // Check the complete local import graph before importing any Three.js module.
   // A failed nested import otherwise manifests misleadingly as "Failed to fetch viewer3d.js".
   let status;
   try{status=await api('/api/3d/status')}catch(e){status={ready:false,missing:['3D status endpoint: '+e.message]}}
-  if(!status.ready){
-    const missing=(status.missing||[]).map(s=>s.split('/').pop()).join(', ');
-    await activate2DFallback(false,'3D setup incomplete: '+(missing||'required assets not installed')+'. Run python3 scripts/prepare_3d_assets.py in Terminal, then refresh.');
-    return;
-  }
-  if(!ixStudioLoading)ixStudioLoading=import('/viewer3d.js').then(m=>{window.ixStudio3D=m;return m});
-  try{const studio=await ixStudioLoading;if(studio)await studio.mount(d)}catch(e){
-    ixStudioLoading=null;
-    await activate2DFallback(false,'3D module failed to load: '+(e?.message||e));
-  }
+  if(status.ready&&personalModels.body){
+    if(!ixStudioLoading)ixStudioLoading=import('/viewer3d.js').then(m=>{window.ixStudio3D=m;return m});
+    try{const studio=await ixStudioLoading;await studio.openPersonal('/api/3d/model?slot=body',personalModels.body.format,d,true);activePersonalSlot='body';}
+    catch(e){ixStudioLoading=null;showHosted3D();}
+  }else showHosted3D(); // Prefer actual four-door geometry over the mismatched M3 reference.
+
  }catch(e){
   $('twinvisualstatus').textContent='Visual twin unavailable: '+e.message;
   $('twinvisualstatus').className='risk';

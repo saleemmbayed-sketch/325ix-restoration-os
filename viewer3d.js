@@ -28,7 +28,7 @@ const REGIONS={
 };
 let region='chassis';
 
-const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:null,explosion:0,wireframe:false,modelCenter:null,modelSize:1};
+const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:null,explosion:0,wireframe:false,modelCenter:null,modelSize:1,wholeCar:true};
 const setStatus=(s)=>{const el=$('twinvisualstatus');if(el)el.textContent=s;const hud=$('ix3d-status');if(hud)hud.textContent=s;};
 function showFallback(error){
  const canvas=$('ix3d-stage');if(canvas)canvas.hidden=true;
@@ -125,24 +125,40 @@ function prepareMeshes(model){
   state.meshes.push(node);
  });
 }
-async function loadModel(src, data){
+async function loadBinarySTL(src){
+ const response=await fetch(src);
+ if(!response.ok)throw Error('Local STL fetch failed: HTTP '+response.status);
+ const buffer=await response.arrayBuffer(),view=new DataView(buffer);
+ if(buffer.byteLength<84)throw Error('Invalid binary STL length');
+ const count=view.getUint32(80,true);
+ if(84+count*50!==buffer.byteLength)throw Error('Only binary STL is supported');
+ const positions=new Float32Array(count*9);
+ for(let t=0;t<count;t++){
+  const offset=84+t*50;
+  for(let k=0;k<9;k++)positions[t*9+k]=view.getFloat32(offset+12+4*k,true);
+ }
+ const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.computeVertexNormals();
+ const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color:0x8daebc,roughness:.55,metalness:.18,side:THREE.DoubleSide}));
+ mesh.name='Personal STL reference · not OEM-certified';const group=new THREE.Group();group.add(mesh);return group;
+}
+async function loadModel(src,data,format='glb',wholeCar=true){
  const s=makeStudio();if(!s)return;
  s.selectMesh(null);if(state.model){s.scene.remove(state.model);state.model=null;}
  setStatus('Loading licensed E30 geometry…');
  const loader=new GLTFLoader();loader.setMeshoptDecoder(MeshoptDecoder);
  try {
-  const result=await new Promise((resolve,reject)=>loader.load(src,resolve,undefined,reject));
-  state.model=result.scene;state.modelUrl=src;s.scene.add(result.scene);prepareMeshes(result.scene);frameModel();
+  const model=format==='stl'?await loadBinarySTL(src):(await new Promise((resolve,reject)=>loader.load(src,resolve,undefined,reject))).scene;
+  state.model=model;state.modelUrl=src;state.wholeCar=wholeCar;s.scene.add(model);prepareMeshes(model);frameModel();
   $('ix3d-stage').hidden=false;$('twin-diagram-panel').hidden=true;$('twin-canvas').setAttribute('hidden','');$('ix3d-fallback').hidden=true;const m3=$('ix-mode-3d'),m2=$('twin2d');m3?.classList.add('active');m2?.classList.remove('active');if($('ix-stage-heading'))$('ix-stage-heading').textContent='3D VIEW';
   setExplosion(Number($('ix3d-explode')?.value||0)/100);
-  setStatus(`${state.meshes.length} pickable reference meshes · 3D active · NOT 325iX CAD`);
+  setStatus(`${state.meshes.length} pickable reference meshes · ${wholeCar?'E30 body':'personal assembly'} · NOT 325iX CAD · variant/fitment not verified`);
   renderSystems(data);
- }catch(e){showFallback('Cannot load the E30 model: '+(e?.message||e));}
+ }catch(e){showFallback('Cannot load the E30 model: '+(e?.message||e));throw e;}
 }
 function renderSystems(data){
  const menu=$('ix3d-system-select');if(!menu)return;
  if(studio){
-  const all=(data.systems||[]).filter(s=>HOTSPOT_HINTS[s.id]);
+  const all=(state.wholeCar?data.systems:[]||[]).filter(s=>HOTSPOT_HINTS[s.id]);
   studio.markers.replaceChildren();studio.markerButtons.clear();
   for(const system of all){
    const button=document.createElement('button');button.type='button';button.className='ix3d-marker';
@@ -204,5 +220,10 @@ export async function mount(data){
  await loadModel('/models/e30_reference_m3.glb',data);
 }
 export {positionView};
+export async function openPersonal(src,format,data,wholeCar=false){
+ if(format!=='glb'&&format!=='stl')throw Error('Only GLB or binary STL can be displayed');
+ await loadModel(src,data,format,wholeCar);
+}
+
 export function reset(){if(studio&&state.modelCenter)studio.controls.target.copy(state.modelCenter);positionView('iso');if($('ix3d-explode')){$('ix3d-explode').value='0';$('ix3d-explode-value').textContent='0%'}setExplosion(0);studio?.selectMesh(null);}
 export function selectSystem(id){const select=$('ix3d-system-select');if(select)select.value=id;filterRegion();}
