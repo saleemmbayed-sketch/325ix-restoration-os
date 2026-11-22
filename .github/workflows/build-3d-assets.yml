@@ -95,6 +95,7 @@ jobs:
           #ix3d-status{position:absolute;top:8px;left:18px;font-size:16px}
           </style></head><body><div id="twin"><div id="ix3d-status">Waiting for model…</div><div id="ix3d-stage"></div>
           <svg id="twin-canvas" hidden></svg><div id="ix3d-fallback" hidden></div><div id="twin-diagram-panel" hidden></div>
+          <nav id="ix3d-regions"><button type="button" data-ix-region="chassis">Chassis</button><button type="button" data-ix-region="drivetrain">AWD / Drive</button><button type="button" data-ix-region="engine">Engine</button><button type="button" data-ix-region="electrical">Electrical</button></nav>
           <span id="twinvisualstatus"></span><span id="ix-stage-heading"></span>
           <input id="ix3d-explode" type="range" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output>
           <select id="ix3d-system-select"></select><label><input type="checkbox" id="ix3d-wireframe"></label>
