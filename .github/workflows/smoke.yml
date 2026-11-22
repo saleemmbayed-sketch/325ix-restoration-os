@@ -18,5 +18,7 @@ jobs:
           node-version: '22'
       - name: Source parse, offline viewer contract
         run: python3 test_viewer3d_contract.py
+      - name: Original mechanical GLB and three-checkpoint contracts
+        run: python3 test_rc19_mechanical.py
       - name: Report limits
         run: echo 'Full catalog/device/WebGL acceptance requires privately held derived data and installed 3D assets. This job does not certify release readiness.'

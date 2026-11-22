@@ -19,7 +19,15 @@ maintenance_manual_index.sqlite3
 catalog_research_registry.json
 OFFLINE_VISUAL_ATLAS.html
 # Third party CC BY / MIT assets are downloaded locally at pinned versions.
-models/
+models/*
+!models/ix_m20_engine_bay.glb
+!models/ix_front_axle_workshop.glb
+!models/ix_awd_driveline_workshop.glb
+!models/previews/
+models/previews/*
+!models/previews/ix_m20_engine_bay.webp
+!models/previews/ix_front_axle_workshop.webp
+!models/previews/ix_awd_driveline_workshop.webp
 vendor/
 # Machine-local source archives, editor and temp files.
 *.zip

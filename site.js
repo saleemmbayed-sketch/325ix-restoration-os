@@ -476,6 +476,14 @@ function ensureVisualTwinUI(){
   <div><div class="ix-eyebrow">BMW 325iX · RESTORATION OS / VISUAL WORKSHOP</div><h2>Explore the car. Find the part.</h2><p>3D model for orientation · BMW catalog drawings for part identification · documented workshop decisions</p></div>
   <span class="ix-ref-chip">REFERENCE GEOMETRY · NOT DIMENSIONAL CAD</span>
  </div>
+ <div class="ix-mech-journey" id="ix-mech-journey" aria-label="Mechanical explorer">
+  <div class="ix-mech-journey-title"><b>INSPECTION STUDIO</b><span>Open an assembly → choose a component → verify BMW evidence → save the repair</span></div>
+  <div class="ix-scene-actions" id="ix-scene-actions">
+   <button class="ix-scene-btn" data-mech-scene="ix_m20_engine_bay" type="button"><strong>01</strong> Open bonnet <small>M20 engine</small></button>
+   <button class="ix-scene-btn" data-mech-scene="ix_front_axle_workshop" type="button"><strong>02</strong> Front axle <small>AWD / steering</small></button>
+   <button class="ix-scene-btn" data-mech-scene="ix_awd_driveline_workshop" type="button"><strong>03</strong> AWD driveline <small>Transfer case</small></button>
+  </div>
+ </div>
  <div class="ix-studio-toolbar">
   <div class="ix-mode-tabs"><button id="ix-preview-sedan" class="ix-mode-btn" type="button">◈ E30 sedan 3D</button><button id="ix-mode-3d" class="ix-mode-btn active" type="button">Local 3D</button><button id="twin2d" class="ix-mode-btn" type="button">▤ OEM drawings</button></div>
   <div class="ix-studio-tools"><button type="button" id="ix-fullscreen" class="light">⛶ Full screen</button><button type="button" id="twinreset" class="light">Reset camera</button><label class="ix3d-explode-label" title="Separates reference model meshes; not a true mechanical exploded assembly">Separate meshes <input type="range" id="ix3d-explode" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output></label>
@@ -486,6 +494,12 @@ function ensureVisualTwinUI(){
  <div id="ix-studio-stage" class="twin-stage ix-studio-stage">
    <div class="ix3d-hud"><span class="ix3d-kicker">BMW E30 · INTERACTIVE REFERENCE</span><strong id="ix-stage-heading">3D VIEW</strong><span id="ix3d-status">Checking reference assets…</span></div>
    <div id="ix3d-stage" class="ix3d-stage" aria-label="Interactive 3D viewer"></div>
+   <div id="ix-mech-static" class="ix-mech-static" hidden><img id="ix-mech-preview" alt="Original rendered mechanical reference" /><div class="ix-mech-static-text">Full 3D engine, axle and AWD models are included. Install the free local Three.js kit to rotate and select their meshes.<br><strong>Run INSTALL_3D_ASSETS.command</strong></div></div>
+   <div class="ix-mech-stage-controls" id="ix-mech-stage-controls" hidden>
+    <span id="ix-mech-stage-label">ENGINE BAY</span>
+    <button id="ix-bonnet-action" type="button">Close bonnet</button>
+    <button id="ix-mech-exit" type="button">Back to car</button>
+   </div>
    <div id="ix3d-hosted" class="ix3d-hosted" hidden>
      <div class="ix-hosted-banner"><strong>4-door E30 · FREE ONLINE REFERENCE</strong><a href="https://sketchfab.com/3d-models/bmw-3-series-e30-sedan-bd0925e21c934a9cbfdb30ccf5584e86" target="_blank" rel="noopener noreferrer">Open source model ↗</a></div>
      <iframe id="ix3d-hosted-frame" title="BMW E30 four-door 3D reference via Sketchfab" loading="lazy" allow="fullscreen; xr-spatial-tracking" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
@@ -507,6 +521,14 @@ function ensureVisualTwinUI(){
  </div>
  <aside id="twin-inspector" class="twin-inspector ix-studio-inspector">
    <div class="ix-eyebrow">INSPECTION / NAVIGATION</div><h3>Systems & assemblies</h3>
+   <section id="ix-mech-browser" class="ix-mech-browser" hidden>
+    <span class="ix-eyebrow">SELECTABLE GEOMETRY</span>
+    <h3 id="ix-mech-system-name">Mechanical assembly</h3>
+    <p class="ix-mech-help">Select a modeled part to find matching catalog records. Dimensions and fitment come from evidence, not geometry.</p>
+    <input id="ix-mech-part-filter" type="search" placeholder="Filter modeled components…" aria-label="Filter mechanical components">
+    <div id="ix-mech-part-list" class="ix-mech-part-list"></div>
+    <div id="ix-mech-component-detail" class="ix-mech-component-detail" aria-live="polite"></div>
+   </section>
    <label class="ix3d-system-field">Active system<select id="ix3d-system-select"><option value="">Choose a system</option></select></label>
    <label class="ix-system-search-label" for="ix-system-finder">Explore all 21 systems</label>
    <input id="ix-system-finder" type="search" placeholder="Search engine, front axle, brakes…" autocomplete="off">
@@ -538,7 +560,8 @@ function ensureVisualTwinUI(){
  $('twin2d').onclick=()=>activate2DFallback(false);
  $('ix-preview-sedan').onclick=()=>showHosted3D();
  $('ix-save-model').onclick=savePersonalModel;
- $('ix-view-system-model').onclick=()=>showPersonalModel(activeVisualSystem?.id); 
+ $('ix-view-system-model').onclick=()=>showPersonalModel(activeVisualSystem?.id);
+ setupMechanicalControls(); 
  $('ix-mode-3d').onclick=async()=>{
    hideHosted3D();
    const status=await api('/api/3d/status');
@@ -590,7 +613,7 @@ async function selectVisualSystem(system){activeVisualSystem=system; $('workspac
 }
 let visualSearchToken=0;
 async function loadVisualAssemblies(system,{autoOpen=false}={}){
- hideHosted3D();
+ deactivateMechanicalMode();hideHosted3D();
  const token=++visualSearchToken;
  // An OEM drawing replaces the 3D canvas; it is not appended below the model.
  const model=$('ix3d-stage');if(model)model.hidden=true;
@@ -658,7 +681,7 @@ async function loadVisualAssembly(id){
  }catch(e){target.replaceChildren(text('p','Assembly could not load: '+e.message,'risk'))}
 }
 async function activate2DFallback(scroll=false,reason=''){
- activePersonalSlot=null;hideHosted3D();
+ deactivateMechanicalMode();activePersonalSlot=null;hideHosted3D();
  ensureVisualTwinUI();
  $('ix3d-stage').hidden=true;
  $('twin-canvas').setAttribute('hidden',''); // The old label map is not the fallback.
@@ -680,7 +703,7 @@ function selectVisualPart(p,assembly){const root=$('twin-system-list');root.repl
 let personalModels={};
 function hideHosted3D(){const e=$('ix3d-hosted');if(e)e.hidden=true;$('ix-preview-sedan')?.classList.remove('active');}
 function showHosted3D(){
- activePersonalSlot=null;ensureVisualTwinUI();
+ deactivateMechanicalMode();activePersonalSlot=null;ensureVisualTwinUI();
  const panel=$('ix3d-hosted');panel.hidden=false;
  const iframe=$('ix3d-hosted-frame');
  if(!iframe.src || iframe.src==='about:blank')iframe.src='https://sketchfab.com/models/bd0925e21c934a9cbfdb30ccf5584e86/embed?autostart=1&ui_infos=0&ui_controls=1';
@@ -716,6 +739,7 @@ async function savePersonalModel(){
 }
 async function showPersonalModel(slot){
  if(!slot||!personalModels[slot])return;
+ deactivateMechanicalMode();
  hideHosted3D();const message=$('ix-model-message');
  try{
   const status=await api('/api/3d/status');
@@ -727,6 +751,157 @@ async function showPersonalModel(slot){
   $('ix-mode-3d').classList.add('active');$('twin2d').classList.remove('active');
   $('twinvisualstatus').textContent='Private '+personalModels[slot].format.toUpperCase()+' reference · source '+(personalModels[slot].source||'not supplied');
  }catch(e){activePersonalSlot=null;message.textContent='Cannot open saved model: '+e.message}
+}
+
+
+// RC19: three actual local GLB assembly scenes, selected mesh -> catalog -> reviewable inspection job.
+let mechanicalInventory=null,mechanicalScene=null,mechanicalComponent=null,mechanicalCandidate=null;
+let mechanicalSelectionToken=0,mechanicalSetup=false;
+function deactivateMechanicalMode(){
+ if($('ix-mech-static'))$('ix-mech-static').hidden=true;
+ mechanicalScene=null;mechanicalComponent=null;mechanicalCandidate=null;++mechanicalSelectionToken;
+ $('visualtwin')?.classList.remove('ix-inspect-mode');
+ if($('ix-mech-browser'))$('ix-mech-browser').hidden=true;
+ if($('ix-mech-stage-controls'))$('ix-mech-stage-controls').hidden=true;
+ for(const b of document.querySelectorAll('[data-mech-scene]'))b.classList.remove('active');
+}
+function setupMechanicalControls(){
+ if(mechanicalSetup)return;mechanicalSetup=true;
+ for(const button of document.querySelectorAll('[data-mech-scene]'))button.onclick=()=>openMechanicalScene(button.dataset.mechScene);
+ $('ix-bonnet-action').onclick=()=>window.ixStudio3D?.toggleBonnet();
+ $('ix-mech-exit').onclick=showHosted3D;
+ $('ix-mech-part-filter').oninput=()=>renderMechanicalComponentList();
+}
+async function getMechanicalInventory(){
+ if(!mechanicalInventory)mechanicalInventory=await api('/mechanical_index.json');
+ return mechanicalInventory;
+}
+async function openMechanicalScene(slug){
+ ensureVisualTwinUI();setupMechanicalControls();
+ if(!window.visualTwinData)window.visualTwinData=await api('/api/visual/twin');
+ const inventory=await getMechanicalInventory();const scene=inventory.scenes.find(s=>s.slug===slug);
+ if(!scene){$('twinvisualstatus').textContent='Unknown 3D assembly';return;}
+ const status=await api('/api/3d/status');
+ mechanicalScene=scene;mechanicalComponent=null;mechanicalCandidate=null;
+ $('visualtwin').classList.add('ix-inspect-mode');$('ix-mech-browser').hidden=false;
+ $('ix-mech-system-name').textContent=scene.description;
+ $('ix-mech-part-filter').value='';$('ix-mech-component-detail').replaceChildren();renderMechanicalComponentList();
+ for(const b of document.querySelectorAll('[data-mech-scene]'))b.classList.toggle('active',b.dataset.mechScene===slug);
+ $('ix-mech-stage-controls').hidden=false;
+ $('ix-mech-stage-label').textContent=slug.includes('engine')?'M20 ENGINE BAY':slug.includes('front_axle')?'325iX FRONT AXLE':'325iX AWD DRIVELINE';
+ $('ix-bonnet-action').hidden=!slug.includes('engine');$('ix-bonnet-action').textContent='Close bonnet';
+ $('ix3d-hosted').hidden=true;$('ix-preview-sedan').classList.remove('active');
+ $('ix3d-stage').hidden=false;$('twin-diagram-panel').hidden=true;$('ix3d-fallback').hidden=true;
+ $('ix-mech-static').hidden=true;
+ $('ix-mode-3d').classList.add('active');$('twin2d').classList.remove('active');
+ $('ix-stage-heading').textContent='3D MECHANICAL STUDIO';
+ $('twinvisualstatus').textContent='Loading '+scene.components.length+' interactive mechanical components';
+ if(!status.ready){
+   const missing=status.missing?.join(', ')||'Three.js runtime';
+   $('twinvisualstatus').textContent='Offline preview · '+scene.components.length+' selectable components in the inspector';$('ix3d-status').textContent='Component geometry included · renderer kit available';
+   $('ix3d-stage').hidden=true;$('ix-mech-static').hidden=false;$('ix-mech-preview').src='/'+scene.preview;
+   $('ix3d-fallback').hidden=true;
+   return;
+ }
+ try{
+   if(!window.ixStudio3D)window.ixStudio3D=await import('/viewer3d.js');
+   const result=await window.ixStudio3D.openMechanical(scene,window.visualTwinData);
+   $('twinvisualstatus').textContent=scene.components.length+' modeled components · '+result.pickable+' selectable 3D segments · source model generated locally';
+ }catch(e){
+   $('ix3d-stage').hidden=true;$('ix-mech-static').hidden=false;$('ix-mech-preview').src='/'+scene.preview;
+   $('ix3d-fallback').hidden=true;
+   $('twinvisualstatus').textContent='Assembly geometry present; renderer error: '+e.message;
+ }
+}
+function renderMechanicalComponentList(){
+ if(!mechanicalScene)return;
+ const q=$('ix-mech-part-filter').value.trim().toLowerCase(),root=$('ix-mech-part-list');root.replaceChildren();
+ const matches=mechanicalScene.components.filter(c=>(c.label+' '+c.search_terms).toLowerCase().includes(q));
+ for(const c of matches){
+  const b=text('button',null,'ix-mech-component');b.type='button';b.dataset.component=c.id;
+  b.classList.toggle('selected',mechanicalComponent?.id===c.id);
+  b.append(text('span',c.label),text('small',c.system.replaceAll('_',' ')));
+  b.onclick=()=>selectMechanicalComponent(c.id,true);root.append(b);
+ }
+ if(!matches.length)root.append(text('p','No modeled component matches. Clear the filter to show all.','info'));
+}
+window.ixOnMechanicalComponent=(sceneSlug,key)=>{
+ if(mechanicalScene?.slug===sceneSlug)selectMechanicalComponent(key,false);
+};
+async function selectMechanicalComponent(key,focus){
+ if(!mechanicalScene)return;
+ const c=mechanicalScene.components.find(x=>x.id===key);if(!c)return;
+ mechanicalComponent=c;mechanicalCandidate=null;
+ if(focus)window.ixStudio3D?.focusMechanicalComponent(key);
+ else window.ixStudio3D?.selectMechanicalComponent(key,false);
+ renderMechanicalComponentList();
+ const token=++mechanicalSelectionToken,root=$('ix-mech-component-detail');
+ root.replaceChildren(text('span','STEP 02 / COMPONENT','ix-eyebrow'),text('h3',c.label),text('p',c.notes,'ix-mech-help'));
+ const actions=text('div',null,'ix-mech-detail-actions');
+ const oem=text('button','See OEM drawings','light');oem.onclick=()=>openMechanicalDrawings(c.system);
+ const isolate=text('button','Isolate in 3D','light');isolate.onclick=()=>{const active=window.ixStudio3D?.isolateMechanicalComponent(key);isolate.textContent=active?'Show all parts':'Isolate in 3D'};
+ actions.append(isolate,oem);root.append(actions);
+ const searchLabel=text('p','Looking up BMW catalog matches…','ix-mech-catalog-state');root.append(searchLabel);
+ const resultArea=text('div',null,'ix-mech-matches');root.append(resultArea);
+ const jobPanel=text('section',null,'ix-mech-job-panel');root.append(jobPanel);
+ renderMechanicalJobForm(jobPanel,c);
+ try{
+  const base='/api/search?group='+encodeURIComponent(c.system)+'&q=';
+  let response=await api(base+encodeURIComponent(c.search_terms));
+  let used=c.search_terms;
+  // Some E30 descriptions use period-specific terminology; try one shorter term.
+  if(!response.results?.length){
+   const tokenWord=c.search_terms.split(/\s+/).find(w=>w.length>=4&&!['front','rear','engine','six','with','hose'].includes(w.toLowerCase()));
+   if(tokenWord){used=tokenWord;response=await api(base+encodeURIComponent(used));}
+  }
+  if(token!==mechanicalSelectionToken)return;
+  const matches=(response.results||[]).slice(0,9);
+  searchLabel.textContent=matches.length?`${response.results.length} catalog hits for “${used}” · select an OEM occurrence`:'No matching description. Open the system assembly catalog for part identification.';
+  for(const result of matches){
+   const b=text('button',null,'ix-mech-catalog-result');b.type='button';
+   b.append(text('strong',result.part_number||'Assembly — BMW catalog'),text('span',result.description||result.slug||result.title||'Catalog record'),
+    text('small',`${(result.slug||result.title||'').replaceAll('_',' ')} · ${result.date_condition_raw||'date condition not recorded'}`));
+   b.onclick=()=>{
+    mechanicalCandidate=result;
+    for(const other of resultArea.querySelectorAll('button'))other.classList.toggle('selected',other===b);
+    $('ix-mech-job-part').textContent=result.part_number||'catalog occurrence selected';
+    $('ix-mech-catalog-choice').textContent='Selected BMW catalog occurrence; installed fitment still requires verification';
+   };
+   resultArea.append(b);
+  }
+  const more=text('button','Browse all system assemblies','light');more.onclick=()=>openMechanicalDrawings(c.system);resultArea.append(more);
+ }catch(e){if(token===mechanicalSelectionToken)searchLabel.textContent='Catalog lookup failed: '+e.message}
+}
+async function openMechanicalDrawings(group){
+ const system=window.visualTwinData?.systems?.find(s=>s.id===group);
+ if(!system){tab('lookup');$('search').value=mechanicalComponent?.search_terms||'';search();return;}
+ await selectVisualSystem(system);
+ await loadVisualAssemblies(system,{autoOpen:true});
+}
+function renderMechanicalJobForm(root,c){
+ root.replaceChildren(text('span','STEP 03 / REPAIR WORKFLOW','ix-eyebrow'),text('h4','Create an inspection'),
+ text('p','A real saved job starts here. Only observed evidence is recorded; never generated from the model.','ix-mech-help'));
+ const choice=text('div','No BMW catalog occurrence selected','ix-mech-selection-status');choice.id='ix-mech-job-part';
+ const state=text('div','','ix-mech-selection-state');state.id='ix-mech-catalog-choice';root.append(choice,state);
+ const form=document.createElement('form');form.className='ix-mech-job-form';
+ const symptom=document.createElement('textarea');symptom.id='ix-mech-job-symptom';symptom.rows=2;symptom.required=true;symptom.minLength=4;symptom.placeholder='What needs inspection? Describe the real symptom or objective…';
+ const evidence=document.createElement('textarea');evidence.id='ix-mech-job-evidence';evidence.rows=2;evidence.placeholder='Optional observed condition / measurement (not a guess)';
+ const source=document.createElement('input');source.id='ix-mech-job-source';source.placeholder='Evidence source / mechanic (required if adding evidence)';
+ const button=text('button','Save inspection & open mission');button.type='submit';button.className='ix-mech-save';
+ const status=text('div','','ix-mech-job-status');status.setAttribute('role','status');
+ form.append(symptom,evidence,source,button,status);root.append(form);
+ form.onsubmit=async ev=>{
+  ev.preventDefault();if(mechanicalComponent!==c)return;
+  if(evidence.value.trim()&&!source.value.trim()){status.textContent='Enter who observed the condition or the evidence source.';source.focus();return;}
+  button.disabled=true;status.textContent='Saving inspection in local workshop database…';
+  try{
+   const job=await api('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:c.system,assembly_id:mechanicalCandidate?.assembly_id||'',symptom:symptom.value.trim(),context:`Visual inspection: ${mechanicalScene.description}; component: ${c.label}; keyword: ${c.search_terms}; candidate OEM ${mechanicalCandidate?.part_number||'not yet verified'}`})});
+   if(evidence.value.trim())await api('/api/job/'+job.job_id+'/observation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'inspection',value:evidence.value.trim(),unit:'',tool:'',source:source.value.trim()})});
+   currentJob=job.job_id;const domain=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===c.system));
+   const mission={job_id:job.job_id,domain_id:domain?.id||'other',domain_label:domain?.label||c.system.replaceAll('_',' '),system:c.system,mission_status:'ACTIVE'};
+   await resumeMission(mission);
+  }catch(err){status.textContent='Could not save: '+err.message;button.disabled=false;}
+ };
 }
 
 let ixStudioLoading=null;

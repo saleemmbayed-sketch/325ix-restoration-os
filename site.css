@@ -255,3 +255,50 @@ footer{background:#eaf0f4;color:#8193a1;border-top:1px solid #d9e5ec;margin-left
 .ix-mission-detail>.panel{margin:0!important;padding:17px 20px!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 .ix-mission-detail>.panel h2{font-size:16px}
 @media(max-width:900px){.ix-mission-forms{grid-template-columns:1fr}}
+
+/* RC19 / MECHANIC STUDIO — one inspectable assembly at a time. */
+.ix-mech-journey{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 15px;background:#ecf4f7;border:1px solid #d6e5ec;border-radius:12px;margin:16px 0 14px;flex-wrap:wrap}
+.ix-mech-journey-title{display:grid;gap:3px;color:#203c53;min-width:195px}.ix-mech-journey-title b{font-size:11px;letter-spacing:.14em}.ix-mech-journey-title span{font-size:11px;color:#597489;max-width:420px;line-height:1.45}
+.ix-scene-actions{display:flex;gap:7px;flex:1;flex-wrap:wrap;justify-content:flex-end}
+.ix-scene-actions .ix-scene-btn{display:flex;align-items:center;flex-wrap:wrap;gap:5px;width:auto;min-width:133px;flex:1 1 145px;max-width:208px;text-align:left;padding:12px;border:1px solid #c6d6e2;border-radius:10px;background:#fff;color:#1d3a50;font-size:12px;font-weight:780;box-shadow:none}
+.ix-scene-actions .ix-scene-btn strong{display:inline-grid;place-items:center;font-size:9px;width:24px;height:24px;background:#e3eff2;color:#1a5971;border-radius:7px}
+.ix-scene-actions .ix-scene-btn small{display:block;width:100%;padding-left:30px;color:#668398;font-size:10px;font-weight:500}
+.ix-scene-actions .ix-scene-btn:hover,.ix-scene-actions .ix-scene-btn.active{background:#16334a;color:white;border-color:#1a475f}
+.ix-scene-actions .ix-scene-btn.active small{color:#b9d4de}
+.ix-mech-stage-controls{position:absolute;z-index:5;left:18px;bottom:55px;display:flex;align-items:center;gap:10px;max-width:calc(100% - 35px);flex-wrap:wrap}
+.ix-mech-stage-controls[hidden],.ix-mech-browser[hidden]{display:none!important}
+.ix-mech-stage-controls span{color:#d8ebf1;font-size:10px;letter-spacing:.12em;font-weight:850;background:#0c2235cc;padding:9px;border:1px solid #56718560;border-radius:7px}
+.ix-mech-stage-controls button{border:1px solid #617f93;background:#143951df;color:white;font-size:11px;font-weight:750;border-radius:8px;padding:8px 11px;width:auto;box-shadow:none}
+.ix-mech-stage-controls button:hover{background:#2c6578}
+.ix-mech-stage-controls button[hidden]{display:none!important}
+.ix-studio-v2.ix-inspect-mode .ix3d-regions,.ix3d-regions[hidden]{display:none!important}
+.ix-studio-v2.ix-inspect-mode .ix-studio-inspector>.ix3d-system-field,.ix-studio-v2.ix-inspect-mode .ix-system-search-label,.ix-studio-v2.ix-inspect-mode #ix-system-finder,.ix-studio-v2.ix-inspect-mode #ix-system-count,.ix-studio-v2.ix-inspect-mode #ix-system-results,.ix-studio-v2.ix-inspect-mode #twin-system-list,.ix-studio-v2.ix-inspect-mode .ix-personal-vault,.ix-studio-v2.ix-inspect-mode .ix3d-advanced,.ix-studio-v2.ix-inspect-mode .ix-studio-inspector>.info,.ix-studio-v2.ix-inspect-mode #ix3d-selection-info{display:none!important}
+.ix-mech-browser{display:grid;gap:13px;padding-top:4px}
+.ix-mech-browser h3{margin:0;font-size:16px;line-height:1.25;color:#163348}
+.ix-mech-help{font-size:11px;line-height:1.55;color:#688094;margin:2px 0 7px}
+.ix-mech-browser #ix-mech-part-filter{margin:0;padding:12px;border:1px solid #cbdae2;background:#fff;border-radius:10px;width:100%;font-size:12px}
+.ix-mech-part-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:225px;overflow-y:auto;padding:2px 2px 6px}
+.ix-mech-part-list button.ix-mech-component{display:flex;flex-direction:column;gap:5px;align-items:flex-start;justify-content:space-between;min-height:54px;text-align:left;background:white;border:1px solid #cedfe8;color:#1d4257;border-radius:8px;padding:10px;font-size:11px;font-weight:700;line-height:1.3;box-shadow:none;width:100%;word-break:break-word}
+.ix-mech-part-list .ix-mech-component small{color:#7592a0;font-weight:520;font-size:10px}
+.ix-mech-part-list .ix-mech-component:hover,.ix-mech-part-list .ix-mech-component.selected{background:#dbf3f4;border-color:#53a6b0}
+.ix-mech-component-detail{display:grid;gap:10px;padding:15px;background:#f6fafb;border:1px solid #d3e1e7;border-radius:12px}
+.ix-mech-component-detail h3{font-size:17px}.ix-mech-detail-actions{display:flex;gap:6px;flex-wrap:wrap}
+.ix-mech-detail-actions button{width:auto!important;padding:9px 10px;font-size:11px;background:#e8f1f4!important;color:#1c5366!important;border:1px solid #c8dce5!important;border-radius:8px}
+.ix-mech-catalog-state{font-size:11px;color:#47718a;margin:2px 0 0;line-height:1.4}
+.ix-mech-matches{display:grid;gap:6px;max-height:330px;overflow-y:auto}
+.ix-mech-catalog-result{display:grid;gap:3px;width:100%!important;justify-content:stretch;text-align:left!important;white-space:normal;background:white!important;color:#203d55!important;padding:9px!important;border:1px solid #d5e3e7!important;border-radius:8px!important;box-shadow:none!important}
+.ix-mech-catalog-result:hover,.ix-mech-catalog-result.selected{border-color:#23839a!important;background:#e8f7f9!important}
+.ix-mech-catalog-result strong{font-size:11px}.ix-mech-catalog-result span{font-size:11px;overflow-wrap:anywhere}.ix-mech-catalog-result small{font-size:10px;color:#708da1}
+.ix-mech-job-panel{border-top:1px solid #d2e0e6;padding-top:12px;display:grid;gap:8px}
+.ix-mech-job-panel h4{font-size:15px;margin:0;color:#1f4359}.ix-mech-selection-status{background:#e6eff3;padding:8px 10px;border-radius:7px;color:#355a6f;font-size:11px;font-weight:680}.ix-mech-selection-state{color:#5d7d91;font-size:10px}
+.ix-mech-job-form{display:grid;gap:8px}.ix-mech-job-form textarea,.ix-mech-job-form input{width:100%;background:#fff;border:1px solid #cbdde5;border-radius:8px;padding:10px;font-size:11px;resize:vertical;color:#1f4154}
+.ix-mech-job-form button.ix-mech-save{width:100%;background:#173f5a;color:white;border:0;border-radius:8px;font-size:12px;padding:11px;font-weight:750}
+.ix-mech-job-form button.ix-mech-save:disabled{opacity:.65}.ix-mech-job-status{font-size:11px;color:#a25a3e}
+@media(max-width:900px){.ix-scene-actions{justify-content:flex-start}.ix-mech-journey{align-items:stretch}.ix-mech-journey-title{min-width:100%}}
+@media(max-width:500px){.ix-mech-journey{padding:10px}.ix-scene-actions .ix-scene-btn{min-width:100px;flex:1 1 125px;padding:9px;font-size:11px}.ix-scene-actions .ix-scene-btn small{padding-left:0}.ix-mech-part-list{grid-template-columns:1fr 1fr}.ix-mech-stage-controls{left:8px;bottom:55px;gap:5px}.ix-mech-stage-controls span{width:100%;padding:5px}}
+.ix-mech-static[hidden]{display:none!important}
+.ix-mech-static{width:100%;height:505px;position:relative;background:#0a1d2d;display:flex;align-items:center;justify-content:center}
+.ix-mech-static img{width:100%;height:100%;object-fit:contain;display:block}
+.ix-mech-static-text{position:absolute;bottom:18px;left:20px;right:20px;color:#d7ebf4;background:#102b3ce8;border:1px solid #567a8994;border-radius:10px;padding:12px 15px;line-height:1.5;font-size:12px;box-shadow:0 8px 28px #00192655}
+.ix-mech-static-text strong{display:inline-block;margin-top:3px;color:#a2f1f3}
+@media(max-width:680px){.ix-mech-static{height:350px}.ix-mech-static-text{font-size:10px;padding:8px;left:9px;right:9px}}

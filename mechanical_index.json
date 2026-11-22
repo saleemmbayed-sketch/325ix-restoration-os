@@ -1,0 +1,499 @@
+{
+  "title": "Original illustrative 3D mechanic scenes for BMW 325iX POC",
+  "revision": "RC19",
+  "geometry_notice": "Original stylized mechanical visualizations; not scans, drawings or dimensionally verified OEM geometry.",
+  "scenes": [
+    {
+      "slug": "ix_m20_engine_bay",
+      "filename": "models/ix_m20_engine_bay.glb",
+      "size": 91972,
+      "sha256": "062778fdfcc12e60b041b59c9a92d4a4cba8932d7e1d15c6e58364eef3a8fbf9",
+      "mesh_segments": 102,
+      "components": [
+        {
+          "id": "bay_floor",
+          "label": "Engine bay lower tray",
+          "system": "engine",
+          "search_terms": "engine bay lower tray",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "engine_bay",
+          "label": "Chassis rail",
+          "system": "engine",
+          "search_terms": "chassis rail",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 6
+        },
+        {
+          "id": "strut_mount",
+          "label": "Top mount bearing",
+          "system": "front_axle",
+          "search_terms": "strut mount bearing",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 4
+        },
+        {
+          "id": "bulkhead",
+          "label": "Firewall",
+          "system": "engine",
+          "search_terms": "bulkhead",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "radiator_support",
+          "label": "Radiator support panel",
+          "system": "engine",
+          "search_terms": "radiator",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "bonnet",
+          "label": "Bonnet inner reinforcement",
+          "system": "bodywork",
+          "search_terms": "hood bonnet",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 3
+        },
+        {
+          "id": "engine_block",
+          "label": "Cast iron M20 block",
+          "system": "engine",
+          "search_terms": "engine block",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "oil_pan",
+          "label": "Engine oil sump",
+          "system": "engine",
+          "search_terms": "oil pan sump",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "cylinder_head",
+          "label": "Cylinder head",
+          "system": "engine",
+          "search_terms": "cylinder head",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "valve_cover",
+          "label": "Cover cooling ribs",
+          "system": "engine",
+          "search_terms": "valve cover",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 10
+        },
+        {
+          "id": "oil_filler_cap",
+          "label": "Oil filler cap",
+          "system": "engine",
+          "search_terms": "oil filler cap",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "spark_plugs",
+          "label": "Spark-plug boot",
+          "system": "engine",
+          "search_terms": "spark plug",
+          "notes": "Six visually distinct M20 ignition positions; not engineering geometry",
+          "segments": 6
+        },
+        {
+          "id": "ignition_wiring",
+          "label": "HT leads",
+          "system": "engine_electrical_system",
+          "search_terms": "ignition lead distributor",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 6
+        },
+        {
+          "id": "intake_plenum",
+          "label": "Intake manifold plenum",
+          "system": "engine",
+          "search_terms": "intake manifold",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "intake_runners",
+          "label": "Six M20 intake runners",
+          "system": "engine",
+          "search_terms": "intake manifold",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 6
+        },
+        {
+          "id": "throttle_body",
+          "label": "Throttle body",
+          "system": "engine",
+          "search_terms": "throttle body",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "intake_hose",
+          "label": "Intake rubber boot",
+          "system": "engine",
+          "search_terms": "air intake rubber boot",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "airbox",
+          "label": "Air filter housing",
+          "system": "engine",
+          "search_terms": "air filter",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "fuel_rail",
+          "label": "Fuel injector rail",
+          "system": "fuel_preparation_system",
+          "search_terms": "fuel rail",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "injectors",
+          "label": "Fuel injectors",
+          "system": "fuel_preparation_system",
+          "search_terms": "fuel injector",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 6
+        },
+        {
+          "id": "exhaust_manifold",
+          "label": "Exhaust manifold tubes",
+          "system": "exhaust_system",
+          "search_terms": "exhaust manifold",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 6
+        },
+        {
+          "id": "timing_cover",
+          "label": "Front timing-belt cover",
+          "system": "engine",
+          "search_terms": "timing belt cover",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "crank_pulley",
+          "label": "Crankshaft pulley",
+          "system": "engine",
+          "search_terms": "crank pulley",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "cam_pulley",
+          "label": "Cam pulley / timing",
+          "system": "engine",
+          "search_terms": "camshaft pulley",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "alternator",
+          "label": "Alternator",
+          "system": "engine_electrical_system",
+          "search_terms": "alternator",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "water_pump",
+          "label": "Water pump",
+          "system": "radiator",
+          "search_terms": "water pump",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "fan",
+          "label": "Radiator fan blade",
+          "system": "radiator",
+          "search_terms": "cooling fan",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 8
+        },
+        {
+          "id": "radiator",
+          "label": "Radiator fins",
+          "system": "radiator",
+          "search_terms": "radiator",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 19
+        },
+        {
+          "id": "coolant_hoses",
+          "label": "Lower coolant hose",
+          "system": "radiator",
+          "search_terms": "radiator coolant hose",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "battery",
+          "label": "12 V battery",
+          "system": "vehicle_electrical_system",
+          "search_terms": "battery",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "fuse_box",
+          "label": "Fuse/relay box",
+          "system": "vehicle_electrical_system",
+          "search_terms": "fuse relay box",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "coolant_expansion",
+          "label": "Coolant expansion vessel",
+          "system": "radiator",
+          "search_terms": "coolant expansion tank",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        }
+      ],
+      "description": "M20 inline-six engine bay with front-hinged bonnet and inspectable systems",
+      "geometry_role": "ORIGINAL_INTERACTIVE_ILLUSTRATION_NOT_OEM_CAD",
+      "preview": "models/previews/ix_m20_engine_bay.webp"
+    },
+    {
+      "slug": "ix_front_axle_workshop",
+      "filename": "models/ix_front_axle_workshop.glb",
+      "size": 162504,
+      "sha256": "c4797e18e352ee21309c9e268c9729d533f3c5c8c684c522c8e31256523b8348",
+      "mesh_segments": 27,
+      "components": [
+        {
+          "id": "subframe",
+          "label": "Front axle carrier",
+          "system": "front_axle",
+          "search_terms": "front axle carrier subframe",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "steering_rack",
+          "label": "Steering rack housing",
+          "system": "steering",
+          "search_terms": "steering rack",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "front_differential",
+          "label": "325iX front differential casing",
+          "system": "front_axle",
+          "search_terms": "front axle differential",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "strut_tube",
+          "label": "Front strut tube",
+          "system": "front_axle",
+          "search_terms": "strut shock absorber",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "coil_spring",
+          "label": "MacPherson coil spring",
+          "system": "front_axle",
+          "search_terms": "coil spring",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "upper_mount",
+          "label": "Front upper strut mount",
+          "system": "front_axle",
+          "search_terms": "strut top mount",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "hub",
+          "label": "Front hub / AWD wheel flange",
+          "system": "front_axle",
+          "search_terms": "wheel hub bearing",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "brake_disc",
+          "label": "Front brake disc",
+          "system": "brakes",
+          "search_terms": "brake disc",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "caliper",
+          "label": "Brake caliper",
+          "system": "brakes",
+          "search_terms": "brake caliper",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "control_arm",
+          "label": "Wishbone control arm",
+          "system": "front_axle",
+          "search_terms": "wishbone control arm",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "ball_joint",
+          "label": "Front ball joint",
+          "system": "front_axle",
+          "search_terms": "ball joint",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "tie_rod",
+          "label": "Steering tie rod",
+          "system": "steering",
+          "search_terms": "tie rod",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "cv_shaft",
+          "label": "Front AWD driveshaft",
+          "system": "front_axle",
+          "search_terms": "front axle shaft CV joint",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "cv_boots",
+          "label": "CV joint boot",
+          "system": "front_axle",
+          "search_terms": "CV joint axle shaft",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 4
+        }
+      ],
+      "description": "Explorable AWD front axle / steering / strut technical illustration",
+      "geometry_role": "ORIGINAL_INTERACTIVE_ILLUSTRATION_NOT_OEM_CAD",
+      "preview": "models/previews/ix_front_axle_workshop.webp"
+    },
+    {
+      "slug": "ix_awd_driveline_workshop",
+      "filename": "models/ix_awd_driveline_workshop.glb",
+      "size": 34396,
+      "sha256": "6d1cf3815da20e36fbf504ff1a993e5897fa3a99b4a6de9e860bca33b4833770",
+      "mesh_segments": 19,
+      "components": [
+        {
+          "id": "transfer_case",
+          "label": "AWD transfer housing",
+          "system": "transfer_box_electric_gearbox",
+          "search_terms": "transfer case",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "case_bolt",
+          "label": "Transfer housing fastener",
+          "system": "transfer_box_electric_gearbox",
+          "search_terms": "transfer case bolts",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "transfer_output",
+          "label": "Rear output flange",
+          "system": "transfer_box_electric_gearbox",
+          "search_terms": "transfer output flange",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 2
+        },
+        {
+          "id": "front_prop",
+          "label": "Front propeller shaft",
+          "system": "drive_shaft",
+          "search_terms": "front propeller shaft",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "rear_prop",
+          "label": "Rear propeller shaft",
+          "system": "drive_shaft",
+          "search_terms": "rear propeller shaft",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "front_diff",
+          "label": "Front differential shell",
+          "system": "front_axle",
+          "search_terms": "front differential",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "rear_diff",
+          "label": "Rear differential shell",
+          "system": "rear_axle",
+          "search_terms": "rear differential",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "axle_halfshafts",
+          "label": "Half-shaft to wheel",
+          "system": "front_axle",
+          "search_terms": "axle half shaft CV",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 4
+        },
+        {
+          "id": "cv_joints",
+          "label": "CV joint casing",
+          "system": "front_axle",
+          "search_terms": "CV joint axle",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 4
+        },
+        {
+          "id": "case_mount",
+          "label": "Transfer case mounting bush",
+          "system": "transfer_box_electric_gearbox",
+          "search_terms": "transfer case mount",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        },
+        {
+          "id": "transfer_viscous",
+          "label": "Transfer unit conceptual clutch pack",
+          "system": "transfer_box_electric_gearbox",
+          "search_terms": "viscous coupling",
+          "notes": "Visual orientation only; use catalog evidence to identify the actual part.",
+          "segments": 1
+        }
+      ],
+      "description": "Illustrative 325iX AWD transfer/driveshaft arrangement",
+      "geometry_role": "ORIGINAL_INTERACTIVE_ILLUSTRATION_NOT_OEM_CAD",
+      "preview": "models/previews/ix_awd_driveline_workshop.webp"
+    }
+  ]
+}

@@ -365,6 +365,13 @@ class App(BaseHTTPRequestHandler):
             static_3d = {
                 '/viewer3d.js':('viewer3d.js','text/javascript; charset=utf-8'),
                 '/models/e30_reference_m3.glb':('models/e30_reference_m3.glb','model/gltf-binary'),
+                '/models/ix_m20_engine_bay.glb':('models/ix_m20_engine_bay.glb','model/gltf-binary'),
+                '/models/ix_front_axle_workshop.glb':('models/ix_front_axle_workshop.glb','model/gltf-binary'),
+                '/models/ix_awd_driveline_workshop.glb':('models/ix_awd_driveline_workshop.glb','model/gltf-binary'),
+                '/mechanical_index.json':('mechanical_index.json','application/json; charset=utf-8'),
+                '/models/previews/ix_m20_engine_bay.webp':('models/previews/ix_m20_engine_bay.webp','image/webp'),
+                '/models/previews/ix_front_axle_workshop.webp':('models/previews/ix_front_axle_workshop.webp','image/webp'),
+                '/models/previews/ix_awd_driveline_workshop.webp':('models/previews/ix_awd_driveline_workshop.webp','image/webp'),
                 '/vendor/three/build/three.module.js':('vendor/three/build/three.module.js','text/javascript; charset=utf-8'),
                 '/vendor/three/examples/jsm/controls/OrbitControls.js':('vendor/three/examples/jsm/controls/OrbitControls.js','text/javascript; charset=utf-8'),
                 '/vendor/three/examples/jsm/loaders/GLTFLoader.js':('vendor/three/examples/jsm/loaders/GLTFLoader.js','text/javascript; charset=utf-8'),
@@ -375,9 +382,11 @@ class App(BaseHTTPRequestHandler):
             if path=='/api/3d/models':return self.send_json(200,{'models':self.personal_models()})
             if path=='/api/3d/model':return self.personal_model_get()
             if path=='/api/3d/status':
-                required=[n for n,_mime in static_3d.values()]
+                required=[n for n,_mime in static_3d.values() if n.startswith('vendor/') or n=='viewer3d.js']
                 missing=[n for n in required if not (APP/n).is_file() or (APP/n).stat().st_size==0]
+                # Bundle-original mechanical models are independent of the optional M3 reference.
                 return self.send_json(200,{'viewer':'Three.js GLB studio','ready':not missing,'missing':missing,
+                  'mechanical_scenes':3,'original_mechanical_assets':all((APP/n).is_file() for n in ('models/ix_m20_engine_bay.glb','models/ix_front_axle_workshop.glb','models/ix_awd_driveline_workshop.glb')),
                   'model_installed':(APP/'models/e30_reference_m3.glb').is_file(),
                   'three_installed':(APP/'vendor/three/build/three.module.js').is_file(),
                   'reference_model':'BMW M3 E30 (not 325iX)', 'source_license':'CC BY 4.0',
@@ -1439,7 +1448,7 @@ class App(BaseHTTPRequestHandler):
         manual_conflicts=self.manual_conflict_data()['conflicts'][:12]
         system_prompt=(
             'You are a cautious BMW 1987-12 production 325iX workshop research assistant, NOT a certified mechanic. '
-            'Current installed replacement engine is reported as M20B25, manual AWD LHD; serial kept in private configuration. '
+            'Installed M20B25 serial is documented in private owner configuration, manual AWD LHD. '
             'Use retrieved ETK part rows for part identity, and explicitly cited user-imported manual text for procedural claims. Manual URL pointers without excerpts are NOT read procedures. '
             'If evidence is insufficient, explicitly say so and request an observable measurement/photo/test. '
             'Always separate observations, hypotheses, discriminating tests, and verified source-backed procedures. '

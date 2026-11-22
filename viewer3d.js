@@ -20,6 +20,61 @@ const HOTSPOT_HINTS = {
  heater_and_air_conditioning:[-.02,.37,.14]
 };
 const $=id=>document.getElementById(id);
+const modelKey=mesh=>/^MX:([a-z0-9_]+):\d+$/.exec(mesh?.name||'')?.[1]||null;
+function clearMechanicalHighlight(){
+ for(const [mesh,previous,clones] of state.highlighted){mesh.material=previous;for(const mat of clones)mat.dispose();}
+ state.highlighted=[];
+}
+function mechanicalMeshes(key){return state.meshes.filter(mesh=>modelKey(mesh)===key)}
+function highlightMechanical(key){
+ clearMechanicalHighlight();
+ for(const mesh of mechanicalMeshes(key)){
+  const original=mesh.material,arr=Array.isArray(original)?original:[original];
+  const tinted=arr.map(mat=>{const copy=mat.clone();if(copy.emissive){copy.emissive.set('#ffbc69');copy.emissiveIntensity=.48;}else copy.color?.set('#ffbc69');return copy});
+  mesh.material=Array.isArray(original)?tinted:tinted[0];state.highlighted.push([mesh,original,tinted]);
+ }
+}
+function setupEngineBonnet(model){
+ state.hoodPivot=null;state.hoodOpened=false;
+ if(state.mechanical?.slug!=='ix_m20_engine_bay')return;
+ const hood=[];model.traverse(node=>{if(node.isMesh&&modelKey(node)==='bonnet')hood.push(node)});
+ if(!hood.length)return;
+ const pivot=new THREE.Group();pivot.name='Bonnet hinge — front edge';pivot.position.set(0,1.28,1.85);model.add(pivot);
+ for(const mesh of hood)pivot.attach(mesh);state.hoodPivot=pivot;
+}
+function animateBonnet(open){
+ if(!state.hoodPivot)return false;
+ const pivot=state.hoodPivot,start=pivot.rotation.x,finish=open?1.13:0,started=performance.now();
+ state.hoodOpened=open;
+ const update=()=>{if(state.hoodPivot!==pivot)return;const p=Math.min(1,(performance.now()-started)/580);const smooth=p*p*(3-2*p);pivot.rotation.x=start+(finish-start)*smooth;if(p<1)requestAnimationFrame(update);};requestAnimationFrame(update);
+ const button=$('ix-bonnet-action');if(button)button.textContent=open?'Close bonnet':'Open bonnet';return true;
+}
+export function toggleBonnet(){return animateBonnet(!state.hoodOpened)}
+export function selectMechanicalComponent(key,notify=true){
+ if(!state.mechanical||!mechanicalMeshes(key).length)return false;
+ if(key==='bonnet'){toggleBonnet();return true;}
+ if(state.hoodPivot&&!state.hoodOpened)animateBonnet(true);
+ highlightMechanical(key);
+ if(notify)window.ixOnMechanicalComponent?.(state.mechanical.slug,key);
+ const selected=state.mechanical.components?.find(c=>c.id===key);
+ const name=$('ix3d-mesh-name');if(name)name.textContent=(selected?.label||key.replaceAll('_',' '))+' · selectable model component';
+ if($('ix3d-selection-info'))$('ix3d-selection-info').hidden=false;
+ return true;
+}
+export function isolateMechanicalComponent(key){
+ if(!state.mechanical)return false;
+ state.isolated=state.isolated===key?null:key;
+ for(const mesh of state.meshes){const id=modelKey(mesh);mesh.visible=!state.isolated||id===state.isolated||id==='engine_bay'||id==='strut_mount'||id==='subframe'}
+ return Boolean(state.isolated);
+}
+export function focusMechanicalComponent(key){
+ if(!selectMechanicalComponent(key))return false;
+ const meshes=mechanicalMeshes(key);const box=new THREE.Box3();for(const m of meshes)box.expandByObject(m);
+ const center=box.getCenter(new THREE.Vector3()),size=Math.max(box.getSize(new THREE.Vector3()).length(),.5);
+ studio.controls.target.copy(center);studio.camera.position.copy(center).add(new THREE.Vector3(1,1.05,1.6).normalize().multiplyScalar(Math.max(size*2.9,state.modelSize*.8)));
+ studio.controls.update();return true;
+}
+
 const REGIONS={
  chassis:['front_axle','steering','brakes','wheels','rear_axle'],
  drivetrain:['manual_transmission','clutch','gearshift','transfer_box_electric_gearbox','drive_shaft'],
@@ -28,7 +83,7 @@ const REGIONS={
 };
 let region='chassis';
 
-const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:null,explosion:0,wireframe:false,modelCenter:null,modelSize:1,wholeCar:true};
+const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:null,explosion:0,wireframe:false,modelCenter:null,modelSize:1,wholeCar:true,mechanical:null,hoodPivot:null,hoodOpened:false,highlighted:[],isolated:null};
 const setStatus=(s)=>{const el=$('twinvisualstatus');if(el)el.textContent=s;const hud=$('ix3d-status');if(hud)hud.textContent=s;};
 function showFallback(error){
  const canvas=$('ix3d-stage');if(canvas)canvas.hidden=true;
@@ -82,6 +137,7 @@ function makeStudio(){
  const resize=()=>{const w=Math.max(1,holder.clientWidth),h=Math.max(1,holder.clientHeight);if(w!==lastWidth||h!==lastHeight){camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);lastWidth=w;lastHeight=h;}};
  const tick=()=>{if(!alive)return;requestAnimationFrame(tick);if($('twin')?.hidden||holder.hidden)return;resize();controls.update();syncMarkers();renderer.render(scene,camera);};tick();
  const selectMesh=(mesh)=>{
+   if(state.mechanical){if(mesh)selectMechanicalComponent(modelKey(mesh));return;}
    if(state.selected&&state.selectedOriginal){const old=state.selected;const cloned=old.material;old.material=state.selectedOriginal;(Array.isArray(cloned)?cloned:[cloned]).forEach(m=>m.dispose?.());}
    state.selected=mesh;state.selectedOriginal=null;
    if(mesh){const old=mesh.material;state.selectedOriginal=old;const tint=mat=>{const c=mat.clone();if(c.emissive){c.emissive.set('#f2a84a');c.emissiveIntensity=.5;}else if(c.color){c.color.set('#f2a84a');}return c;};mesh.material=Array.isArray(old)?old.map(tint):tint(old);
@@ -104,7 +160,8 @@ function frameModel(){if(!studio||!state.model)return;
  studio.controls.minDistance=radius*.4;studio.controls.maxDistance=radius*10;studio.controls.update();
 }
 function setExplosion(fraction){state.explosion=fraction;if(!state.modelCenter||!studio)return;
- for(const mesh of state.meshes){mesh.position.copy(mesh.userData.ixOriginalPosition);const worldDirection=mesh.userData.ixExplodeWorld;
+ for(const mesh of state.meshes){mesh.position.copy(mesh.userData.ixOriginalPosition);
+  if(state.mechanical&&['bonnet','engine_bay','bulkhead','strut_mount','radiator_support'].includes(modelKey(mesh)))continue;const worldDirection=mesh.userData.ixExplodeWorld;
   if(worldDirection.lengthSq()<.00001)continue;
   const parent=mesh.parent;parent.updateWorldMatrix(true,false);
   const a=parent.worldToLocal(worldDirection.clone().add(mesh.userData.ixExplodeOrigin));
@@ -141,24 +198,31 @@ async function loadBinarySTL(src){
  const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color:0x8daebc,roughness:.55,metalness:.18,side:THREE.DoubleSide}));
  mesh.name='Personal STL reference · not OEM-certified';const group=new THREE.Group();group.add(mesh);return group;
 }
-async function loadModel(src,data,format='glb',wholeCar=true){
+async function loadModel(src,data,format='glb',wholeCar=true,mechanical=null){
  const s=makeStudio();if(!s)return;
- s.selectMesh(null);if(state.model){s.scene.remove(state.model);state.model=null;}
- setStatus('Loading licensed E30 geometry…');
+ clearMechanicalHighlight();s.selectMesh(null);
+ if(state.model){s.scene.remove(state.model);state.model=null;}
+ state.mechanical=mechanical;state.isolated=null;state.hoodPivot=null;state.hoodOpened=false;
+ setStatus(mechanical?'Preparing inspectable mechanical assembly…':'Loading licensed E30 geometry…');
  const loader=new GLTFLoader();loader.setMeshoptDecoder(MeshoptDecoder);
  try {
   const model=format==='stl'?await loadBinarySTL(src):(await new Promise((resolve,reject)=>loader.load(src,resolve,undefined,reject))).scene;
-  state.model=model;state.modelUrl=src;state.wholeCar=wholeCar;s.scene.add(model);prepareMeshes(model);frameModel();
+  state.model=model;state.modelUrl=src;state.wholeCar=wholeCar;s.scene.add(model);
+  if(mechanical)setupEngineBonnet(model);
+  prepareMeshes(model);frameModel();
   $('ix3d-stage').hidden=false;$('twin-diagram-panel').hidden=true;$('twin-canvas').setAttribute('hidden','');$('ix3d-fallback').hidden=true;const m3=$('ix-mode-3d'),m2=$('twin2d');m3?.classList.add('active');m2?.classList.remove('active');if($('ix-stage-heading'))$('ix-stage-heading').textContent='3D VIEW';
   setExplosion(Number($('ix3d-explode')?.value||0)/100);
-  setStatus(`${state.meshes.length} pickable reference meshes · ${wholeCar?'E30 body':'personal assembly'} · NOT 325iX CAD · variant/fitment not verified`);
+  setStatus(mechanical?`${mechanical.components.length} selectable components · ${mechanical.description} · illustrated reference`:
+    `${state.meshes.length} pickable reference meshes · ${wholeCar?'E30 body':'personal assembly'} · NOT 325iX CAD · variant/fitment not verified`);
   renderSystems(data);
+  const regs=$('ix3d-regions');if(regs)regs.hidden=Boolean(mechanical);
+  if(mechanical?.slug==='ix_m20_engine_bay')setTimeout(()=>animateBonnet(true),350);
  }catch(e){showFallback('Cannot load the E30 model: '+(e?.message||e));throw e;}
 }
 function renderSystems(data){
  const menu=$('ix3d-system-select');if(!menu)return;
  if(studio){
-  const all=(state.wholeCar?data.systems:[]||[]).filter(s=>HOTSPOT_HINTS[s.id]);
+  const all=(state.wholeCar&&!state.mechanical?data.systems:[]).filter(s=>HOTSPOT_HINTS[s.id]);
   studio.markers.replaceChildren();studio.markerButtons.clear();
   for(const system of all){
    const button=document.createElement('button');button.type='button';button.className='ix3d-marker';
@@ -224,6 +288,12 @@ export async function openPersonal(src,format,data,wholeCar=false){
  if(format!=='glb'&&format!=='stl')throw Error('Only GLB or binary STL can be displayed');
  await loadModel(src,data,format,wholeCar);
 }
+export async function openMechanical(scene,data){
+ if(!scene?.filename?.startsWith('models/ix_')||!Array.isArray(scene.components))throw Error('Unknown mechanical scene');
+ await loadModel('/'+scene.filename,data,'glb',false,scene);
+ return {components:scene.components.length,pickable:state.meshes.length};
+}
+
 
 export function reset(){if(studio&&state.modelCenter)studio.controls.target.copy(state.modelCenter);positionView('iso');if($('ix3d-explode')){$('ix3d-explode').value='0';$('ix3d-explode-value').textContent='0%'}setExplosion(0);studio?.selectMesh(null);}
 export function selectSystem(id){const select=$('ix3d-system-select');if(select)select.value=id;filterRegion();}

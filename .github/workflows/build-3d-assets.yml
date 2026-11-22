@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/build-3d-assets.yml'
       - 'viewer3d.js'
-      - 'scripts/browser_3d_smoke.cjs'
+      - 'models/ix_*.glb'
+      - 'mechanical_index.json'
+      - 'scripts/browser_mechanical_smoke.cjs'
 permissions:
   contents: write
 jobs:
@@ -94,24 +96,56 @@ jobs:
           </style></head><body><div id="twin"><div id="ix3d-status">Waiting for model…</div><div id="ix3d-stage"></div>
           <svg id="twin-canvas" hidden></svg><div id="ix3d-fallback" hidden></div><div id="twin-diagram-panel" hidden></div>
           <span id="twinvisualstatus"></span><span id="ix-stage-heading"></span>
-          <nav id="ix3d-regions">
-          <button data-ix-region="chassis" type="button">Chassis</button>
-          <button data-ix-region="drivetrain" type="button">AWD / Drive</button>
-          <button data-ix-region="engine" type="button">Engine</button>
-          <button data-ix-region="electrical" type="button">Electrical</button>
-          </nav>
           <input id="ix3d-explode" type="range" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output>
           <select id="ix3d-system-select"></select><label><input type="checkbox" id="ix3d-wireframe"></label>
           <div id="ix3d-mesh-name"></div><div id="ix3d-selection-info" hidden></div>
           <button id="ix-mode-3d">3D</button><button id="twin2d">OEM</button>
           </div><script type="module">import * as studio from './viewer3d.js';window.ixStudio3D=studio;
-          window.visualTwinData={systems:["engine","radiator","fuel_preparation_system","fuel_supply","exhaust_system","manual_transmission","clutch","gearshift","pedals","transfer_box_electric_gearbox","drive_shaft","front_axle","rear_axle","steering","wheels","brakes","vehicle_electrical_system","engine_electrical_system","lighting","instruments_measuring_systems","heater_and_air_conditioning"].map(id=>({id,label:id.replaceAll('_',' '),assembly_count:1}))};
+          window.visualTwinData={systems:[{id:'front_axle',label:'Front Axle',assembly_count:14}]};
           await studio.mount(window.visualTwinData);</script></body></html>
           HTML
           (cd kit && python3 -m http.server 8115 --bind 127.0.0.1 > /tmp/ix-smoke-server.log 2>&1 &)
           sleep 2
           NODE_PATH=/tmp/ixdeps/node_modules node scripts/browser_3d_smoke.cjs
           rm -f kit/__3d_smoke.html kit/viewer3d.js
+      - name: Render and interact with original M20, front axle and AWD WebGL scenes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp models/ix_*.glb kit/models/
+          cp mechanical_index.json kit/
+          cp viewer3d.js kit/viewer3d.js
+          cat > kit/__mechanical_smoke.html <<'HTML'
+          <!doctype html><html><head><meta charset="utf-8"><style>
+          body{background:#0b1b2b;color:#e7f3f6;font:14px Arial;margin:0}
+          #twin{display:block}#ix3d-stage{width:1100px;height:625px;margin:30px auto;position:relative}
+          #ix3d-stage canvas{display:block}#ix3d-fallback[hidden],#twin-canvas[hidden],#twin-diagram-panel[hidden]{display:none!important}
+          #ix3d-status{position:absolute;z-index:8;top:4px;left:20px}
+          </style></head><body><div id="twin"><div id="ix3d-status">Loading mechanical GLB…</div>
+          <div id="ix3d-stage"></div><svg id="twin-canvas" hidden></svg><div id="ix3d-fallback" hidden></div>
+          <div id="twin-diagram-panel" hidden></div><span id="twinvisualstatus"></span><span id="ix-stage-heading"></span>
+          <input id="ix3d-explode" type="range" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output>
+          <select id="ix3d-system-select"></select><input type="checkbox" id="ix3d-wireframe">
+          <div id="ix3d-mesh-name"></div><div id="ix3d-selection-info" hidden></div>
+          <button id="ix-mode-3d">3D</button><button id="twin2d">OEM</button><button id="ix-bonnet-action">Bonnet</button>
+          <div id="selected"></div></div><script type="module">
+          import * as studio from './viewer3d.js';window.ixStudio3D=studio;
+          window.ixOnMechanicalComponent=(_slug,key)=>{document.getElementById('selected').textContent=key};
+          window.twinData={systems:[]};window.mechanicalIndex=await fetch('/mechanical_index.json').then(r=>r.json());
+          await studio.openMechanical(window.mechanicalIndex.scenes[0],window.twinData);
+          </script></body></html>
+          HTML
+          NODE_PATH=/tmp/ixdeps/node_modules node scripts/browser_mechanical_smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rc19-verified-renderer-and-webgl-proof
+          path: |
+            out/325ix_3d_assets_v1.zip
+            out/rc19_m20_engine_webgl.png
+            out/rc19_front_axle_webgl.png
+          if-no-files-found: warn
+          retention-days: 7
       - name: Publish single-click 3D runtime ZIP
         env:
           GH_TOKEN: ${{ github.token }}
