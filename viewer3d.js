@@ -20,28 +20,53 @@ const HOTSPOT_HINTS = {
  heater_and_air_conditioning:[-.02,.37,.14]
 };
 const $=id=>document.getElementById(id);
+const REGIONS={
+ chassis:['front_axle','steering','brakes','wheels','rear_axle'],
+ drivetrain:['manual_transmission','clutch','gearshift','transfer_box_electric_gearbox','drive_shaft'],
+ engine:['engine','radiator','fuel_preparation_system','fuel_supply','exhaust_system','engine_electrical_system'],
+ electrical:['lighting','vehicle_electrical_system','instruments_measuring_systems','heater_and_air_conditioning','pedals']
+};
+let region='chassis';
+
 const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:null,explosion:0,wireframe:false,modelCenter:null,modelSize:1};
 const setStatus=(s)=>{const el=$('twinvisualstatus');if(el)el.textContent=s;const hud=$('ix3d-status');if(hud)hud.textContent=s;};
 function showFallback(error){
  const canvas=$('ix3d-stage');if(canvas)canvas.hidden=true;
  const svg=$('twin-canvas');if(svg)svg.setAttribute('hidden','');
  const msg=$('ix3d-fallback');if(msg){msg.hidden=false;msg.textContent=error+' · 2D evidence and catalog remain available.';}
- setStatus('3D unavailable · verified 2D catalog fallback active');
+ setStatus('3D unavailable · OEM catalog fallback active');
+ if($('twin2d'))$('twin2d').click();
 }
 function makeStudio(){
  const holder=$('ix3d-stage');if(!holder)return null;
  if(studio&&studio.holder===holder)return studio;
  if(studio)studio.destroy();
- const scene=new THREE.Scene();scene.background=new THREE.Color('#0c1420');
+ const scene=new THREE.Scene();scene.background=new THREE.Color('#101f31');
  const camera=new THREE.PerspectiveCamera(39,1,0.01,1500);
  let renderer;
  try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});}catch(e){showFallback('WebGL renderer unavailable: '+e.message);return null;}
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5)); // Low-power Mac: avoid double-resolution GPU work.
  renderer.outputColorSpace=THREE.SRGBColorSpace;
  renderer.toneMapping=THREE.ACESFilmicToneMapping;
  renderer.toneMappingExposure=1.45;
- renderer.setClearColor('#0c1420');
+ renderer.setClearColor('#101f31');
  holder.replaceChildren(renderer.domElement);
+ const markers=document.createElement('div');markers.className='ix3d-markers';markers.setAttribute('aria-label','Approximate vehicle zones');holder.append(markers);
+ const markerButtons=new Map();
+ const syncMarkers=()=>{
+  if(!state.modelCenter)return;
+  const width=holder.clientWidth,height=holder.clientHeight;
+  for(const [id,button] of markerButtons){
+   if(button.hidden)continue;
+   const v=HOTSPOT_HINTS[id];
+   if(!v)continue;
+   const point=state.modelCenter.clone().add(new THREE.Vector3(...v).multiplyScalar(state.modelSize)).project(camera);
+   button.style.left=`${(point.x+1)*width/2}px`;
+   button.style.top=`${(1-point.y)*height/2}px`;
+   button.style.visibility=point.z>1||point.z< -1?'hidden':'visible';
+  }
+ };
+
  renderer.domElement.setAttribute('aria-label','Rotatable E30 reference model: drag to orbit, scroll to zoom, click meshes');
  renderer.domElement.setAttribute('role','img');
  const ambient=new THREE.HemisphereLight(0xe1f1ff,0x151923,2.5);scene.add(ambient);
@@ -55,7 +80,7 @@ function makeStudio(){
  const raycaster=new THREE.Raycaster(),point=new THREE.Vector2();
  let alive=true, lastWidth=0,lastHeight=0;
  const resize=()=>{const w=Math.max(1,holder.clientWidth),h=Math.max(1,holder.clientHeight);if(w!==lastWidth||h!==lastHeight){camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);lastWidth=w;lastHeight=h;}};
- const tick=()=>{if(!alive)return;requestAnimationFrame(tick);if($('twin')?.hidden)return;resize();controls.update();renderer.render(scene,camera);};tick();
+ const tick=()=>{if(!alive)return;requestAnimationFrame(tick);if($('twin')?.hidden||holder.hidden)return;resize();controls.update();syncMarkers();renderer.render(scene,camera);};tick();
  const selectMesh=(mesh)=>{
    if(state.selected&&state.selectedOriginal){const old=state.selected;const cloned=old.material;old.material=state.selectedOriginal;(Array.isArray(cloned)?cloned:[cloned]).forEach(m=>m.dispose?.());}
    state.selected=mesh;state.selectedOriginal=null;
@@ -67,7 +92,7 @@ function makeStudio(){
  const onClick=e=>{if(!state.meshes.length)return;const r=renderer.domElement.getBoundingClientRect();point.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);raycaster.setFromCamera(point,camera);const hit=raycaster.intersectObjects(state.meshes,false)[0];if(hit)selectMesh(hit.object);};
  renderer.domElement.addEventListener('click',onClick);
  const destroy=()=>{alive=false;renderer.domElement.removeEventListener('click',onClick);controls.dispose();renderer.dispose();holder.replaceChildren();};
- studio={holder,scene,camera,renderer,controls,grid,selectMesh,resize,destroy};
+ studio={holder,scene,camera,renderer,controls,grid,markers,markerButtons,selectMesh,resize,destroy};
  return studio;
 }
 function frameModel(){if(!studio||!state.model)return;
@@ -116,17 +141,48 @@ async function loadModel(src, data){
 }
 function renderSystems(data){
  const menu=$('ix3d-system-select');if(!menu)return;
+ if(studio){
+  const all=(data.systems||[]).filter(s=>HOTSPOT_HINTS[s.id]);
+  studio.markers.replaceChildren();studio.markerButtons.clear();
+  for(const system of all){
+   const button=document.createElement('button');button.type='button';button.className='ix3d-marker';
+   button.dataset.system=system.id;button.title=system.label+' — approximate vehicle location';
+   button.setAttribute('aria-label','Explore '+system.label+' reference zone');
+   button.textContent=system.label;button.onclick=()=>focusSystem(system.id);
+   studio.markers.append(button);studio.markerButtons.set(system.id,button);
+  }
+  filterRegion();
+ }
+
  const value=menu.value;menu.replaceChildren();const lead=new Option('Choose an iX system', '');menu.add(lead);
  for(const s of data.systems||[]){const opt=new Option(s.label+' · '+s.assembly_count+' assemblies',s.id);menu.add(opt);}if(data.systems?.some(s=>s.id===value))menu.value=value;
 }
-function pickSystem(){const menu=$('ix3d-system-select');const id=menu?.value;
- if(!id)return;const data=window.visualTwinData,system=data?.systems?.find(s=>s.id===id);if(!system)return;
- const v=HOTSPOT_HINTS[id];if(v&&studio&&state.modelCenter){
-  const focus=state.modelCenter.clone().add(new THREE.Vector3(...v).multiplyScalar(state.modelSize));
-  studio.controls.target.lerp(focus,.5);studio.controls.update();
+function filterRegion(){
+ if(!studio)return;
+ for(const [id,button] of studio.markerButtons){
+  button.hidden=!REGIONS[region]?.includes(id);
+  button.classList.toggle('selected',$('ix3d-system-select')?.value===id);
+ }
+ document.querySelectorAll('[data-ix-region]').forEach(b=>{
+  b.classList.toggle('active',b.dataset.ixRegion===region);
+  b.setAttribute('aria-pressed',String(b.dataset.ixRegion===region));
+ });
+}
+function focusSystem(id){
+ const data=window.visualTwinData,system=data?.systems?.find(s=>s.id===id);
+ if(!system)return;
+ const group=Object.entries(REGIONS).find(([_,ids])=>ids.includes(id));if(group)region=group[0];
+ const menu=$('ix3d-system-select');if(menu)menu.value=id;
+ filterRegion();
+ const hint=HOTSPOT_HINTS[id];
+ if(studio&&state.modelCenter&&hint){
+  const target=state.modelCenter.clone().add(new THREE.Vector3(...hint).multiplyScalar(state.modelSize));
+  const shift=target.sub(studio.controls.target);
+  studio.controls.target.add(shift);studio.camera.position.add(shift);studio.controls.update();
  }
  window.ixSelectVisualSystemById?.(id);
 }
+function pickSystem(){focusSystem($('ix3d-system-select')?.value)}
 function positionView(view){if(!studio||!state.modelCenter)return;const c=studio.controls.target.clone(),r=state.modelSize*2.4;
  const vectors={front:[0,.6,1],rear:[0,.6,-1],side:[1,.6,0],top:[0,1,.001],iso:[1.6,.85,1.7]};
  const axis=new THREE.Vector3(...(vectors[view]||vectors.iso)).normalize();studio.camera.position.copy(c).addScaledVector(axis,r);studio.controls.update();
@@ -139,6 +195,7 @@ export async function mount(data){
   $('ix3d-stage').dataset.ixEvents='1';
   $('ix3d-explode')?.addEventListener('input',e=>{setExplosion(Number(e.target.value)/100);$('ix3d-explode-value').textContent=e.target.value+'%';});
   $('ix3d-system-select')?.addEventListener('change',pickSystem);
+  for(const b of document.querySelectorAll('[data-ix-region]'))b.addEventListener('click',()=>{region=b.dataset.ixRegion;filterRegion();});
   for(const b of document.querySelectorAll('[data-ix3d-view]'))b.addEventListener('click',()=>positionView(b.dataset.ix3dView));
   $('ix3d-wireframe')?.addEventListener('change',e=>wireframe(e.target.checked));
   $('ix3d-local-model')?.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;if(!/\.(glb|gltf)$/i.test(file.name)){setStatus('Choose a GLB or glTF file');return}const url=URL.createObjectURL(file);loadModel(url,data).finally(()=>URL.revokeObjectURL(url));});
@@ -147,5 +204,5 @@ export async function mount(data){
  await loadModel('/models/e30_reference_m3.glb',data);
 }
 export {positionView};
-export function reset(){positionView('iso');if($('ix3d-explode')){$('ix3d-explode').value='0';$('ix3d-explode-value').textContent='0%'}setExplosion(0);studio?.selectMesh(null);}
-export function selectSystem(id){const select=$('ix3d-system-select');if(select)select.value=id;}
+export function reset(){if(studio&&state.modelCenter)studio.controls.target.copy(state.modelCenter);positionView('iso');if($('ix3d-explode')){$('ix3d-explode').value='0';$('ix3d-explode-value').textContent='0%'}setExplosion(0);studio?.selectMesh(null);}
+export function selectSystem(id){const select=$('ix3d-system-select');if(select)select.value=id;filterRegion();}

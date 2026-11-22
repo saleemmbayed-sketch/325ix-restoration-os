@@ -17,6 +17,11 @@ def main():
   assert "loadVisualAssemblies(system)" in site and "loadVisualAssembly" in site and "selectVisualPart" in site
   assert "MeshoptDecoder" in view and "GLTFLoader" in view and "OrbitControls" in view
   assert "setExplosion" in view and "selectMesh" in view and "positionView" in view
+  # Ponytail RC16: no fake SVG vehicle map or serial probes for cached OEM diagrams.
+  assert 'VISUAL_LAYOUT' not in site and 'twinNode(' not in site
+  assert 'has_local_drawing' in app and 'has_local_drawing' in site
+  assert 'ix-system-finder' in site and 'visualSearchToken' in site
+  assert 'ix3d-marker' in view and 'REGIONS' in view
   assert "MODEL_GIT_BLOB='8aaa3daafd53158b63ced92c4c65d520ebce561f'" in prep
   assert 'NOT_APPROVED' in app and 'NOT 325iX CAD' in view
   if shutil.which('node'):

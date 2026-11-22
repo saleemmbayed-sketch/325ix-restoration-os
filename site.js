@@ -328,7 +328,7 @@ function ensureVisualTwinUI(){
  </div>
  <div class="ix-studio-toolbar">
   <div class="ix-mode-tabs"><button id="ix-mode-3d" class="ix-mode-btn active" type="button">◈ 3D model</button><button id="twin2d" class="ix-mode-btn" type="button">▤ OEM drawings</button></div>
-  <div class="ix-studio-tools"><button type="button" id="twinreset" class="light">Reset view</button><label class="ix3d-explode-label">Explode <input type="range" id="ix3d-explode" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output></label>
+  <div class="ix-studio-tools"><button type="button" id="twinreset" class="light">Reset camera</button><label class="ix3d-explode-label" title="Separates reference model meshes; not a true mechanical exploded assembly">Separate meshes <input type="range" id="ix3d-explode" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output></label>
    <select id="ix-view-select" aria-label="Camera angle"><option value="iso">3/4 angle</option><option value="front">Front</option><option value="side">Side</option><option value="top">Top</option></select>
    <label class="ix3d-inline ix-wire">Wireframe <input id="ix3d-wireframe" type="checkbox"></label></div>
  </div>
@@ -336,18 +336,28 @@ function ensureVisualTwinUI(){
  <div class="twin-stage ix-studio-stage">
    <div class="ix3d-hud"><span class="ix3d-kicker">BMW E30 · INTERACTIVE REFERENCE</span><strong id="ix-stage-heading">3D VIEW</strong><span id="ix3d-status">Checking reference assets…</span></div>
    <div id="ix3d-stage" class="ix3d-stage" aria-label="Interactive 3D viewer"></div>
+   <nav id="ix3d-regions" class="ix3d-regions" aria-label="3D inspection regions">
+    <button type="button" data-ix-region="chassis" class="active">Chassis</button>
+    <button type="button" data-ix-region="drivetrain">AWD / Drive</button>
+    <button type="button" data-ix-region="engine">Engine</button>
+    <button type="button" data-ix-region="electrical">Electrical / Cabin</button>
+   </nav>
    <p id="ix3d-fallback" class="ix3d-fallback" hidden></p>
    <svg id="twin-canvas" viewBox="0 0 1000 560" hidden aria-hidden="true"></svg>
    <section id="twin-diagram-panel" class="twin-diagram-panel ix-oem-instage" hidden>
       <div class="ix-drawing-head"><div><div class="ix-eyebrow">BMW ORIGINAL PARTS CATALOG</div><h3 id="twin-diagram-title">OEM drawing</h3><p id="twin-diagram-meta" class="small">Exploded parts and original identifiers</p></div><span class="ix-drawing-chip">2D · DOCUMENTED</span></div>
       <div id="twin-diagram-body"></div>
    </section>
-   <div class="ix-stage-foot"><span id="twinvisualstatus">Preparing model…</span><span>Reference only · fitment requires evidence</span></div>
+   <div class="ix-stage-foot"><span id="twinvisualstatus">Preparing model…</span><span>Approximate 3D zones · OEM numbers require catalog evidence</span></div>
  </div>
  <aside id="twin-inspector" class="twin-inspector ix-studio-inspector">
    <div class="ix-eyebrow">INSPECTION / NAVIGATION</div><h3>Systems & assemblies</h3>
-   <label class="ix3d-system-field">BMW catalog system<select id="ix3d-system-select"><option value="">Choose a subsystem</option></select></label>
-   <p class="info">Pick a system to inspect its available original drawings and part numbers. The 3D reference is not used to establish fitment.</p>
+   <label class="ix3d-system-field">Active system<select id="ix3d-system-select"><option value="">Choose a system</option></select></label>
+   <label class="ix-system-search-label" for="ix-system-finder">Explore all 21 systems</label>
+   <input id="ix-system-finder" type="search" placeholder="Search engine, front axle, brakes…" autocomplete="off">
+   <span id="ix-system-count" class="ix-system-count"></span>
+   <div id="ix-system-results" class="ix-system-results" aria-label="Available vehicle systems"></div>
+   <p class="info">3D markers locate reference zones; choose any system for its indexed OEM assemblies. Physical part identity and fitment require evidence.</p>
    <div id="ix3d-selection-info" hidden class="ix-mesh-selection"><strong>Selected reference mesh</strong><p id="ix3d-mesh-name"></p></div>
    <div id="twin-system-list" class="ix-system-details"></div>
    <details class="ix3d-advanced"><summary>Use another licensed 3D model</summary><input id="ix3d-local-model" type="file" accept=".glb,.gltf"><p class="info">Only geometry you have permission to use. No automatic OEM identification.</p></details>
@@ -364,13 +374,39 @@ function ensureVisualTwinUI(){
  };
  $('ix-view-select').onchange=e=>document.querySelector(`[data-ix3d-view="${e.target.value}"]`)?.click()||window.ixStudio3D?.positionView?.(e.target.value);
 }
-const VISUAL_LAYOUT={engine:[165,260,150,62],radiator:[105,177,120,48],fuel_preparation_system:[225,176,126,44],fuel_supply:[260,348,118,42],exhaust_system:[154,386,145,42],manual_transmission:[360,258,155,58],clutch:[350,343,120,40],gearshift:[442,197,105,38],pedals:[285,136,92,34],transfer_box_electric_gearbox:[525,258,164,58],drive_shaft:[670,270,145,34],front_axle:[815,224,112,46],rear_axle:[780,395,112,46],steering:[795,151,112,40],wheels:[790,305,116,40],brakes:[715,344,102,40],vehicle_electrical_system:[555,126,145,38],engine_electrical_system:[132,126,155,38],lighting:[65,105,90,34],instruments_measuring_systems:[370,108,180,36],heater_and_air_conditioning:[570,192,170,36]};
 function visualShort(s){return s.replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase())}
-function twinNode(svg,system){const p=VISUAL_LAYOUT[system.id]||[40,430,120,38],ns='http://www.w3.org/2000/svg',g=document.createElementNS(ns,'g');g.classList.add('twin-node');g.dataset.system=system.id;g.setAttribute('tabindex','0');g.setAttribute('role','button');g.setAttribute('aria-label',system.label);const r=document.createElementNS(ns,'rect');r.setAttribute('x',p[0]);r.setAttribute('y',p[1]);r.setAttribute('width',p[2]);r.setAttribute('height',p[3]);r.setAttribute('rx','12');g.append(r);const t=document.createElementNS(ns,'text');t.setAttribute('x',p[0]+10);t.setAttribute('y',p[1]+21);t.textContent=visualShort(system.id);g.append(t);const sub=document.createElementNS(ns,'text');sub.setAttribute('x',p[0]+10);sub.setAttribute('y',p[1]+40);sub.classList.add('twin-node-sub');sub.textContent=`${system.assembly_count} assemblies · ${system.mission_count} missions`;g.append(sub);g.onclick=()=>selectVisualSystem(system);g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectVisualSystem(system)}};svg.append(g)}
-function renderVisualTwin(d){window.visualTwinData=d;ensureVisualTwinUI();const svg=$('twin-canvas'),ns='http://www.w3.org/2000/svg';svg.replaceChildren();const defs=document.createElementNS(ns,'defs');defs.innerHTML='<linearGradient id="bodygrad" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#d8e7ef"/><stop offset="1" stop-color="#7d9caf"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-opacity=".22"/></filter>';svg.append(defs);const body=document.createElementNS(ns,'path');body.setAttribute('d','M80 198 L170 152 L760 152 L910 205 L954 358 L895 431 L140 431 L58 350 Z');body.setAttribute('fill','url(#bodygrad)');body.setAttribute('stroke','#3e6176');body.setAttribute('stroke-width','5');body.setAttribute('filter','url(#shadow)');body.setAttribute('opacity','.63');svg.append(body);const roof=document.createElementNS(ns,'path');roof.setAttribute('d','M280 154 L360 88 L650 88 L760 154 Z');roof.setAttribute('fill','#b8d0dc');roof.setAttribute('stroke','#52788c');roof.setAttribute('stroke-width','4');roof.setAttribute('opacity','.75');svg.append(roof);for(const [cx,cy] of [[170,410],[830,410],[170,210],[830,210]]){const w=document.createElementNS(ns,'ellipse');w.setAttribute('cx',cx);w.setAttribute('cy',cy);w.setAttribute('rx','54');w.setAttribute('ry','30');w.setAttribute('fill','#263a48');w.setAttribute('stroke','#9cb5c2');w.setAttribute('stroke-width','5');svg.append(w)}for(const system of d.systems)twinNode(svg,system);const menu=$('ix3d-system-select');if(menu){menu.replaceChildren(new Option('Choose an iX system',''));for(const system of d.systems)menu.add(new Option(system.label+' · '+system.assembly_count+' assemblies',system.id));menu.onchange=()=>{const match=d.systems.find(x=>x.id===menu.value);if(match){selectVisualSystem(match);if(!$('ix3d-stage')?.offsetParent)loadVisualAssemblies(match,{autoOpen:true});}};}$('twinvisualstatus').textContent=`${d.systems.length} catalog systems mapped · visual reference (not iX CAD)`;$('twin-system-list').replaceChildren(text('p','Choose a system to explore real catalog assemblies.','info'))}
+function renderVisualTwin(d){
+ window.visualTwinData=d;ensureVisualTwinUI();
+ const menu=$('ix3d-system-select');menu.replaceChildren(new Option('Choose a system',''));
+ for(const system of d.systems)menu.add(new Option(`${system.label} · ${system.assembly_count} assemblies`,system.id));
+ menu.onchange=()=>{const system=d.systems.find(s=>s.id===menu.value);if(system)chooseVisualSystem(system)};
+ $('twinvisualstatus').textContent=`${d.systems.length} indexed systems · reference geometry only`;
+ $('twin-system-list').replaceChildren(text('p','Choose a vehicle zone or search for a system to open indexed assemblies.','info'));
+ renderVisualSystemFinder(d.systems);
+}
+function renderVisualSystemFinder(systems){
+ const finder=$('ix-system-finder'),list=$('ix-system-results');
+ const show=()=>{
+  const query=finder.value.trim().toLowerCase();const matches=systems.filter(s=>`${s.label} ${s.domain_label} ${s.id}`.toLowerCase().includes(query));
+  list.replaceChildren();
+  for(const system of matches){
+   const b=text('button',null,'ix-zone-item');b.type='button';b.dataset.system=system.id;
+   b.append(text('strong',system.label),text('small',`${system.assembly_count} assemblies · ${system.priority}`));
+   b.onclick=()=>chooseVisualSystem(system);list.append(b);
+  }
+  $('ix-system-count').textContent=`${matches.length} / ${systems.length} systems`;
+ };
+ finder.oninput=show;show();
+}
 let activeVisualSystem=null;
-async function selectVisualSystem(system){activeVisualSystem=system;ensureVisualTwinUI();const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Open 2D diagram fallback');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open restoration mission');mission.className='light';mission.onclick=()=>{tab('garage');const domain=$('missiondomain');if(domain&&restorationDomains.length){const d=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));if(d){domain.value=d.id;syncMissionSystems()}}const s=$('missionsystem');if(s)s.value=system.id};root.append(mission)}
+function chooseVisualSystem(system){
+ selectVisualSystem(system);
+ if($('twin2d')?.classList.contains('active'))loadVisualAssemblies(system,{autoOpen:true});
+}
+async function selectVisualSystem(system){activeVisualSystem=system;ensureVisualTwinUI();const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');for(const b of $('ix-system-results').querySelectorAll('button'))b.classList.toggle('active',b.dataset.system===system.id);root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Inspect OEM assemblies');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open restoration mission');mission.className='light';mission.onclick=()=>{tab('garage');const domain=$('missiondomain');if(domain&&restorationDomains.length){const d=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));if(d){domain.value=d.id;syncMissionSystems()}}const s=$('missionsystem');if(s)s.value=system.id};root.append(mission)}
+let visualSearchToken=0;
 async function loadVisualAssemblies(system,{autoOpen=false}={}){
+ const token=++visualSearchToken;
  // An OEM drawing replaces the 3D canvas; it is not appended below the model.
  const model=$('ix3d-stage');if(model)model.hidden=true;
  $('twin-canvas')?.setAttribute('hidden','');
@@ -381,37 +417,40 @@ async function loadVisualAssemblies(system,{autoOpen=false}={}){
  $('twin-diagram-meta').textContent='BMW catalog diagrams and numbered callouts; drawings are illustrative and do not certify installed 325iX fitment.';
  const body=$('twin-diagram-body');body.replaceChildren(text('p','Loading local catalog assemblies…','info'));
  try{
-   const d=await api('/api/search?group='+encodeURIComponent(system.id));body.replaceChildren();
+   const d=await api('/api/search?group='+encodeURIComponent(system.id));if(token!==visualSearchToken)return;body.replaceChildren();
    if(!d.results?.length){body.append(text('p','No indexed assembly for this system. Use Parts & drawings for broader search.','risk'));return}
+   const search=document.createElement('input');search.type='search';search.className='ix-assembly-search';
+   search.placeholder='Filter assemblies by name…';search.setAttribute('aria-label','Filter assemblies');
    const list=text('div',null,'visual-assembly-list');
+   const count=text('p',`${d.results.length} indexed assemblies · ${d.results.filter(a=>a.has_local_drawing).length} drawings cached locally`,'info');
    const detail=text('section',null,'visual-diagram-detail');detail.id='visual-diagram-detail';
-   const assemblies=d.results.slice(0,30);
-   for(const a of assemblies){
-      const card=text('button',visualShort(a.slug||a.title||'Assembly')+' · '+a.part_count+' rows','light');
-      card.className='visual-assembly';card.onclick=()=>loadVisualAssembly(a.id||a.assembly_id);
-      list.append(card);
+   function filterAssemblies(){
+     const q=search.value.trim().toLowerCase();const matches=d.results.filter(a=>(a.slug||a.title||'').toLowerCase().includes(q));
+     list.replaceChildren();
+     for(const a of matches){
+       const card=text('button',null,'visual-assembly');card.type='button';card.dataset.assembly=a.id||a.assembly_id;
+       card.append(text('strong',visualShort(a.slug||a.title||'Assembly')),
+          text('small',`${a.part_count} parts · ${a.has_local_drawing?'Drawing cached':'Diagram indexed'}`));
+       card.onclick=()=>loadVisualAssembly(a.id||a.assembly_id);list.append(card);
+     }
+     count.textContent=`${matches.length} of ${d.results.length} assemblies · ${d.results.filter(a=>a.has_local_drawing).length} drawings cached locally`;
    }
-   body.append(text('p',`${d.results.length} catalog assemblies. Select one to view its original drawing and OEM callouts.`, 'info'),list,detail);
+   search.oninput=filterAssemblies;filterAssemblies();body.append(search,count,list,detail);
    if(autoOpen){
-      detail.append(text('p','Finding a locally available original drawing…','info'));
-      // The RC14 package contains a partial V4 media cache. Prefer an actually present drawing;
-      // do not pretend that every catalog figure was bundled.
-      let best=assemblies[0],found=false;
-      for(const a of assemblies){
-        try{const candidate=await api('/api/assembly?id='+encodeURIComponent(a.id||a.assembly_id));
-          if(candidate.figures?.some(f=>f.local_available===true)){best=a;found=true;break;}
-        }catch(_error){/* Keep working through the other indexed assemblies. */}
-      }
-      await loadVisualAssembly(best.id||best.assembly_id);
-      if(!found)detail.prepend(text('p','No local image cached for this system. Catalog callouts and original-source links remain available.','risk'));
-   }else detail.append(text('p','Choose an assembly above to inspect its diagrams and numbered callouts.','info'));
- }catch(e){body.replaceChildren(text('p','2D catalog could not load: '+e.message,'risk'))}
+     const best=d.results.find(a=>a.has_local_drawing)||d.results[0];
+     await loadVisualAssembly(best.id||best.assembly_id);
+     if(!best.has_local_drawing)detail.prepend(text('p','No local drawing cached in this system. Indexed source links and part records remain available.','risk'));
+   }else detail.append(text('p','Choose an assembly to inspect its drawings and OEM records.','info'));
+ }catch(e){if(token===visualSearchToken)body.replaceChildren(text('p','2D catalog could not load: '+e.message,'risk'))}
 }
+let visualAssemblyToken=0;
 async function loadVisualAssembly(id){
  const target=$('visual-diagram-detail')||$('twin-diagram-body');
+ const token=++visualAssemblyToken;
  target.replaceChildren(text('p','Loading assembly drawing and callouts…','info'));
  try{
-  const d=await api('/api/assembly?id='+encodeURIComponent(id));target.replaceChildren();
+  const d=await api('/api/assembly?id='+encodeURIComponent(id));if(token!==visualAssemblyToken)return;target.replaceChildren();
+  for(const b of document.querySelectorAll('.visual-assembly'))b.classList.toggle('active',b.dataset.assembly===id);
   const wrap=text('div',null,'visual-diagram-wrap');
   const figure=(d.figures||[]).find(f=>f.local_available===true)||d.figures?.[0];
   const media=text('div',null,'visual-diagram-media');

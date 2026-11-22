@@ -470,6 +470,13 @@ class App(BaseHTTPRequestHandler):
                     data=[dict(x) for x in db.execute('''SELECT a.id,a.group_name,a.title AS slug,a.source_url,count(p.id) AS part_count
                         FROM assembly a LEFT JOIN part_record p ON p.assembly_id=a.id WHERE a.group_name=?
                         GROUP BY a.id ORDER BY a.title LIMIT 75''',(group,))]
+                    # One group lookup replaces serial diagram probes.
+                    available={r['assembly_id'] for r in db.execute('''SELECT fo.assembly_id,fo.image_asset_id
+                        FROM figure_occurrence fo JOIN assembly a ON a.id=fo.assembly_id
+                        WHERE a.group_name=?''',(group,))
+                        if self.server.v4root and self.server.assets.get(r['image_asset_id'],{}).get('local_file')
+                        and (self.server.v4root/self.server.assets[r['image_asset_id']]['local_file']).is_file()}
+                    for row in data:row['has_local_drawing']=row['id'] in available
                     return self.send_json(200,{'kind':'assemblies','results':data,'scope':'V4_MULTIMODAL_SQLITE; UNVERIFIED_FITMENT'})
                 like='%'+escape_like(q)+'%'
                 rows=db.execute('''SELECT p.id,p.assembly_id,p.part_number,p.callout AS callout_position,
@@ -493,6 +500,11 @@ class App(BaseHTTPRequestHandler):
                 data=[dict(x) for x in db.execute('''SELECT a.id,a.group_name,a.slug,a.source_url,count(p.id) AS part_count
                      FROM assembly a LEFT JOIN part_row p ON p.assembly_id=a.id
                      WHERE a.group_name=? GROUP BY a.id ORDER BY a.slug LIMIT 75''',(group,))]
+                local={r['assembly_id'] for r in db.execute('''SELECT f.assembly_id,f.image_asset_id FROM figure f
+                    JOIN assembly a ON a.id=f.assembly_id WHERE a.group_name=?''',(group,))
+                    if self.server.v4root and self.server.assets.get(r['image_asset_id'],{}).get('local_file')
+                    and (self.server.v4root/self.server.assets[r['image_asset_id']]['local_file']).is_file()}
+                for row in data:row['has_local_drawing']=row['id'] in local
             return self.send_json(200,{'kind':'assemblies','results':data,'scope':'SECONDARY_ETK_CATALOG; UNVERIFIED_FITMENT'})
         like='%'+escape_like(q)+'%'
         with self.get_db() as db:
