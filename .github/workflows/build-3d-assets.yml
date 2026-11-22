@@ -75,7 +75,7 @@ jobs:
           node --check kit/vendor/three/examples/jsm/loaders/GLTFLoader.js
           node --check kit/vendor/meshopt_decoder.module.js
           test "$(stat -c '%s' kit/models/e30_reference_m3.glb)" -gt 2500000
-      - name: Real browser smoke: rendered GLB, mesh selection and explode control
+      - name: "Real browser smoke: rendered GLB, mesh selection and explode control"
         shell: bash
         run: |
           set -euo pipefail
