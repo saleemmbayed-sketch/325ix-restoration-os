@@ -9,7 +9,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 from hashlib import sha1,sha256
 from datetime import datetime,timezone
-import json,os,sys
+import json,os,sys,zipfile,io,argparse
 
 ROOT=Path(__file__).resolve().parents[1]
 URLS={
@@ -23,6 +23,49 @@ URLS={
   'models/e30_reference_m3.glb':'https://raw.githubusercontent.com/ahnuchen/auto-atlas/master/public/models/free_bmw_m3_e30.glb',
 }
 MODEL_GIT_BLOB='8aaa3daafd53158b63ced92c4c65d520ebce561f'
+KIT_URL='https://github.com/saleemmbayed-sketch/325ix-restoration-os/releases/download/rc15-3d-runtime/325ix_3d_assets_v1.zip'
+REQUIRED_KIT=(
+  'models/e30_reference_m3.glb',
+  'vendor/three/build/three.module.js',
+  'vendor/three/examples/jsm/controls/OrbitControls.js',
+  'vendor/three/examples/jsm/loaders/GLTFLoader.js',
+  'vendor/three/examples/jsm/utils/BufferGeometryUtils.js',
+  'vendor/three/LICENSE',
+  'vendor/meshopt_decoder.module.js',
+  'vendor/meshoptimizer_LICENSE.md',
+)
+
+def install_kit(zip_bytes):
+    """Extract only pinned expected runtime files after hashing each archive member.
+
+    Existing owner files, workshop data and any source ZIP are untouched.
+    """
+    zf=zipfile.ZipFile(io.BytesIO(zip_bytes))
+    manifest=json.loads(zf.read('ASSET_KIT_MANIFEST.json'))
+    assert manifest['version']=='rc15-3d-runtime-v1','Unexpected asset kit'
+    assert manifest['model']['git_blob_sha']==MODEL_GIT_BLOB,'Unexpected model source'
+    for name in REQUIRED_KIT:
+        if name not in manifest['files']:raise ValueError('Missing manifest entry: '+name)
+        raw=zf.read(name)
+        if sha256(raw).hexdigest()!=manifest['files'][name]['sha256']:
+            raise ValueError('Asset hash mismatch: '+name)
+        if name.startswith('models/'):
+            blob=sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+            if blob!=MODEL_GIT_BLOB or raw[:4]!=b'glTF':
+                raise ValueError('Unexpected GLB identity: '+blob)
+    # Only install manifest-checked files; no path traversal or arbitrary extraction.
+    for name in REQUIRED_KIT:
+        dst=ROOT/name
+        dst.parent.mkdir(parents=True,exist_ok=True)
+        tmp=dst.with_suffix(dst.suffix+'.tmp')
+        tmp.write_bytes(zf.read(name))
+        os.replace(tmp,dst)
+        print('OK (verified kit):',name,flush=True)
+    report={'status':'ready','source':'GitHub release '+KIT_URL,'model_git_blob':MODEL_GIT_BLOB,
+        'files':manifest['files'],'installed_utc':datetime.now(timezone.utc).isoformat()}
+    (ROOT/'models'/'asset-install-report.json').write_text(json.dumps(report,indent=2)+'\n')
+    return 0
+
 JS_SUFFIX='.js'
 
 def get(url):
@@ -43,7 +86,32 @@ def get(url):
             print('  Source failed:',candidate,':',str(exc)[:120],flush=True)
     raise URLError('No pinned source mirror reachable: '+str(last))
 
-def install():
+def install(local_kit=None):
+    if local_kit:
+        try:return install_kit(Path(local_kit).expanduser().read_bytes())
+        except (OSError,ValueError,AssertionError,KeyError,zipfile.BadZipFile) as e:
+            print('FAILED: local asset kit:',e,file=sys.stderr)
+            return 1
+    if all((ROOT/n).is_file() and (ROOT/n).stat().st_size for n in REQUIRED_KIT):
+        try:
+            raw=(ROOT/'models/e30_reference_m3.glb').read_bytes()
+            blob=sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+            if blob==MODEL_GIT_BLOB:
+                print('3D asset status: ready (verified cached kit)')
+                return 0
+        except OSError:pass
+    print('Downloading one verified 3D asset kit from GitHub release…',flush=True)
+    try:
+        req=Request(KIT_URL,headers={'User-Agent':'BMW-325iX-Local-Viewer/0.3'})
+        with urlopen(req,timeout=75) as res:
+            size=res.headers.get('Content-Length')
+            if size and int(size)>12500000:raise ValueError('Kit exceeds 12.5 MB budget')
+            zip_bytes=res.read(12500001)
+        if len(zip_bytes)>12500000:raise ValueError('Kit exceeds 12.5 MB budget')
+        return install_kit(zip_bytes)
+    except (HTTPError,URLError,TimeoutError,ValueError,AssertionError,KeyError,OSError,zipfile.BadZipFile) as e:
+        print('Kit download unavailable:',str(e)[:220],file=sys.stderr)
+        print('Fallback: retrieving individually pinned public sources.',flush=True)
     report={'installed_utc':datetime.now(timezone.utc).isoformat(),'files':{},'source':'ahnuchen/auto-atlas; Martin Trafas CC BY 4.0','status':'partial'}
     failed=[]
     for name,url in URLS.items():
@@ -83,4 +151,8 @@ def install():
     print('3D asset status:',report['status'],'(2D fallback remains available)')
     return 0 if not failed else 1
 
-if __name__=='__main__':sys.exit(install())
+if __name__=='__main__':
+    args=argparse.ArgumentParser(description='Install approved E30 3D model and renderer (one-time)')
+    args.add_argument('--kit',help='Path to downloaded 325ix_3d_assets_v1.zip; avoids network')
+    opt=args.parse_args()
+    sys.exit(install(opt.kit))

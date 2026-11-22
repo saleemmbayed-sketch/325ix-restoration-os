@@ -24,7 +24,7 @@ const state={model:null,modelUrl:null,meshes:[],selected:null,selectedOriginal:n
 const setStatus=(s)=>{const el=$('twinvisualstatus');if(el)el.textContent=s;const hud=$('ix3d-status');if(hud)hud.textContent=s;};
 function showFallback(error){
  const canvas=$('ix3d-stage');if(canvas)canvas.hidden=true;
- const svg=$('twin-canvas');if(svg)svg.removeAttribute('hidden');
+ const svg=$('twin-canvas');if(svg)svg.setAttribute('hidden','');
  const msg=$('ix3d-fallback');if(msg){msg.hidden=false;msg.textContent=error+' · 2D evidence and catalog remain available.';}
  setStatus('3D unavailable · verified 2D catalog fallback active');
 }
@@ -108,7 +108,7 @@ async function loadModel(src, data){
  try {
   const result=await new Promise((resolve,reject)=>loader.load(src,resolve,undefined,reject));
   state.model=result.scene;state.modelUrl=src;s.scene.add(result.scene);prepareMeshes(result.scene);frameModel();
-  $('ix3d-stage').hidden=false;$('twin-canvas').setAttribute('hidden','');$('ix3d-fallback').hidden=true;
+  $('ix3d-stage').hidden=false;$('twin-diagram-panel').hidden=true;$('twin-canvas').setAttribute('hidden','');$('ix3d-fallback').hidden=true;const m3=$('ix-mode-3d'),m2=$('twin2d');m3?.classList.add('active');m2?.classList.remove('active');if($('ix-stage-heading'))$('ix-stage-heading').textContent='3D VIEW';
   setExplosion(Number($('ix3d-explode')?.value||0)/100);
   setStatus(`${state.meshes.length} pickable reference meshes · 3D active · NOT 325iX CAD`);
   renderSystems(data);
@@ -146,5 +146,6 @@ export async function mount(data){
  if(state.model&&studio&&studio.holder===$('ix3d-stage'))return;
  await loadModel('/models/e30_reference_m3.glb',data);
 }
+export {positionView};
 export function reset(){positionView('iso');if($('ix3d-explode')){$('ix3d-explode').value='0';$('ix3d-explode-value').textContent='0%'}setExplosion(0);studio?.selectMesh(null);}
 export function selectSystem(id){const select=$('ix3d-system-select');if(select)select.value=id;}

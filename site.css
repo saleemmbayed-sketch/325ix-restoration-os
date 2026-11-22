@@ -62,3 +62,61 @@ details{padding:10px;border-radius:10px;border:1px solid #d0e1eb;margin:13px 0}s
 .ix3d-fallback{padding:14px;color:#e5ab80;background:#1b2838}.twin-stage>svg:not([hidden]){min-height:360px;background:radial-gradient(circle at 50% 40%,#d6e7ef,#9ebfce)}.twin-stage>svg[hidden],.ix3d-stage[hidden],.ix3d-fallback[hidden]{display:none!important}.twin-legend{background:#0f2132;color:#a9c4d3;padding:11px 17px}.twin-legend .legend-dot{background:#53b5c9}
 .ix3d-explode-label{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:700}.ix3d-explode-label input{width:110px;cursor:pointer;accent-color:#48b6d0}.ix3d-explode-label output{font-size:12px;min-width:35px}.ix3d-inline{display:flex;gap:5px;align-items:center}.ix3d-system-field{display:grid;font-weight:750;gap:8px}.ix3d-system-field select{width:100%;max-width:100%;padding:10px}.ix3d-advanced{border-top:1px solid #d2e0ea;margin-top:12px;padding-top:12px}.ix3d-advanced summary{cursor:pointer}.ix3d-advanced input{max-width:100%}
 @media(max-width:850px){.twin-stage{min-height:395px}.ix3d-stage{height:360px}.ix3d-hud{top:12px;left:12px}.ix3d-hud strong{font-size:16px}.ix3d-explode-label input{width:80px}}
+
+/* RC15: genuine 3D studio + OEM drawing fallback. No synthetic labeled car map. */
+body:has(#twin.page:not([hidden])) main {max-width:1490px;}
+.ix-studio-v2{background:#f7f9fc;border:1px solid #d6e0eb!important;padding:25px!important;border-radius:20px!important;box-shadow:0 14px 45px #15253b0b!important;}
+.ix-studio-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px}
+.ix-eyebrow{font-weight:800;font-size:10px;letter-spacing:.16em;color:#6484a2;text-transform:uppercase}
+.ix-studio-head h2{font-size:clamp(23px,2.6vw,34px)!important;letter-spacing:-.042em;margin:8px 0!important;color:#0c1d31}
+.ix-studio-head p{color:#607589;margin:0!important;max-width:700px;font-size:13px}
+.ix-ref-chip{white-space:nowrap;border:1px solid #d4dce5;border-radius:20px;padding:9px 12px;background:#fff;color:#7f8b9a;font-size:10px;font-weight:800;letter-spacing:.07em}
+.ix-studio-toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:14px}
+.ix-mode-tabs{display:flex;border-radius:10px;background:#e8eff5;padding:4px;gap:3px}
+.ix-mode-btn{background:transparent;color:#45657d;border:0;box-shadow:none;padding:10px 17px;border-radius:8px;font-size:13px;font-weight:750}
+.ix-mode-btn.active{background:#fff;color:#15354c;box-shadow:0 2px 6px #12335318}
+.ix-studio-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ix-studio-tools button{padding:9px 12px;font-size:12px}
+.ix-studio-tools select{width:auto;min-width:116px;font-size:12px;padding:9px;border-color:#d4dfe7}
+.ix-studio-tools .ix3d-explode-label{margin:0;font-size:12px;font-weight:700;color:#45657d}
+.ix-studio-tools .ix3d-explode-label input{width:84px}
+.ix-studio-tools .ix-wire{font-size:12px;font-weight:650;color:#50677a}
+.ix-studio-layout{grid-template-columns:minmax(0,3.05fr) minmax(280px,1fr);gap:16px;align-items:stretch}
+.ix-studio-stage{background:#0b1727;border-color:#1b2b41;min-height:570px;border-radius:14px;padding:0;box-shadow:0 12px 32px #081b2a16;position:relative;overflow:hidden}
+.ix-studio-stage .ix3d-stage{height:505px;min-height:505px}
+.ix-studio-stage .ix3d-hud{position:absolute;left:22px;top:20px;z-index:3}
+.ix-studio-stage .ix3d-hud strong{font-size:16px!important;letter-spacing:.07em}
+.ix-studio-stage .ix3d-hud .ix3d-kicker{font-size:9px}
+.ix-studio-stage .ix3d-hud #ix3d-status{font-size:10px;max-width:340px}
+.ix-studio-stage .twin-diagram-panel{margin:0;border:0;padding:25px 25px 12px;background:#f8fbff;min-height:506px;color:#172c40;}
+.ix-studio-stage .twin-diagram-panel[hidden]{display:none!important}
+.ix-studio-stage:has(.ix-oem-instage:not([hidden])) .ix3d-hud{display:none}
+.ix-oem-instage .ix-drawing-head{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #dbe5ed;padding-bottom:15px}
+.ix-oem-instage .ix-drawing-head h3{font-size:20px;margin:5px 0;color:#122b41;letter-spacing:-.025em}
+.ix-oem-instage .ix-drawing-head p{margin:0;font-size:12px}
+.ix-drawing-chip{font-size:10px;font-weight:750;letter-spacing:.08em;border-radius:15px;color:#49687b;background:#eaf1f6;padding:7px 10px;white-space:nowrap}
+.ix-oem-instage .visual-assembly-list{display:flex;flex-wrap:nowrap;overflow-x:auto;margin:11px 0;padding:3px 0 12px;gap:6px}
+.ix-oem-instage .visual-assembly-list .visual-assembly{font-size:11px;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;padding:9px 11px;border-color:#d4e1ec}
+.ix-oem-instage .visual-diagram-wrap{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(180px,.74fr);gap:13px;align-items:stretch}
+.ix-oem-instage .visual-diagram-media{display:flex;align-items:center;flex-direction:column;min-height:270px;justify-content:center;background:white;border:1px solid #e0e9f0;border-radius:12px;padding:12px}
+.ix-oem-instage .visual-diagram-image{border:0;padding:0;max-height:325px;width:100%;object-fit:contain;box-shadow:none}
+.ix-oem-instage .visual-callout-rail{max-height:330px;overflow-y:auto;padding:5px 8px 5px 1px}
+.ix-oem-instage .visual-callout-rail button{display:block;text-align:left;background:#fff;color:#29485e;border:1px solid #d8e4eb;border-radius:8px;padding:9px;margin:6px 0;font-size:11px;line-height:1.36;width:100%}
+.ix-oem-instage .visual-callout-rail button:hover{background:#e9f2f8}
+.ix-stage-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0e2136;color:#94aabb;padding:13px 17px;font-size:10px;line-height:1.4}
+.ix-stage-foot span:first-child{color:#a2d6e6;font-weight:650}
+.ix-studio-stage .ix3d-fallback{margin:0;border:0;background:#203042;color:#baccd8;font-size:11px;padding:9px 22px}
+.ix-studio-stage .ix3d-fallback[hidden]{display:none!important}
+.ix-studio-inspector{background:#fff;border:1px solid #dbe5ef;padding:22px;border-radius:14px;min-height:0!important;box-shadow:0 6px 24px #15344a08}
+.ix-studio-inspector h3{font-size:19px;letter-spacing:-.023em;margin:8px 0 14px}
+.ix-studio-inspector .ix3d-system-field{font-weight:750;font-size:12px;color:#355066;margin:12px 0}
+.ix-studio-inspector .ix3d-system-field select{font-size:13px;padding:11px;border-color:#cbd9e3}
+.ix-studio-inspector .ix-system-details h3{margin-top:20px;font-size:18px}
+.ix-studio-inspector .ix-system-details button{font-size:12px;padding:11px;margin:8px 0;width:100%;text-align:center;border-radius:9px}
+.ix-studio-inspector .ix-system-details .risk{padding:11px 12px;border-radius:8px;border:1px solid #f4dacb;background:#fff7f2;color:#966041;font-size:11px}
+.ix-studio-inspector .ix3d-advanced{margin-top:18px;font-size:12px}
+.ix-studio-v2 #twin-canvas{display:none!important}
+@media(max-width:1000px){.ix-studio-layout{grid-template-columns:1fr}.ix-studio-inspector{min-height:0}.ix-studio-head{flex-wrap:wrap}.ix-studio-stage{min-height:450px}}
+@media(max-width:680px){.ix-studio-v2{padding:14px!important}.ix-studio-stage .twin-diagram-panel{padding:16px 10px}.ix-oem-instage .visual-diagram-wrap{grid-template-columns:1fr}.ix-studio-toolbar{gap:10px}.ix-studio-tools .ix-wire{display:none}.ix-ref-chip{white-space:normal}}
+/* OEM diagram mode does not expose inactive 3D-only controls. */
+.ix-studio-v2:has(#twin2d.active) .ix-studio-tools{display:none}

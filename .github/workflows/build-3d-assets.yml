@@ -1,0 +1,91 @@
+name: Package pinned E30 3D runtime
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-3d-assets.yml'
+permissions:
+  contents: write
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build rights-attributed deterministic browser asset kit
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/ixdeps --ignore-scripts --no-save --no-audit --no-fund three@0.159.0 meshoptimizer@0.22.0
+          mkdir -p kit/models kit/vendor/three/build kit/vendor/three/examples/jsm/controls kit/vendor/three/examples/jsm/loaders kit/vendor/three/examples/jsm/utils
+          cp /tmp/ixdeps/node_modules/three/build/three.module.js kit/vendor/three/build/
+          cp /tmp/ixdeps/node_modules/three/examples/jsm/controls/OrbitControls.js kit/vendor/three/examples/jsm/controls/
+          cp /tmp/ixdeps/node_modules/three/examples/jsm/loaders/GLTFLoader.js kit/vendor/three/examples/jsm/loaders/
+          cp /tmp/ixdeps/node_modules/three/examples/jsm/utils/BufferGeometryUtils.js kit/vendor/three/examples/jsm/utils/
+          cp /tmp/ixdeps/node_modules/three/LICENSE kit/vendor/three/LICENSE
+          cp /tmp/ixdeps/node_modules/meshoptimizer/meshopt_decoder.module.js kit/vendor/meshopt_decoder.module.js
+          if test -f /tmp/ixdeps/node_modules/meshoptimizer/LICENSE.md; then
+            cp /tmp/ixdeps/node_modules/meshoptimizer/LICENSE.md kit/vendor/meshoptimizer_LICENSE.md
+          else
+            curl -fLsS --retry 3 'https://raw.githubusercontent.com/zeux/meshoptimizer/v0.22/LICENSE.md' -o kit/vendor/meshoptimizer_LICENSE.md
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ('vendor/three/examples/jsm/controls/OrbitControls.js','vendor/three/examples/jsm/loaders/GLTFLoader.js','vendor/three/examples/jsm/utils/BufferGeometryUtils.js'):
+              p=Path('kit')/name
+              s=p.read_text()
+              s=s.replace("from 'three'", "from '/vendor/three/build/three.module.js'")
+              s=s.replace('from "three"','from "/vendor/three/build/three.module.js"')
+              if "from 'three'" in s: raise SystemExit('unmapped imports')
+              p.write_text(s)
+          PY
+          curl -fLsS --retry 3 'https://raw.githubusercontent.com/ahnuchen/auto-atlas/master/public/models/free_bmw_m3_e30.glb' -o kit/models/e30_reference_m3.glb
+          echo '8aaa3daafd53158b63ced92c4c65d520ebce561f' > /tmp/e30_sha
+          test "$(git hash-object kit/models/e30_reference_m3.glb)" = "$(cat /tmp/e30_sha)"
+          python3 - <<'PY'
+          import json,hashlib,struct
+          from pathlib import Path
+          p=Path('kit/models/e30_reference_m3.glb');b=p.read_bytes()
+          assert b[:4]==b'glTF' and struct.unpack_from('<I',b,8)[0]==len(b)
+          chunk_len=struct.unpack_from('<I',b,12)[0]
+          assert b[16:20]==b'JSON'
+          scene=json.loads(b[20:20+chunk_len].decode())
+          assert len(scene.get('meshes',[])) >= 1
+          root=Path('kit')
+          manifest={'version':'rc15-3d-runtime-v1','model':{'name':'BMW M3 E30 exterior REFERENCE (not 325iX)','creator':'Martin Trafas (TinoD2)','license':'CC BY 4.0 (upstream documentation)','source':'https://github.com/ahnuchen/auto-atlas','original':'https://sketchfab.com/3d-models/free-bmw-m3-e30-ac3c7013434e403e8faff87948caf422','git_blob_sha':'8aaa3daafd53158b63ced92c4c65d520ebce561f','mesh_count':len(scene['meshes'])},'libraries':{'three':'0.159.0 MIT','meshoptimizer':'0.22.0 MIT'},'files':{}}
+          for f in sorted(root.rglob('*')):
+              if f.is_file():manifest['files'][str(f.relative_to(root))]={'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'bytes':f.stat().st_size}
+          (root/'ASSET_KIT_MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          print('VERIFIED ASSET MANIFEST',len(manifest['files']),'files; GLB meshes',len(scene['meshes']))
+          PY
+          cat > kit/ATTRIBUTION.md <<'ATTRIBUTION'
+          # BMW E30 reference geometry and JavaScript runtime credits
+          **BMW M3 E30 visual reference**, Martin Trafas (`TinoD2`), CC BY 4.0 as documented by the upstream Auto Atlas project.
+          Original: https://sketchfab.com/3d-models/free-bmw-m3-e30-ac3c7013434e403e8faff87948caf422
+          Optimized derivative: https://github.com/ahnuchen/auto-atlas (Git blob 8aaa3daafd53158b63ced92c4c65d520ebce561f)
+          This reference mesh is not an exact E30 325iX AWD/4-door model, and does not prove OEM part identities, geometry or fitment.
+          Three.js 0.159.0, MIT; meshoptimizer 0.22.0, MIT. Licenses included in vendor/.
+          ATTRIBUTION
+          mkdir -p out
+          (cd kit && zip -q -r ../out/325ix_3d_assets_v1.zip .)
+          sha256sum out/325ix_3d_assets_v1.zip
+          node --check kit/vendor/three/examples/jsm/loaders/GLTFLoader.js
+          node --check kit/vendor/meshopt_decoder.module.js
+          test "$(stat -c '%s' kit/models/e30_reference_m3.glb)" -gt 2500000
+      - name: Publish single-click 3D runtime ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/asset-notes.md <<'NOTES'
+          BMW M3 E30 reference GLB (Martin Trafas / TinoD2, CC BY 4.0 as documented upstream), Three.js 0.159.0 and Meshoptimizer 0.22.0 with MIT licenses. Model integrity validated to Git blob 8aaa3daafd53158b63ced92c4c65d520ebce561f. Extract the ZIP into the Restoration OS installation folder; includes `models/` and `vendor/` at archive root. Not a 325iX CAD model. Geometry and mesh selection cannot establish real vehicle fitment or part identity.
+          NOTES
+          if gh release view rc15-3d-runtime >/dev/null 2>&1; then
+            gh release upload rc15-3d-runtime out/325ix_3d_assets_v1.zip --clobber
+          else
+            gh release create rc15-3d-runtime out/325ix_3d_assets_v1.zip --title 'RC15 · E30 3D Runtime Asset Kit' --notes-file /tmp/asset-notes.md --latest=false --target "$GITHUB_SHA"
+          fi
