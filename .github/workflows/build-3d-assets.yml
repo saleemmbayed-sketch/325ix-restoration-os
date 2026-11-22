@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - '.github/workflows/build-3d-assets.yml'
+      - 'viewer3d.js'
+      - 'scripts/browser_3d_smoke.cjs'
 permissions:
   contents: write
 jobs:
@@ -92,12 +94,18 @@ jobs:
           </style></head><body><div id="twin"><div id="ix3d-status">Waiting for model…</div><div id="ix3d-stage"></div>
           <svg id="twin-canvas" hidden></svg><div id="ix3d-fallback" hidden></div><div id="twin-diagram-panel" hidden></div>
           <span id="twinvisualstatus"></span><span id="ix-stage-heading"></span>
+          <nav id="ix3d-regions">
+          <button data-ix-region="chassis" type="button">Chassis</button>
+          <button data-ix-region="drivetrain" type="button">AWD / Drive</button>
+          <button data-ix-region="engine" type="button">Engine</button>
+          <button data-ix-region="electrical" type="button">Electrical</button>
+          </nav>
           <input id="ix3d-explode" type="range" min="0" max="100" value="0"><output id="ix3d-explode-value">0%</output>
           <select id="ix3d-system-select"></select><label><input type="checkbox" id="ix3d-wireframe"></label>
           <div id="ix3d-mesh-name"></div><div id="ix3d-selection-info" hidden></div>
           <button id="ix-mode-3d">3D</button><button id="twin2d">OEM</button>
           </div><script type="module">import * as studio from './viewer3d.js';window.ixStudio3D=studio;
-          window.visualTwinData={systems:[{id:'front_axle',label:'Front Axle',assembly_count:14}]};
+          window.visualTwinData={systems:["engine","radiator","fuel_preparation_system","fuel_supply","exhaust_system","manual_transmission","clutch","gearshift","pedals","transfer_box_electric_gearbox","drive_shaft","front_axle","rear_axle","steering","wheels","brakes","vehicle_electrical_system","engine_electrical_system","lighting","instruments_measuring_systems","heater_and_air_conditioning"].map(id=>({id,label:id.replaceAll('_',' '),assembly_count:1}))};
           await studio.mount(window.visualTwinData);</script></body></html>
           HTML
           (cd kit && python3 -m http.server 8115 --bind 127.0.0.1 > /tmp/ix-smoke-server.log 2>&1 &)

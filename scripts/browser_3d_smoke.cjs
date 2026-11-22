@@ -12,10 +12,17 @@ const {chromium}=require('playwright');
  assert(output.canvas && output.canvas.width>=750 && output.canvas.height>=450,'WebGL canvas not sized');
  assert(output.modelVisible && output.fallbackHidden,'Viewer fell back to 2D despite model loaded');
  const count=Number((output.status.match(/^(\d+) pickable/)||[])[1]);assert(count>=1,'Real model yielded no mesh selection targets');
+ const markers=page.locator('.ix3d-marker');
+ assert.equal(await markers.count(),21,'All indexed systems must be exposed as 3D reference zones');
+ await page.locator('[data-ix-region="drivetrain"]').click();
+ assert.equal(await page.locator('[data-ix-region="drivetrain"]').getAttribute('aria-pressed'),'true','AWD group must activate');
+ await page.locator('.ix3d-marker[data-system="transfer_box_electric_gearbox"]').evaluate(el=>el.click());
+ assert.equal(await page.locator('#ix3d-system-select').inputValue(),'transfer_box_electric_gearbox','3D marker must select authoritative catalog system');
+
  await page.locator('#ix3d-explode').evaluate(el=>{el.value='35';el.dispatchEvent(new Event('input',{bubbles:true}))});
  await page.waitForTimeout(900);
  await page.screenshot({path:'out/rc15_3d_smoke.png'});
- console.log('PASS: REAL WebGL GLB rendered in browser; mesh pickables='+count+'; canvas='+output.canvas.width+'x'+output.canvas.height+'; explosion event completed; screenshot captured');
+ console.log('PASS: REAL WebGL GLB rendered in browser; mesh pickables='+count+'; selectable systems=21; AWD marker navigation passed; canvas='+output.canvas.width+'x'+output.canvas.height+'; explosion event completed; screenshot captured');
  if(errors.length)throw new Error('Browser errors: '+errors.slice(0,10).join(' | '));
  await browser.close();
 })().catch(e=>{console.error('FAIL: real browser GLB smoke',e);process.exit(1)});
