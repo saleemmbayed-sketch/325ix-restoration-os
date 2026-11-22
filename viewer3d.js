@@ -163,7 +163,10 @@ function frameModel(){if(!studio||!state.model)return;
  const bbox=new THREE.Box3().setFromObject(state.model);const center=bbox.getCenter(new THREE.Vector3());const dimensions=bbox.getSize(new THREE.Vector3());const radius=Math.max(dimensions.length()*.5,1);
  state.modelCenter=center;state.modelSize=radius;studio.controls.target.copy(center);
  studio.grid.position.y=bbox.min.y-.02*radius;
- studio.camera.position.copy(center).add(new THREE.Vector3(1.6,.85,1.7).multiplyScalar(radius*1.5));
+ // Keep assemblies legible on a laptop and view the bonnet from the cabin side.
+ const isEngine=state.mechanical?.slug==='ix_m20_engine_bay';
+ const aim=isEngine?new THREE.Vector3(1.1,1.6,-1.65):new THREE.Vector3(1.6,1.0,1.7);
+ studio.camera.position.copy(center).add(aim.multiplyScalar(radius*(isEngine?1.15:1.12)));
  studio.camera.near=Math.max(radius/1000,.005);studio.camera.far=Math.max(radius*55,200);studio.camera.updateProjectionMatrix();
  studio.controls.minDistance=radius*.4;studio.controls.maxDistance=radius*10;studio.controls.update();
 }

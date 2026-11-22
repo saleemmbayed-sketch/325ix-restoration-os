@@ -4,10 +4,8 @@ on:
   push:
     paths:
       - '.github/workflows/build-3d-assets.yml'
-      - 'viewer3d.js'
       - 'models/ix_*.glb'
       - 'mechanical_index.json'
-      - 'scripts/browser_mechanical_smoke.cjs'
 permissions:
   contents: write
 jobs:
