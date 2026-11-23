@@ -31,6 +31,8 @@ def main():
         if installer.returncode!=0:raise RuntimeError('Installer failed; cannot proceed')
         check('Original catalog unchanged',sha(root/'data'/'325ix_assemblies.sqlite3')==src_cat)
         check('Original mutable jobs unchanged by installation',sha(root/'workshop_jobs.sqlite3')==initial_db)
+        installed_overlay=json.loads((root/'curated_evidence.json').read_text())
+        check('Installed source-review count excludes unqualified keys',installed_overlay.get('source_reviewed_count')==85 and installed_overlay.get('verified_count')==85 and len(installed_overlay.get('evidence',{}))==85,installed_overlay.get('source_reviewed_count'))
         check('Application changed',sha(root/'app.py')!=old_app)
         pointers=json.loads((root/'RC070_BACKUP_POINTER.json').read_text());backup=Path(pointers['backup_path'])
         check('Code backup and SQLite snapshot exist',(backup/'app.py').is_file() and (backup/'workshop_jobs.sqlite3').is_file())
@@ -46,7 +48,7 @@ def main():
         scan=b''.join(b'\x00'+bytes(v for x in range(n) for v in ((x*17+y*5)%256,(x*11+y*19)%256,(x*23+y*7)%256)) for y in range(n))
         binimg=(b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('!2I5B',n,n,8,2,0,0,0))+chunk(b'IDAT',zlib.compress(scan))+chunk(b'IEND',b''))
         (v4/'01_DIAGRAM_IMAGES'/'synthetic.png').write_bytes(binimg)
-        (v4/'03_MANIFESTS'/'image_assets.jsonl').write_text(json.dumps({'asset_id':asset,'local_file':'01_DIAGRAM_IMAGES/synthetic.png','status':'DOWNLOADED'})+'\n')
+        (v4/'03_MANIFESTS'/'image_assets.jsonl').write_text(json.dumps({'asset_id':asset,'local_file':'01_DIAGRAM_IMAGES/synthetic.png','status':'DOWNLOADED','bytes':len(binimg),'sha256':hashlib.sha256(binimg).hexdigest(),'mime':'image/png'})+'\n')
         # ephemeral port
         with socket.socket() as s:s.bind(('127.0.0.1',0));port=s.getsockname()[1]
         logfile=Path(td)/'server.log'
@@ -74,9 +76,10 @@ def main():
                     except Exception:payload=raw
                     return code,payload
                 code,stats=request('/api/catalog/coverage')
-                check('Catalog counts dynamic after V07 overlay',code==200 and stats.get('researched_exact_number_records')==23 and stats.get('unique_part_numbers')==7190,stats.get('researched_exact_number_records'))
+                check('Catalog counts dynamic after V07 overlay',code==200 and stats.get('researched_exact_number_records')==85 and stats.get('unique_part_numbers')==7190,stats.get('researched_exact_number_records'))
                 code,stats2=request('/api/evidence/coverage')
-                check('Independent evidence count reconciled',code==200 and stats2.get('researched_exact_part_numbers')==23)
+                check('Independent evidence count reconciled',code==200 and stats2.get('researched_exact_part_numbers')==85)
+                check('Supplier image references distinct from local actual-part photos',code==200 and stats2.get('supplier_image_reference_count')==6 and stats2.get('owner_uploaded_workshop_actual_part_photo_count')==0 and stats2.get('physical_photo_reference_count')==6,stats2)
                 code,work=request('/api/catalog/worklist?batch=1')
                 check('Worklist includes sourced first-part state',code==200 and work.get('parts') and work['parts'][0].get('evidence_status')=='SOURCE_REVIEWED',work['parts'][0]['part_number'] if work.get('parts') else None)
                 code,entry=request('/api/catalog/entry?part=31331125341')
@@ -87,6 +90,9 @@ def main():
                 check('Synthetic V4 fixture recognized',code==200 and status.get('images_present_locally',0)>=1,status)
                 code,img=request('/api/diagram?asset='+asset)
                 check('Synthetic diagram served inline through localhost route',code==200 and img==binimg)
+                (v4/'01_DIAGRAM_IMAGES'/'synthetic.png').write_bytes(binimg+b'corruption')
+                code,broken=request('/api/diagram?asset='+asset)
+                check('Corrupt local diagram is rejected before serving',code==404 and broken.get('integrity_state')=='SIZE_MISMATCH',broken)
                 code,j=request('/api/jobs',{'system':'invented_critical_bypass','symptom':'Front wheel play'}, {'X-Workbench-Request':'same-origin'})
                 check('Unknown vehicle system blocked',code==400)
                 code,j=request('/api/jobs',{'system':'steering','symptom':'Front wheel play'}, {'X-Workbench-Request':'same-origin','Origin':'https://untrusted.example'})

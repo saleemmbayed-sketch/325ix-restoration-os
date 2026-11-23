@@ -7,7 +7,7 @@ Works on Python 3.10+ macOS/Linux without third-party dependencies.
 import argparse
 from datetime import datetime, timezone
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import json
 import re
 import sqlite3
@@ -123,6 +123,7 @@ RESTORATION_DOMAINS={
 DEFERRED_CATALOG_GROUPS={'bodywork','vehicle_trim','seats','retrofitting_conversion_accessories','equipment_parts','sliding_roof_folding_top','audio_navigation_electronic_systems','restraint_system_and_accessories','distance_systems_cruise_control'}
 DOMAIN_BY_GROUP={group:domain_id for domain_id,domain in RESTORATION_DOMAINS.items() for group in domain['groups']}
 DB_SCHEMA_VERSION=2
+DEMO_CATALOG_MARKER='325IX_SYNTHETIC_LOCAL_DEMO_V1'
 
 def now():return datetime.now(timezone.utc).isoformat(timespec='seconds')
 
@@ -288,21 +289,316 @@ def trim(value,limit):return str(value or '').strip()[:limit]
 
 def escape_like(s):return s.replace('\\','\\\\').replace('%','\\%').replace('_','\\_')
 
+def has_curated_review_timestamp(record):
+    """Recognize explicit ISO review fields without rewriting the source record."""
+    if not isinstance(record,dict):return False
+    for field in ('reviewed_utc','reviewed_at'):
+        value=record.get(field)
+        if not isinstance(value,str) or not value.strip():continue
+        candidate=value.strip()
+        if candidate.endswith('Z'):candidate=candidate[:-1]+'+00:00'
+        try:datetime.fromisoformat(candidate)
+        except ValueError:continue
+        return True
+    return False
+
 def sourced_curated(number,record):
     """Conservatively recognize a separately researched exact-number record.
 
     A URL alone in the catalog's *candidate lead* field is never evidence.
-    This only checks the structural provenance and does not independently
-    authenticate claims made by a supplier or prove as-installed fitment.
+    Only explicit matching row identity and row-level review fields are used;
+    ``reviewed_at`` is accepted as an existing timestamp alias, not copied to
+    ``reviewed_utc``. This does not authenticate supplier claims or prove
+    as-installed fitment.
     """
     if not isinstance(record,dict):return False
-    if record.get('part_number') != number or not record.get('reviewed_utc') or not record.get('evidence_status'):
+    if record.get('part_number') != number or not has_curated_review_timestamp(record) or not record.get('evidence_status'):
         return False
     sources=record.get('sources')
     return bool(isinstance(sources,list) and any(
         isinstance(x,dict) and isinstance(x.get('url'),str) and x['url'].startswith('https://')
         and isinstance(x.get('status'),str) and x['status'].strip()
         for x in sources))
+
+def resolve_visual_catalog_selection(catalog_path,multimodal,assembly_id,candidate_id='',part_number='',allowed_groups=None):
+    """Resolve a selected front-play catalog occurrence without asserting fitment.
+
+    The catalog remains read-only. The returned occurrence is only a catalog
+    candidate; the physical installed part still needs separate evidence.
+    Supports both the V3/V4 multimodal schema and the legacy catalog schema.
+    """
+    assembly_id=trim(assembly_id,35)
+    candidate_id=trim(candidate_id,45)
+    part_number=trim(part_number,40)
+    if not assembly_id:
+        if candidate_id or part_number:raise ValueError('A catalog part candidate must include its parent assembly')
+        return None
+    allowed_groups=set(allowed_groups or {'front_axle','steering'})
+    with db_connect(Path(catalog_path),True) as db:
+        if multimodal:
+            assembly=db.execute('SELECT id,group_name,title AS label,source_url FROM assembly WHERE id=?',(assembly_id,)).fetchone()
+            part_table='part_record'
+        else:
+            assembly=db.execute('SELECT id,group_name,slug AS label,source_url FROM assembly WHERE id=?',(assembly_id,)).fetchone()
+            part_table='part_row'
+        if not assembly:raise ValueError('Selected BMW catalog assembly is not present')
+        if assembly['group_name'] not in allowed_groups:
+            raise ValueError('Selected catalog assembly is outside the front-axle/steering workflow')
+        part=None
+        if candidate_id or part_number:
+            where=['assembly_id=?'];params=[assembly_id]
+            if candidate_id:
+                where.append('CAST(id AS TEXT)=?');params.append(candidate_id)
+            if part_number:
+                where.append('part_number=?');params.append(part_number)
+            part=db.execute(f'SELECT id,assembly_id,part_number,description FROM {part_table} WHERE '+' AND '.join(where)+' LIMIT 1',params).fetchone()
+            if not part:raise ValueError('Selected part occurrence does not match the chosen BMW assembly')
+    return {'assembly':dict(assembly),'part':dict(part) if part else None}
+
+def resolve_visual_reference(scene_slug,component_id,system):
+    """Verify a viewer locator against the bundled mechanical scene manifest."""
+    scene_slug=trim(scene_slug,80);component_id=trim(component_id,100);system=trim(system,80)
+    if not scene_slug and not component_id:return None
+    if scene_slug!='ix_front_axle_workshop' or not component_id:
+        raise ValueError('The front-wheel-play workflow accepts only a listed front-axle visual reference')
+    try:index=json.loads((APP/'mechanical_index.json').read_text(encoding='utf-8'))
+    except (OSError,json.JSONDecodeError) as exc:raise ValueError('Bundled mechanical scene index is unavailable') from exc
+    scene=next((x for x in index.get('scenes',[]) if x.get('slug')==scene_slug),None)
+    component=next((x for x in (scene or {}).get('components',[]) if x.get('id')==component_id),None)
+    if not component:raise ValueError('Selected visual component is not in the bundled front-axle scene')
+    if component.get('system') not in {'front_axle','steering'} or component.get('system')!=system:
+        raise ValueError('Visual component system does not match the selected front-axle/steering workflow')
+    return {'scene_slug':scene_slug,'component_id':component_id,'component_label':component['label'],
+            'system':component['system'],'geometry_status':'ORIENTATION_ONLY_NOT_INSTALLED_PART'}
+
+READY_IMAGE_STATUSES={'DOWNLOADED','ALREADY_PRESENT'}
+MAX_DIAGRAM_BYTES=16000000
+
+def detect_image_mime(raw):
+    if raw.startswith(bytes((255,216,255))):return 'image/jpeg'
+    if raw.startswith(bytes((137,80,78,71,13,10,26,10))):return 'image/png'
+    if raw[:4]==b'RIFF' and raw[8:12]==b'WEBP':return 'image/webp'
+    return None
+
+IMAGE_SUFFIX_MIME={'.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'}
+
+def check_image_mime(file,asset,raw):
+    """Require content signature, manifest MIME and safe-path extension to agree."""
+    actual=detect_image_mime(raw)
+    declared=asset.get('mime')
+    declared=declared.strip().lower() if isinstance(declared,str) else ''
+    extension=IMAGE_SUFFIX_MIME.get(Path(file).suffix.lower())
+    if not declared or not extension:return None,'MIME_UNVERIFIABLE'
+    if actual is None or actual!=extension or actual!=declared:return None,'MIME_MISMATCH'
+    return actual,'VERIFIED'
+
+def load_v4_asset_manifest(v4root):
+    """Load and validate the selected V4 image manifest without modifying it."""
+    if v4root is None:return {},None
+    root=Path(v4root).expanduser()
+    local=root/'03_MANIFESTS'/'image_assets_local.jsonl'
+    canonical=root/'03_MANIFESTS'/'image_assets.jsonl'
+    manifest=local if local.is_file() and local.stat().st_size>0 else canonical
+    if not manifest.is_file():return {},None
+    assets={}
+    with manifest.open(encoding='utf-8') as source:
+        for line_number,line in enumerate(source,1):
+            if not line.strip():continue
+            try:item=json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f'Invalid V4 image manifest JSON on line {line_number}') from exc
+            if not isinstance(item,dict):
+                raise ValueError(f'V4 image manifest line {line_number} must contain a JSON object')
+            asset_id=item.get('asset_id')
+            if not isinstance(asset_id,str) or not re.fullmatch(r'IMG-[a-f0-9]{16}',asset_id):
+                raise ValueError(f'Invalid V4 image asset ID on line {line_number}')
+            if asset_id in assets:raise ValueError(f'Duplicate V4 image asset ID on line {line_number}: {asset_id}')
+            assets[asset_id]=item
+    return assets,manifest.name
+
+def resolve_v4_asset_path(v4root,asset):
+    """Resolve an untrusted manifest path only when it stays inside the V4 root."""
+    if v4root is None:return None,'V4_ROOT_NOT_CONNECTED'
+    rel=asset.get('local_file')
+    if not isinstance(rel,str) or not rel.strip():return None,'MISSING_PATH'
+    if chr(0) in rel or chr(92) in rel:return None,'INVALID_PATH'
+    posix=PurePosixPath(rel)
+    if posix.is_absolute() or any(part in {'','..'} for part in posix.parts):return None,'INVALID_PATH'
+    root=Path(v4root).expanduser().resolve()
+    try:file=(root.joinpath(*posix.parts)).resolve()
+    except (OSError,RuntimeError):return None,'INVALID_PATH'
+    if file==root or root not in file.parents:return None,'INVALID_PATH'
+    return file,None
+
+def inspect_v4_asset(v4root,asset,max_bytes=MAX_DIAGRAM_BYTES,include_bytes=False):
+    """Check status, contained path, expected size, SHA-256 and image MIME.
+
+    A local file is served as an illustration only if every check passes. It
+    remains an unverified catalog diagram and never indicates physical fitment.
+    """
+    reported=str(asset.get('status') or 'UNKNOWN').strip().upper()
+    expected=reported in READY_IMAGE_STATUSES
+    result={'reported_status':reported,'reported_downloaded':expected,'present':False,
+            'state':'NOT_REPORTED_DOWNLOADED','size_ok':None,'sha256_ok':None,'mime_ok':None,
+            'mime':None,'path':None,'raw':None}
+    if not expected:return result
+    file,error=resolve_v4_asset_path(v4root,asset)
+    if error:
+        result['state']=error
+        return result
+    result['path']=file
+    try:
+        if not file.is_file():
+            result['state']='MISSING_ON_DISK'
+            return result
+        stat=file.stat()
+    except OSError:
+        result['state']='MISSING_ON_DISK'
+        return result
+    result['present']=True
+    result['actual_bytes']=stat.st_size
+    expected_bytes=asset.get('bytes')
+    try:
+        if isinstance(expected_bytes,bool):raise ValueError('boolean is not a byte count')
+        if isinstance(expected_bytes,int):expected_length=expected_bytes
+        elif isinstance(expected_bytes,str) and re.fullmatch(r'[0-9]+',expected_bytes.strip()):expected_length=int(expected_bytes.strip())
+        else:raise ValueError('manifest byte count is absent or invalid')
+    except (TypeError,ValueError,OverflowError):
+        result['state']='SIZE_UNVERIFIABLE'
+        return result
+    result['size_ok']=stat.st_size==expected_length
+    if stat.st_size<=100:
+        result['state']='FILE_TOO_SMALL'
+        return result
+    if stat.st_size>max_bytes:
+        result['state']='FILE_TOO_LARGE'
+        return result
+    expected_sha=asset.get('sha256')
+    if not isinstance(expected_sha,str) or not re.fullmatch(r'[a-fA-F0-9]{64}',expected_sha):
+        result['state']='HASH_UNVERIFIABLE'
+        return result
+    digest=hashlib.sha256();chunks=[] if include_bytes else None;prefix=bytearray();read_bytes=0
+    try:
+        with file.open('rb') as source:
+            while True:
+                chunk=source.read(min(1024*1024,max_bytes+1-read_bytes))
+                if not chunk:break
+                read_bytes+=len(chunk);digest.update(chunk)
+                if len(prefix)<32:prefix.extend(chunk[:32-len(prefix)])
+                if chunks is not None:chunks.append(chunk)
+                if read_bytes>max_bytes:break
+    except OSError:
+        result['state']='UNREADABLE'
+        result['present']=False
+        return result
+    result['actual_bytes']=read_bytes
+    result['size_ok']=read_bytes==expected_length
+    if read_bytes>max_bytes:
+        result['state']='FILE_TOO_LARGE'
+        return result
+    result['actual_sha256']=digest.hexdigest()
+    result['sha256_ok']=result['actual_sha256'].lower()==expected_sha.lower()
+    if chunks is not None:result['raw']=b''.join(chunks)
+    mime,mime_state=check_image_mime(file,asset,bytes(prefix))
+    result['mime']=mime
+    result['mime_ok']=True if mime is not None else False if mime_state=='MIME_MISMATCH' else None
+    if result['size_ok'] is False:result['state']='SIZE_MISMATCH'
+    elif not result['sha256_ok']:result['state']='SHA256_MISMATCH'
+    else:result['state']=mime_state
+    return result
+
+def audit_v4_runtime(v4root,assets,multimodal_db=None):
+    """Reconcile V4 manifest claims, local image bytes, and multimodal DB assets."""
+    assets=list(assets.values()) if isinstance(assets,dict) else list(assets or [])
+    status_counts={};state_counts={};problems=[]
+    reported_ready=present=verified=missing=sha_mismatches=size_mismatches=size_unverifiable=hash_unverifiable=mime_mismatches=mime_unverifiable=unsafe_paths=missing_paths=invalid_files=not_ready=0
+    for asset in assets:
+        status=str(asset.get('status') or 'UNKNOWN').strip().upper()
+        status_counts[status]=status_counts.get(status,0)+1
+        check=inspect_v4_asset(v4root,asset)
+        state=check['state'];state_counts[state]=state_counts.get(state,0)+1
+        if check['reported_downloaded']:
+            reported_ready+=1
+            if check['present']:present+=1
+            else:missing+=1
+            if check['sha256_ok'] is True and check['size_ok'] is True and state=='VERIFIED':verified+=1
+            if check['sha256_ok'] is False:sha_mismatches+=1
+            if check['size_ok'] is False:size_mismatches+=1
+            if check['size_ok'] is None and check['present']:size_unverifiable+=1
+            if check['sha256_ok'] is None and check['present']:hash_unverifiable+=1
+            if check['mime_ok'] is False:mime_mismatches+=1
+            if check['mime_ok'] is None and check['present']:mime_unverifiable+=1
+            if state in {'FILE_TOO_SMALL','FILE_TOO_LARGE','UNREADABLE'}:invalid_files+=1
+            if state=='INVALID_PATH':unsafe_paths+=1
+            if state=='MISSING_PATH':missing_paths+=1
+            if state!='VERIFIED' and len(problems)<20:
+                problems.append({'asset_id':asset.get('asset_id','UNKNOWN'),'reported_status':status,'state':state})
+        else:not_ready+=1
+
+    catalog_count=None;catalog_integrity='NOT_CHECKED';missing_from_manifest=[];missing_from_catalog=[];metadata_mismatch_ids=[]
+    if multimodal_db is not None:
+        try:
+            with db_connect(Path(multimodal_db),True) as db:
+                tables={row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+                if 'image_asset' not in tables:
+                    catalog_integrity='SCHEMA_MISMATCH'
+                else:
+                    columns={row[1] for row in db.execute('PRAGMA table_info(image_asset)')}
+                    if not {'id','source_url','local_file','status','sha256'}<=columns:
+                        catalog_integrity='SCHEMA_MISMATCH'
+                    else:
+                        rows=[dict(row) for row in db.execute('SELECT * FROM image_asset')]
+                        catalog_count=len(rows)
+                        manifest_by_id={str(a.get('asset_id')):a for a in assets}
+                        database_by_id={str(row['id']):row for row in rows}
+                        missing_from_manifest=sorted(set(database_by_id)-set(manifest_by_id))
+                        missing_from_catalog=sorted(set(manifest_by_id)-set(database_by_id))
+                        if not v4root:catalog_integrity='NOT_CONNECTED'
+                        elif not assets:catalog_integrity='MANIFEST_MISSING'
+                        else:
+                            for asset_id in sorted(set(manifest_by_id)&set(database_by_id)):
+                                manifest=manifest_by_id[asset_id];row=database_by_id[asset_id]
+                                pairs=(('source_url','url'),('local_file','local_file'),('status','status'),
+                                       ('sha256','sha256'),('width','width_px'),('height','height_px'))
+                                mismatch=False
+                                for db_field,manifest_field in pairs:
+                                    if db_field not in columns:continue
+                                    left=row.get(db_field)
+                                    if manifest_field not in manifest:
+                                        mismatch=db_field in {'source_url','local_file','status','sha256'} or left is not None
+                                    else:
+                                        right=manifest.get(manifest_field)
+                                        if db_field in {'width','height'}:
+                                            if left is None or right is None:mismatch=left is not right
+                                            else:
+                                                try:mismatch=int(left)!=int(right)
+                                                except (TypeError,ValueError,OverflowError):mismatch=True
+                                        else:mismatch=str(left or '')!=str(right or '')
+                                    if mismatch:break
+                                if mismatch:metadata_mismatch_ids.append(asset_id)
+                            catalog_integrity='VERIFIED' if not (missing_from_manifest or missing_from_catalog or metadata_mismatch_ids) else 'MISMATCH'
+        except (OSError,sqlite3.Error):
+            catalog_integrity='ERROR'
+
+    if not v4root:integrity='NOT_CONNECTED'
+    elif catalog_integrity in {'MISMATCH','SCHEMA_MISMATCH','ERROR'} or sha_mismatches or size_mismatches or mime_mismatches or unsafe_paths or invalid_files:
+        integrity='MISMATCH'
+    elif not assets or not multimodal_db or catalog_integrity!='VERIFIED' or not_ready or missing or verified!=reported_ready or hash_unverifiable or size_unverifiable or mime_unverifiable:
+        integrity='INCOMPLETE'
+    else:integrity='VERIFIED'
+    return {'connected':bool(v4root),'manifest_assets':len(assets),'manifest_status_counts':dict(sorted(status_counts.items())),
+        'asset_check_counts':dict(sorted(state_counts.items())),'reported_downloaded_assets':reported_ready,
+        'not_reported_downloaded_assets':not_ready,'images_present_locally':present,'images_hash_verified':verified,
+        'images_missing_locally':missing,'images_sha256_mismatches':sha_mismatches,'images_size_mismatches':size_mismatches,
+        'images_mime_mismatches':mime_mismatches,'images_mime_unverifiable':mime_unverifiable,
+        'images_size_unverifiable':size_unverifiable,'images_hash_unverifiable':hash_unverifiable,'images_invalid_local_files':invalid_files,
+        'images_unsafe_paths':unsafe_paths,'images_missing_manifest_paths':missing_paths,
+        'catalog_assets':catalog_count,'catalog_integrity':catalog_integrity,
+        'catalog_asset_ids_missing_from_manifest':len(missing_from_manifest),
+        'manifest_asset_ids_missing_from_catalog':len(missing_from_catalog),
+        'catalog_metadata_mismatches':len(metadata_mismatch_ids),'integrity_status':integrity,
+        'problems':problems,'read_only':True,
+        'note':'Binary integrity verifies the local manifest and bytes only; diagram status is not installed-part identity, fitment, OEM authorization or repair approval.'}
 
 class App(BaseHTTPRequestHandler):
     def log_message(self,fmt,*args):print('[workbench]',self.address_string(),fmt%args)
@@ -340,7 +636,7 @@ class App(BaseHTTPRequestHandler):
         self.send_header('Content-Type',mime)
         self.send_header('X-Content-Type-Options','nosniff')
         self.send_header('Cache-Control','no-store')
-        self.send_header('Content-Security-Policy',"default-src 'self'; img-src 'self' https://ills.bmwfans.info https://www.bimmerworld.com https://i.ebayimg.com https://www.rageitparts.com https://3a663eb0fef48c6d2d60-a88f8ebfcdb877ad223e888bfcb7f7ec.ssl.cf1.rackcdn.com data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-src https://sketchfab.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
+        self.send_header('Content-Security-Policy',"default-src 'self'; img-src 'self' https://ills.bmwfans.info https://www.bimmerworld.com https://i.ebayimg.com https://www.rageitparts.com https://3a663eb0fef48c6d2d60-a88f8ebfcdb877ad223e888bfcb7f7ec.ssl.cf1.rackcdn.com data:; style-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; frame-src https://sketchfab.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
         if filename:self.send_header('Content-Disposition','attachment; filename="'+filename+'"')
         self.send_header('Content-Length',str(len(raw)));self.end_headers()
         try:self.wfile.write(raw)
@@ -387,6 +683,7 @@ class App(BaseHTTPRequestHandler):
                 missing=[n for n in required if not (APP/n).is_file() or (APP/n).stat().st_size==0]
                 # Bundle-original mechanical models are independent of the optional M3 reference.
                 return self.send_json(200,{'viewer':'Three.js GLB studio','ready':not missing,'missing':missing,
+                  'demo_mode':bool(getattr(self.server,'demo_mode',False)),
                   'mechanical_scenes':3,'original_mechanical_assets':all((APP/n).is_file() for n in ('models/ix_m20_engine_bay.glb','models/ix_front_axle_workshop.glb','models/ix_awd_driveline_workshop.glb')),
                   'model_installed':(APP/'models/e30_reference_m3.glb').is_file(),
                   'three_installed':(APP/'vendor/three/build/three.module.js').is_file(),
@@ -519,6 +816,13 @@ class App(BaseHTTPRequestHandler):
         with self.get_db() as db:
             data=[dict(x) for x in db.execute('SELECT group_name,count(*) assemblies FROM assembly GROUP BY group_name ORDER BY group_name')]
         return self.send_json(200,data)
+    def local_diagram_status(self,asset_id):
+        """Report local availability only after the manifest-backed file verifies."""
+        record=self.server.assets.get(asset_id)
+        if not record:return {'available':False,'state':'NOT_IN_MANIFEST'}
+        check=inspect_v4_asset(self.server.v4root,record)
+        return {'available':check['state']=='VERIFIED','state':check['state']}
+
     def search(self):
         p=self.get_params();q=trim(self.one(p,'q'),130);group=trim(self.one(p,'group'),70)
         if not q and not group:return self.send_json(200,{'results':[],'message':'Enter a part number, assembly name or technical keyword.'})
@@ -528,12 +832,16 @@ class App(BaseHTTPRequestHandler):
                     data=[dict(x) for x in db.execute('''SELECT a.id,a.group_name,a.title AS slug,a.source_url,count(p.id) AS part_count
                         FROM assembly a LEFT JOIN part_record p ON p.assembly_id=a.id WHERE a.group_name=?
                         GROUP BY a.id ORDER BY a.title LIMIT 75''',(group,))]
-                    # One grouped query replaces up to 30 serial browser calls looking for a cached drawing.
-                    available={r['assembly_id'] for r in db.execute('''SELECT fo.assembly_id,fo.image_asset_id
+                    # One grouped query replaces up to 30 serial browser calls; a drawing is
+                    # marked local only after path, size, SHA-256 and MIME verification.
+                    available=set();checked=set()
+                    for figure in db.execute('''SELECT fo.assembly_id,fo.image_asset_id
                         FROM figure_occurrence fo JOIN assembly a ON a.id=fo.assembly_id
-                        WHERE a.group_name=?''',(group,))
-                        if self.server.v4root and self.server.assets.get(r['image_asset_id'],{}).get('local_file')
-                        and (self.server.v4root/self.server.assets[r['image_asset_id']]['local_file']).is_file()}
+                        WHERE a.group_name=?''',(group,)):
+                        asset_id=figure['image_asset_id']
+                        if asset_id not in checked:
+                            checked.add(asset_id)
+                            if self.local_diagram_status(asset_id)['available']:available.add(figure['assembly_id'])
                     for row in data:row['has_local_drawing']=row['id'] in available
                     return self.send_json(200,{'kind':'assemblies','results':data,'scope':'V4_MULTIMODAL_SQLITE; UNVERIFIED_FITMENT'})
                 like='%'+escape_like(q)+'%'
@@ -558,10 +866,13 @@ class App(BaseHTTPRequestHandler):
                 data=[dict(x) for x in db.execute('''SELECT a.id,a.group_name,a.slug,a.source_url,count(p.id) AS part_count
                      FROM assembly a LEFT JOIN part_row p ON p.assembly_id=a.id
                      WHERE a.group_name=? GROUP BY a.id ORDER BY a.slug LIMIT 75''',(group,))]
-                local={r['assembly_id'] for r in db.execute('''SELECT f.assembly_id,f.image_asset_id FROM figure f
-                    JOIN assembly a ON a.id=f.assembly_id WHERE a.group_name=?''',(group,))
-                    if self.server.v4root and self.server.assets.get(r['image_asset_id'],{}).get('local_file')
-                    and (self.server.v4root/self.server.assets[r['image_asset_id']]['local_file']).is_file()}
+                local=set();checked=set()
+                for figure in db.execute('''SELECT f.assembly_id,f.image_asset_id FROM figure f
+                    JOIN assembly a ON a.id=f.assembly_id WHERE a.group_name=?''',(group,)):
+                    asset_id=figure['image_asset_id']
+                    if asset_id not in checked:
+                        checked.add(asset_id)
+                        if self.local_diagram_status(asset_id)['available']:local.add(figure['assembly_id'])
                 for row in data:row['has_local_drawing']=row['id'] in local
             return self.send_json(200,{'kind':'assemblies','results':data,'scope':'SECONDARY_ETK_CATALOG; UNVERIFIED_FITMENT'})
         like='%'+escape_like(q)+'%'
@@ -592,9 +903,8 @@ class App(BaseHTTPRequestHandler):
                     p.description,p.quantity AS quantity_raw,p.date_raw AS date_condition_raw,p.supplement,
                     '' AS anchor,'' AS notes FROM part_record p WHERE p.assembly_id=? ORDER BY CAST(p.callout AS INTEGER),p.description''',(id,))]
             for figure in f:
-                asset=self.server.assets.get(figure.get('image_asset_id'),{})
-                root=self.server.v4root
-                figure['local_available']=bool(root and asset.get('local_file') and (root/asset['local_file']).is_file())
+                local=self.local_diagram_status(figure.get('image_asset_id'))
+                figure['local_available']=local['available'];figure['local_integrity_state']=local['state']
             ad=dict(a);ad['slug']=ad.get('title');ad['downloaded_at']=ad.get('source_status')
             return self.send_json(200,{'assembly':ad,'figures':f,'parts':parts,'scope':'V3/V4 catalog identity only; exact installed fitment and callout pixels require verification'})
         with self.get_db() as db:
@@ -603,9 +913,8 @@ class App(BaseHTTPRequestHandler):
             f=[dict(r) for r in db.execute('SELECT * FROM figure WHERE assembly_id=?',(id,))]
             parts=[dict(r) for r in db.execute('SELECT * FROM part_row WHERE assembly_id=? ORDER BY CAST(callout_position AS INTEGER),description',(id,))]
         for figure in f:
-            asset=self.server.assets.get(figure.get('image_asset_id'),{})
-            root=self.server.v4root
-            figure['local_available']=bool(root and asset.get('local_file') and (root/asset['local_file']).is_file())
+            local=self.local_diagram_status(figure.get('image_asset_id'))
+            figure['local_available']=local['available'];figure['local_integrity_state']=local['state']
         return self.send_json(200,{'assembly':dict(a),'figures':f,'parts':parts,'scope':'Identity/fitment requires inspection; exact callout pixel coordinates unavailable'})
     def part_dossier(self):
         pid=trim(self.one(self.get_params(),'id'),45)
@@ -632,6 +941,9 @@ class App(BaseHTTPRequestHandler):
         return self._part_dossier_response(part,figs,siblings)
 
     def _part_dossier_response(self,part,figs,siblings):
+        for figure in figs:
+            local=self.local_diagram_status(figure.get('image_asset_id'))
+            figure['local_available']=local['available'];figure['local_integrity_state']=local['state']
         number=str(part.get('part_number') or '').strip()
         photos=[]
         with db_connect(self.server.photos,False) as db:
@@ -642,6 +954,7 @@ class App(BaseHTTPRequestHandler):
           'label':curated.get('label') if curated else None,
           'orientation':curated.get('orientation') if curated else None,
           'reviewed_utc':curated.get('reviewed_utc') if curated else None,
+          'reviewed_at':curated.get('reviewed_at') if curated else None,
           'evidence_status':curated.get('evidence_status') if curated else 'NOT_RESEARCHED',
           'sources':curated.get('sources',[]) if curated else [],
           'conflicts':curated.get('conflicts',[]) if curated else [],
@@ -670,9 +983,11 @@ class App(BaseHTTPRequestHandler):
     def catalog_coverage(self):
         stats=dict(self.server.research_stats)
         stats['researched_exact_number_records']=len(self.server.source_reviewed)
-        stats['supplier_photo_references']=sum(1 for k in self.server.source_reviewed
+        supplier_images=sum(1 for k in self.server.source_reviewed
             for p in self.server.curated[k].get('photos',[])
             if isinstance(p,dict) and p.get('kind')!='ALTERNATIVE_REFERENCE')
+        stats['supplier_photo_references']=supplier_images
+        stats['supplier_image_reference_count']=supplier_images
         stats['coverage_basis']='ACTIVE_SOURCE_REVIEWED_OVERLAY; supplier references are not engineering verification'
         stats['status']='DYNAMIC_FROM_CURATED_EVIDENCE'
         return self.send_json(200,stats)
@@ -700,11 +1015,26 @@ class App(BaseHTTPRequestHandler):
           'not_researched_count':sum(k not in self.server.source_reviewed for k in partlist)})
     def evidence_coverage(self):
         n=len(self.server.source_reviewed)
+        supplier_images=sum(1 for k in self.server.source_reviewed
+            for p in self.server.curated[k].get('photos',[])
+            if isinstance(p,dict) and p.get('kind')!='ALTERNATIVE_REFERENCE')
+        alternative_images=sum(1 for k in self.server.source_reviewed
+            for p in self.server.curated[k].get('photos',[])
+            if isinstance(p,dict) and p.get('kind')=='ALTERNATIVE_REFERENCE')
+        with db_connect(self.server.photos,True) as db:
+            local_photo_counts={row['kind']:row['n'] for row in db.execute(
+                'SELECT kind,count(*) AS n FROM part_photo GROUP BY kind')}
+        actual_part_photos=int(local_photo_counts.get('WORKSHOP_ACTUAL_PART',0))
         return self.send_json(200,{'researched_exact_part_numbers':n,
-          'physical_photo_reference_count':sum(1 for k in self.server.source_reviewed for p in self.server.curated[k].get('photos',[]) if p.get('kind')!='ALTERNATIVE_REFERENCE'),
-          'alternative_photo_reference_count':sum(1 for k in self.server.source_reviewed for p in self.server.curated[k].get('photos',[]) if p.get('kind')=='ALTERNATIVE_REFERENCE'),
+          'supplier_image_reference_count':supplier_images,
+          # Legacy key retained for clients; it counts external seller images,
+          # not physical photos of this vehicle or its installed components.
+          'physical_photo_reference_count':supplier_images,
+          'alternative_photo_reference_count':alternative_images,
+          'owner_uploaded_workshop_actual_part_photo_count':actual_part_photos,
+          'owner_uploaded_local_photo_count':sum(local_photo_counts.values()),
           'catalog_distinct_part_numbers':len(self.server.research),
-          'policy':'External product images are source-attributed links, not photos of the installed vehicle, OEM certification, or offline assets.',
+          'policy':'Supplier images are external product references, not photos of installed components. Local uploads are owner-provided and source/identity-unverified; catalog diagrams are illustrations only.',
           'coverage_basis':'ACTIVE_SOURCE_REVIEWED_OVERLAY; no claim of BMW-authorized or fitment-certified data'})
     def part_photo(self):
         raw_id=trim(self.one(self.get_params(),'id'),20)
@@ -1005,6 +1335,13 @@ class App(BaseHTTPRequestHandler):
             db.execute('UPDATE vehicle_twin SET updated_utc=? WHERE id=1',(now(),))
             db.commit()
         return self.send_json(201,{'job_id':id,'status':'OPEN','risk':risk,'prompts':GROUP_PROMPTS.get(system,DEFAULT_PROMPTS)})
+    def runtime_v4_audit(self,refresh=False):
+        cached=getattr(self.server,'v4_audit_report',None)
+        if refresh or cached is None:
+            cached=audit_v4_runtime(self.server.v4root,self.server.assets,self.mm_db())
+            self.server.v4_audit_report=cached
+        return cached
+
     def expert_front_play(self):
         w=self.server.front_expert
         if self.mm_db():
@@ -1021,7 +1358,8 @@ class App(BaseHTTPRequestHandler):
                     rows=[dict(x) for x in db.execute('''SELECT p.id,p.assembly_id,p.part_number,p.description,p.callout AS callout_position,
                         p.applicability FROM part_record p WHERE p.part_number=? LIMIT 2''',(item['number'],))]
                     parts.append({**item,'rows':rows,'source_reviewed':item['number'] in self.server.source_reviewed})
-            v4={'assets_in_manifest':len(self.server.assets),'present':sum(1 for a in self.server.assets.values() if self.server.v4root and a.get('local_file') and (self.server.v4root/a['local_file']).is_file())}
+            audit=self.runtime_v4_audit()
+            v4={**audit,'assets_in_manifest':audit['manifest_assets'],'present':audit['images_hash_verified']}
             return self.send_json(200,{**w,'assemblies':arrays,'parts':parts,'v4':v4,'release_gate':'INTERNAL_PILOT; REAL_V4_BINARY_RENDERING_AND_PHYSICAL_SIGNOFF_REMAIN_OPEN'})
         with self.get_db() as db:
             arrays=[]
@@ -1034,28 +1372,62 @@ class App(BaseHTTPRequestHandler):
             for p in w['parts']:
                 rows=[dict(x) for x in db.execute('SELECT id,assembly_id,part_number,description,callout_position FROM part_row WHERE part_number=? LIMIT 2',(p['number'],))]
                 parts.append({**p,'rows':rows,'source_reviewed':p['number'] in self.server.source_reviewed})
-        v4={'assets_in_manifest':len(self.server.assets),'present':sum(1 for a in self.server.assets.values() if self.server.v4root and (self.server.v4root/a.get('local_file','__missing__')).is_file())}
+        audit=self.runtime_v4_audit()
+        v4={**audit,'assets_in_manifest':audit['manifest_assets'],'present':audit['images_hash_verified']}
         return self.send_json(200,{**w,'assemblies':arrays,'parts':parts,'v4':v4,'release_gate':'INTERNAL_PILOT; MAC_VISUAL_TEST_AND_REPAIR_PROCEDURE_NOT_CLEARED'})
 
     def start_expert_case(self,d):
         w=self.server.front_expert
         side=trim(d.get('side'),16).upper(); symptom=trim(d.get('symptom'),1200); context=trim(d.get('context'),1000)
+        system=trim(d.get('system') or 'front_axle',80)
         if side not in {'LEFT','RIGHT','BOTH','UNKNOWN'}:raise ValueError('Select a valid side')
         if len(symptom)<8:raise ValueError('Describe the front-axle or steering symptom in at least eight characters')
+        if system not in {'front_axle','steering'}:raise ValueError('Front-wheel-play cases must use the front axle or steering system')
+        visual_reference=resolve_visual_reference(d.get('visual_scene',''),d.get('visual_component_id',''),system)
+        catalog=resolve_visual_catalog_selection(self.mm_db() or self.server.catalog,bool(self.mm_db()),
+            d.get('assembly_id',''),d.get('candidate_id',''),d.get('part_number',''))
+        if catalog and catalog['assembly']['group_name']!=system:
+            raise ValueError('Selected BMW assembly does not match the visual component system')
+        catalog_assembly=catalog['assembly'] if catalog else None
+        catalog_part=catalog['part'] if catalog else None
+        context_parts=['Side: '+side]
+        if context:context_parts.append(context)
+        if visual_reference:
+            context_parts.append('3D orientation reference only: '+visual_reference['component_label']+
+                ' ('+visual_reference['scene_slug']+'/'+visual_reference['component_id']+'); not installed-part identification')
+        if catalog_assembly:
+            context_parts.append('Selected BMW catalog assembly candidate: '+catalog_assembly['id']+
+                ' ('+catalog_assembly['label']+'); applicability/installed fitment unverified')
+        if catalog_part:
+            context_parts.append('Selected catalog part candidate: '+catalog_part['part_number']+' — '+catalog_part['description']+
+                '; not confirmed as installed')
+        case_context=' | '.join(context_parts)[:1800]
+        risk='SAFETY_CRITICAL_REVIEW_REQUIRED'
         with self.get_db(False) as db:
             cur=db.execute('INSERT INTO job(created_utc,system,assembly_id,symptom,context,risk) VALUES(?,?,?,?,?,?)',
-                (now(),'front_axle',None,symptom,'Side: '+side+' | '+context,'SAFETY_CRITICAL_REVIEW_REQUIRED'))
+                (now(),system,catalog_assembly['id'] if catalog_assembly else None,symptom,case_context,risk))
             job_id=cur.lastrowid
-            for code,label in CHECK_TEMPLATES['front_axle']:
+            for code,label in CHECK_TEMPLATES.get(system,CHECK_TEMPLATES['front_axle']):
                 db.execute('INSERT INTO diagnostic_check(job_id,code,label,updated_utc) VALUES(?,?,?,?)',(job_id,code,label,now()))
             db.execute('INSERT INTO expert_case(job_id,workflow_id,side,created_utc) VALUES(?,?,?,?)',(job_id,w['id'],side,now()))
             db.execute('INSERT INTO restoration_mission(job_id,domain_id,title,created_utc,updated_utc) VALUES(?,?,?,?,?)',(job_id,'suspension_steering','Suspension & Steering — '+symptom[:90],now(),now()))
             for step in w['steps']:
                 db.execute('INSERT INTO expert_step(job_id,code,updated_utc) VALUES(?,?,?)',(job_id,step['code'],now()))
-            insert_twin_event(db,'CASE_CREATED','case',job_id,{'system':'front_axle','side':side,'symptom':symptom,'workflow_id':w['id']},'Front Axle Expert intake')
+            event_payload={'system':system,'side':side,'symptom':symptom,'workflow_id':w['id']}
+            if visual_reference:event_payload['visual_reference']=visual_reference
+            if catalog_assembly:
+                event_payload['catalog_assembly']={**catalog_assembly,'status':'CATALOG_CANDIDATE; APPLICABILITY_UNVERIFIED'}
+            if catalog_part:
+                event_payload['catalog_candidate']={**catalog_part,
+                    'source_reviewed_exact_number':catalog_part['part_number'] in self.server.source_reviewed,
+                    'status':'NOT_CONFIRMED_AS_INSTALLED'}
+            insert_twin_event(db,'CASE_CREATED','case',job_id,event_payload,
+                'Visual Workshop front-wheel-play intake' if visual_reference else 'Front Axle Expert intake')
             db.execute('UPDATE vehicle_twin SET updated_utc=? WHERE id=1',(now(),))
             db.commit()
-        return self.send_json(201,{'job_id':job_id,'workflow_id':w['id'],'clearance':'NOT_APPROVED','stage_count':len(w['steps'])})
+        return self.send_json(201,{'job_id':job_id,'workflow_id':w['id'],'clearance':'NOT_APPROVED','stage_count':len(w['steps']),
+            'system':system,'catalog_assembly':catalog_assembly,'catalog_candidate':catalog_part,
+            'visual_reference':visual_reference})
 
     def expert_cases(self):
         p=self.get_params();raw=self.one(p,'job_id','')
@@ -1137,11 +1509,23 @@ class App(BaseHTTPRequestHandler):
             j=db.execute('SELECT * FROM job WHERE id=?',(id,)).fetchone()
             if not j:return self.send_json(404,{'error':'Job not found'})
             obs=[dict(o) for o in db.execute('SELECT * FROM observation WHERE job_id=? ORDER BY id',(id,))]
+            intake_row=db.execute("SELECT payload_json FROM twin_event WHERE entity_type IN ('case','job') AND entity_id=? AND event_type='CASE_CREATED' ORDER BY id LIMIT 1",(str(id),)).fetchone()
+        intake=json.loads(intake_row['payload_json']) if intake_row else {}
         j=dict(j); system=j['system']; prompts=GROUP_PROMPTS.get(system,DEFAULT_PROMPTS)
         md=[f'# BMW 325iX WORK ORDER — IX-{id:04d}', '',f"VIN: {VEHICLE['vin']} | Production: {VEHICLE['build_date']} | Replacement M20B25 #[CONFIGURED_ENGINE_NUMBER]",'',
             f"Opened UTC: {j['created_utc']}",f"System: {system}",f"Assembly ID: {j['assembly_id'] or 'NOT ASSIGNED'}",
             f"Risk: {j['risk']}",f"Status: {j['status']}",f"Qualified sign-off: {j['clearance']}",'',
-            '## Symptom',j['symptom'],'','## Context',j['context'] or 'Not recorded','','## Safety and questions',prompts['safety'],'']
+            '## Symptom',j['symptom'],'','## Context',j['context'] or 'Not recorded']
+        visual=intake.get('visual_reference');assembly=intake.get('catalog_assembly');candidate=intake.get('catalog_candidate')
+        if visual or assembly or candidate:
+            md+=['','## Visual and catalog selection context']
+            if visual:md.append(f"- 3D locator: {visual.get('scene_slug')} / {visual.get('component_id')} — {visual.get('component_label')} ({visual.get('geometry_status')}); orientation reference only, not installed-part identification.")
+            if assembly:
+                md.append(f"- Catalog assembly candidate: {assembly.get('id')} — {assembly.get('label')} ({assembly.get('status')}); source: {assembly.get('source_url') or 'not recorded'}.")
+            if candidate:
+                review='exact-number source review exists' if candidate.get('source_reviewed_exact_number') else 'exact-number source review not confirmed'
+                md.append(f"- Part occurrence candidate: {candidate.get('part_number')} — {candidate.get('description')} ({review}); status: {candidate.get('status')}. Fitment remains unverified.")
+        md+=['','## Safety and questions',prompts['safety'],'']
         md.extend('- '+x for x in prompts['questions'])
         md+=['','## Workshop evidence log']
         for o in obs:md.append(f"- {o['created_utc']} | **{o['type']}**: {o['value']} {o['unit'] or ''} | tool {o['tool'] or '?'} | source {o['source'] or '?'}")
@@ -1205,18 +1589,7 @@ class App(BaseHTTPRequestHandler):
             'candidate_assemblies':rows[:12], 'technical_references':ref[:12], 'manual_excerpts':self.find_manual(q),
             'caution':'Candidate assembly names are not a diagnosis; workshop procedure links are references, not verified extracted instructions. Exact torque and limits are not provided.'})
     def v4_status(self):
-        present=0;total=0
-        if self.server.v4root:
-            root=self.server.v4root.resolve()
-            for a in self.server.assets.values():
-                total+=1
-                rel=a.get('local_file','')
-                if not rel:continue
-                fn=(root/rel).resolve()
-                if root in fn.parents and fn.is_file() and fn.stat().st_size>100:present+=1
-        return self.send_json(200,{'connected':bool(self.server.v4root),
-            'manifest_assets':total,'images_present_locally':present,
-            'note':'Images are read-only. V4 files are never rewritten.'})
+        return self.send_json(200,self.runtime_v4_audit(refresh=True))
     def manual_status(self):
         path=self.server.manual_index
         if not path.is_file():return self.send_json(200,{'indexed_pages':0,'indexed_documents':0,'message':'No local manual text indexed; technical source URLs are pointers only.'})
@@ -1360,7 +1733,7 @@ class App(BaseHTTPRequestHandler):
                           'evidence_required':item['evidence'],'approval_required':item['kind'] in {'MECHANIC','MEASUREMENT','REPAIR_DECISION','QA'}})
         return self.send_json(200, {'workflow_id':self.server.front_expert['id'],
             'vehicle':VEHICLE,'clearance':'NOT_APPROVED','steps':steps,
-            'connected_surfaces':['S1_PARTS','S2_MANUALS','S3_PHOTOS','S4_FITMENT','S5_DIAGNOSTICS','S6_WORKBENCH_QA','C0_INTEGRATION']})
+            'connected_surfaces':['S1_PARTS','S2_MANUALS','S3_PHOTOS','S4_FITMENT','S5_DIAGNOSTICS','S6_WORKBENCH_QA','S7_INTEGRATION','C0_COORDINATOR']})
     def integration_health(self):
         checks=[]
         def check(name,ok,detail):checks.append({'name':name,'ok':bool(ok),'detail':detail})
@@ -1482,32 +1855,101 @@ class App(BaseHTTPRequestHandler):
     def diagram(self):
         p=self.get_params();asset=trim(self.one(p,'asset'),60)
         if not re.fullmatch('IMG-[a-f0-9]{16}',asset):return self.send_json(400,{'error':'Invalid image asset id'})
-        a=self.server.assets.get(asset)
-        if not a or not a.get('local_file') or not self.server.v4root:return self.send_json(404,{'error':'Image not available locally'})
-        root=self.server.v4root.resolve();f=(root/a['local_file']).resolve()
-        if root not in f.parents or not f.is_file():return self.send_json(404,{'error':'Image not found in local V4 folder'})
-        if f.stat().st_size>16000000:return self.send_json(403,{'error':'Image too large for preview'})
-        mime={'webp':'image/webp','jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png'}.get(f.suffix.lower().strip('.'))
-        if not mime:return self.send_json(400,{'error':'Invalid image type'})
-        return self.send_blob(200,f.read_bytes(),mime)
+        record=self.server.assets.get(asset)
+        if not record:return self.send_json(404,{'error':'Image asset is not in the selected V4 manifest'})
+        checked=inspect_v4_asset(self.server.v4root,record,include_bytes=True)
+        if checked['state']!='VERIFIED':
+            return self.send_json(404,{'error':'Image is not served: local V4 status, contained path, size, SHA-256 or MIME/content did not verify','integrity_state':checked['state']})
+        mime=checked.get('mime')
+        if not mime:
+            return self.send_json(404,{'error':'Image is not served: content, manifest MIME and file extension are not verified','integrity_state':checked['state']})
+        return self.send_blob(200,checked['raw'],mime)
+
+def is_synthetic_demo_catalog(path):
+    try:
+        with db_connect(Path(path).expanduser(),True) as db:
+            marker=db.execute("SELECT value FROM demo_metadata WHERE key='marker'").fetchone()
+            integrity=db.execute('PRAGMA quick_check').fetchone()
+        return bool(marker and marker['value']==DEMO_CATALOG_MARKER and integrity and integrity[0]=='ok')
+    except (OSError,sqlite3.Error):
+        return False
+
+def resolve_runtime_catalog_paths(app_root,catalog_arg=None,multimodal_arg=None,v4_root_arg=None,home=None):
+    """Resolve read-only catalog inputs from the existing V4 tree or legacy DB.
+
+    A complete V4 folder is self-contained for catalog lookup: its SQLite file
+    can be used directly, without copying or generating a second 805-assembly
+    database. Mutable jobs and owner photographs remain in the Workbench.
+    """
+    app_root=Path(app_root).expanduser()
+    home=Path.home() if home is None else Path(home).expanduser()
+    v4root=Path(v4_root_arg).expanduser() if v4_root_arg is not None else None
+    if v4root is not None and not v4root.is_dir():
+        raise FileNotFoundError('V4 data folder not found: '+str(v4root))
+    if v4root is None:
+        candidates=[app_root/'14_MULTIMODAL_MEDIA_AND_GRAPH',app_root,
+                    app_root.parent/'14_MULTIMODAL_MEDIA_AND_GRAPH',home/'Desktop'/'14_MULTIMODAL_MEDIA_AND_GRAPH']
+        v4root=next((candidate for candidate in candidates if
+            (candidate/'03_MANIFESTS'/'image_assets_local.jsonl').is_file() or
+            (candidate/'03_MANIFESTS'/'image_assets.jsonl').is_file()),None)
+
+    if multimodal_arg is not None:
+        multimodal=Path(multimodal_arg).expanduser()
+        if not multimodal.is_file():raise FileNotFoundError('Multimodal catalog not found: '+str(multimodal))
+    else:
+        candidates=[]
+        if v4root is not None:candidates.append(v4root/'04_SEARCH'/'325ix_multimodal.sqlite3')
+        candidates.extend([app_root/'04_SEARCH'/'325ix_multimodal.sqlite3',
+            app_root/'14_MULTIMODAL_MEDIA_AND_GRAPH'/'04_SEARCH'/'325ix_multimodal.sqlite3',
+            app_root.parent/'14_MULTIMODAL_MEDIA_AND_GRAPH'/'04_SEARCH'/'325ix_multimodal.sqlite3',
+            home/'Desktop'/'14_MULTIMODAL_MEDIA_AND_GRAPH'/'04_SEARCH'/'325ix_multimodal.sqlite3'])
+        seen=set();multimodal=None
+        for candidate in candidates:
+            candidate=candidate.expanduser()
+            if candidate not in seen and candidate.is_file():
+                multimodal=candidate;break
+            seen.add(candidate)
+
+    if catalog_arg is not None:
+        legacy=Path(catalog_arg).expanduser()
+        if not legacy.is_file():raise FileNotFoundError('Legacy catalog not found: '+str(legacy))
+    else:
+        default_legacy=app_root/'data'/'325ix_assemblies.sqlite3'
+        legacy=default_legacy if default_legacy.is_file() else None
+    catalog_source=multimodal or legacy
+    if catalog_source is None:
+        raise FileNotFoundError('No catalog found. Supply --multimodal-db from the V4 folder or --catalog for the legacy 805-assembly database.')
+    return catalog_source,multimodal,v4root
 
 def main():
     p=argparse.ArgumentParser(description='Local BMW 325iX parts and inspection workbench')
-    p.add_argument('--catalog',type=Path,default=APP/'data'/'325ix_assemblies.sqlite3')
+    p.add_argument('--catalog',type=Path,default=None,help='Optional read-only legacy 805-assembly SQLite catalog')
     p.add_argument('--jobs',type=Path,default=APP/'workshop_jobs.sqlite3')
-    p.add_argument('--v4-root',type=Path,default=None,help='Optional local 14_MULTIMODAL_MEDIA_AND_GRAPH folder for downloaded images')
+    p.add_argument('--v4-root',type=Path,default=None,help='Local 14_MULTIMODAL_MEDIA_AND_GRAPH folder (catalog, manifest and available images)')
     p.add_argument('--port',type=int,default=8765)
     p.add_argument('--photo-root',type=Path,default=APP/'actual_part_photos')
+    p.add_argument('--photo-db',type=Path,default=APP/'part_photos.sqlite3',help='Local photo metadata database (defaults to the Workbench photo DB)')
     default_manual_index=APP/'maintenance_manual_index.sqlite3' if (APP/'maintenance_manual_index.sqlite3').is_file() else APP/'manual_index.sqlite3'
     p.add_argument('--manual-index',type=Path,default=default_manual_index)
     p.add_argument('--ollama-model',default=None,help='Optional installed local Ollama model name (no cloud token required)')
-    p.add_argument('--multimodal-db',type=Path,default=APP/'04_SEARCH'/'325ix_multimodal.sqlite3',help='Read-only V3/V4 multimodal catalog index')
-    p.add_argument('--demo',action='store_true',help='Allow the bundled five-assembly front-axle fixture; never use for full-catalog claims')
+    p.add_argument('--multimodal-db',type=Path,default=None,help='Read-only V4 catalog; inferred from --v4-root when available')
+    p.add_argument('--demo',action='store_true',help='Use only a marked synthetic catalog from scripts/build_demo_catalog.py; disables V4 autodiscovery')
     args=p.parse_args()
-    if not args.catalog.is_file():p.error('Catalog missing: '+str(args.catalog))
-    multimodal=args.multimodal_db if args.multimodal_db.is_file() else None
-    catalog_source=multimodal or args.catalog
+    if args.demo:
+        if args.catalog is None:p.error('--demo requires --catalog pointing to the generated synthetic demo fixture')
+        if args.multimodal_db is not None or args.v4_root is not None:
+            p.error('--demo cannot be combined with --multimodal-db or --v4-root')
+        catalog_source=args.catalog.expanduser()
+        if not catalog_source.is_file():p.error('Synthetic demo catalog not found: '+str(catalog_source))
+        if not is_synthetic_demo_catalog(catalog_source):p.error('--demo refuses catalogs without the synthetic demo marker')
+        multimodal=None;v4root=None
+    else:
+        try:
+            catalog_source,multimodal,v4root=resolve_runtime_catalog_paths(APP,args.catalog,args.multimodal_db,args.v4_root)
+        except FileNotFoundError as exc:p.error(str(exc))
     with db_connect(catalog_source,True) as db:
+        check=db.execute('PRAGMA quick_check').fetchone()[0]
+        if check!='ok':p.error('Catalog SQLite quick_check failed: '+str(check)[:200])
         assembly_count=db.execute('SELECT count(*) FROM assembly').fetchone()[0]
         if multimodal:
             part_count=db.execute('SELECT count(*) FROM part_record').fetchone()[0]
@@ -1516,7 +1958,7 @@ def main():
             p.error('Expected 805 assemblies; received '+str(assembly_count)+' (use --demo only with the bundled fixture)')
     init_jobs(args.jobs)
     init_expert_cases(args.jobs)
-    photo_db=APP/'part_photos.sqlite3'
+    photo_db=args.photo_db.expanduser()
     init_photos(photo_db)
     with (APP/'sources.json').open(encoding='utf-8') as f:sources=json.load(f)
     extra_file=APP/'sources_extra.json'
@@ -1536,28 +1978,15 @@ def main():
     with specialist_file.open(encoding='utf-8') as f:specialists=json.load(f)
     research_path=APP/'catalog_research_registry.json'
     research={};research_stats={};research_order=[]
-    if research_path.is_file():
+    if research_path.is_file() and not args.demo:
         with research_path.open(encoding='utf-8') as f:catalog_program=json.load(f)
         research=catalog_program.get('parts',{})
         research_stats=catalog_program.get('catalog_coverage',{})
         research_order=list(research)
         if len(research)!=7190:p.error('Incomplete full-catalog research registry')
 
-    v4root=args.v4_root
-    # Detect a separately copied V4 tree without forcing the user to pass a flag.
-    if not v4root:
-        candidates=[APP/'14_MULTIMODAL_MEDIA_AND_GRAPH',APP,APP.parent/'14_MULTIMODAL_MEDIA_AND_GRAPH',Path.home()/'Desktop'/'14_MULTIMODAL_MEDIA_AND_GRAPH']
-        v4root=next((candidate for candidate in candidates if (candidate/'03_MANIFESTS'/'image_assets.jsonl').is_file()),None)
-    assets={}
-    if v4root:
-        local_manifest=v4root/'03_MANIFESTS'/'image_assets_local.jsonl'
-        file=local_manifest if local_manifest.is_file() else v4root/'03_MANIFESTS'/'image_assets.jsonl'
-        if file.is_file():
-            with file.open(encoding='utf-8') as f:
-                for line in f:
-                    if line.strip():
-                        d=json.loads(line)
-                        if d.get('asset_id'):assets[d['asset_id']]=d
+    try:assets,manifest_name=load_v4_asset_manifest(v4root)
+    except (OSError,ValueError) as exc:p.error('Invalid V4 image manifest: '+str(exc))
     srv=ThreadingHTTPServer(('127.0.0.1',args.port),App)
     with db_connect(catalog_source,True) as db:groups=set(x[0] for x in db.execute('SELECT DISTINCT group_name FROM assembly'))
     source_reviewed={n for n,r in curated.items() if n in research and sourced_curated(n,r)}
@@ -1567,8 +1996,11 @@ def main():
     srv.specialists=specialists
     srv.research=research;srv.research_stats=research_stats;srv.research_order=research_order
     srv.source_reviewed=source_reviewed;srv.curated=curated
-    srv.catalog=args.catalog;srv.multimodal=multimodal;srv.jobs=args.jobs;srv.photos=photo_db;srv.photo_root=args.photo_root;srv.sources=sources;srv.v4root=v4root;srv.assets=assets;srv.groups=groups;srv.ollama=args.ollama_model;srv.manual_index=args.manual_index
-    print('BMW 325iX Restoration OS MVP-0.9.0 RC12 — system-wide device-acceptance candidate')
+    srv.catalog=catalog_source;srv.multimodal=multimodal;srv.jobs=args.jobs;srv.photos=photo_db;srv.photo_root=args.photo_root;srv.sources=sources
+    srv.v4root=v4root;srv.assets=assets;srv.v4_manifest_name=manifest_name;srv.v4_audit_report=None
+    srv.groups=groups;srv.ollama=args.ollama_model;srv.manual_index=args.manual_index;srv.demo_mode=bool(args.demo)
+    print('BMW 325iX Restoration OS MVP-0.9.0 RC12 — local workshop candidate')
+    if args.demo:print('MODE: SYNTHETIC LOCAL DEMO — no OEM catalog, fitment or safety claims')
     print('Ollama:',args.ollama_model or 'disabled (guide works without AI)')
     print('Read-only catalog:',catalog_source)
     print('Job database:',args.jobs)

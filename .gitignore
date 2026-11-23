@@ -31,7 +31,13 @@ models/previews/*
 vendor/
 # Machine-local source archives, editor and temp files.
 *.zip
+google_drive/
 .env
 *.log
 # Personal-use 3D models, original source licensing and private attributions.
 local_models/
+# Generated local-test ZIPs and synthetic runtime state.
+/out/
+/local_demo_state/
+demo_catalog.sqlite3
+/3D_RELEASE_STATUS.json

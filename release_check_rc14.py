@@ -4,16 +4,38 @@ Never calls unverified geometry 'exact 325iX' and never grants road clearance.
 """
 from pathlib import Path
 from datetime import datetime,timezone
-import subprocess,json,sys,hashlib,importlib.util
+import argparse,subprocess,json,sys,hashlib,importlib.util
 ROOT=Path(__file__).resolve().parent
 
+
+def resolve_v4_root(root, requested=None):
+  """Find the private V4 folder or legacy root-level catalog without guessing."""
+  candidates=[requested.expanduser().resolve()] if requested else [
+    root/'google_drive'/'14_MULTIMODAL_MEDIA_AND_GRAPH', root,
+  ]
+  for candidate in candidates:
+    candidate=Path(candidate).resolve()
+    if (candidate/'04_SEARCH'/'325ix_multimodal.sqlite3').is_file():
+      return candidate
+  return None
+
 def run(cmd):
-  p=subprocess.run(cmd,cwd=ROOT,capture_output=True,text=True,timeout=45)
+  p=subprocess.run(cmd,cwd=ROOT,capture_output=True,text=True,timeout=180)
   return p.returncode==0,(p.stdout+p.stderr).strip()[-320:]
 
-def main():
+def main(argv=None):
+  parser=argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('--v4-root',type=Path,default=None,
+    help='Local synced 14_MULTIMODAL_MEDIA_AND_GRAPH folder; defaults to the repository mirror')
+  args=parser.parse_args(argv)
+  v4_root=resolve_v4_root(ROOT,args.v4_root)
   source_ok,source_note=run([sys.executable,'test_viewer3d_contract.py'])
-  core_ok,core_note=run([sys.executable,'test_mvp_integration.py']) if (ROOT/'04_SEARCH/325ix_multimodal.sqlite3').exists() else (False,'Runtime data not yet imported from pinned RC13')
+  if v4_root:
+    core_ok,core_note=run([sys.executable,'test_mvp_integration.py','--v4-root',str(v4_root)])
+  else:
+    requested=f' at {args.v4_root}' if args.v4_root else ''
+    core_ok=False
+    core_note=f'V4 catalog not found{requested}; pass --v4-root to the synced data folder'
   model=ROOT/'models/e30_reference_m3.glb'
   try:
     git_blob=hashlib.sha1(b'blob '+str(model.stat().st_size).encode()+b'\0'+model.read_bytes()).hexdigest() if model.is_file() else None

@@ -33,6 +33,8 @@ def main():
   assert 'PERSONAL_MODELS' in app and "if path=='/api/3d/models'" in app
   assert 'def personal_model_save' in app and 'def personal_slot_valid' in app
   assert 'frame-src https://sketchfab.com' in app
+  assert "script-src 'self' 'wasm-unsafe-eval'" in app
+  assert "script-src 'self' 'unsafe-eval'" not in app
   assert 'async function openPersonal' in view and 'loadBinarySTL' in view
   assert 'local_models/' in (ROOT/'.gitignore').read_text()
   if shutil.which('node'):
@@ -43,6 +45,6 @@ def main():
   assert result.returncode==0,result.stderr
   assert json.loads((ROOT/'docs/runtime_rc13_sha256.json').read_text())['sha256_files']['04_SEARCH/325ix_multimodal.sqlite3']
   print('PASS: JS/Python parse; local asset routes; source pin; 3D/2D integration contract; no safety clearance')
-  print('LIMIT: no installed real GLB/Three.js in this offline execution environment; device visual test still pending.')
+  print('LIMIT: static contract only; no browser/WebGL or device acceptance is proven by this test.')
   return 0
 if __name__=='__main__':sys.exit(main())

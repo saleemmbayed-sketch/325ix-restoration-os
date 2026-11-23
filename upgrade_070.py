@@ -3,6 +3,7 @@
 import json,os,sys,sqlite3,shutil,hashlib,tempfile,tarfile
 from pathlib import Path
 from datetime import datetime,timezone
+from app import sourced_curated
 
 FILES=('app.py','index.html','site.js','site.css','sources_extra.json',
        'index_manuals.py','catalog_research_registry.json','curated_evidence.json',
@@ -66,7 +67,12 @@ def main():
         for number,record in previous['evidence'].items():
             if number in new['evidence'] and new['evidence'][number]!=record:conflicts.append(number)
             new['evidence'][number]=record # Existing local record wins; never silent conflict.
-        new['verified_count']=len(new['evidence'])
+        registry=json.loads((kit/'catalog_research_registry.json').read_text(encoding='utf-8')).get('parts',{})
+        source_reviewed_count=sum(1 for number,record in new['evidence'].items()
+            if number in registry and sourced_curated(number,record))
+        new['verified_count']=source_reviewed_count # Compatibility field; not fitment/engineering verification.
+        new['source_reviewed_count']=source_reviewed_count
+        new['count_semantics']='Source-provenance screen only; no VIN-specific fitment, engineering-specification, condition, or safety approval.'
         temp_cur=backup/'merged_curated.json'
         temp_cur.write_text(json.dumps(new,ensure_ascii=False,indent=2),encoding='utf-8')
         manifest['curated_conflicts_preserved_locally']=conflicts

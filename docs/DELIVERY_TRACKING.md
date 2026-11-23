@@ -2,6 +2,8 @@
 
 Canonical detailed research workstreams, acceptance rules, release history and source registries remain in Google Drive: `325IX DATA` (private archive; link configured by owner). This document records code-integration responsibilities without copying those records.
 
+**Stream naming:** S7 Integration is a distinct delivery lane; C0 Coordinator is a distinct Program Operations lane. Do not count C0 reports as S7 evidence. The current Program Operations root has S1–S6 and C0 folders; separate S7 run artifacts are archived under the front-axle expert integration tree. The authoritative crosswalk is still an open requirement; see [evidence reconciliation](EVIDENCE_RECONCILIATION.md).
+
 | Lane | Outcome (end-to-end) | GitHub proof requirement |
 |---|---|---|
 | S1 Parts | 7,190 exact-number reviews; source conflicts preserved | Exact 11-digit number, URL/review date per record; only evidence delta imported |
@@ -11,6 +13,7 @@ Canonical detailed research workstreams, acceptance rules, release history and s
 | S5 Diagnostics | Symptom → checks → documented evidence → repair-first alternatives | Correct procedure, discriminating test, stop condition and no fabricated torque |
 | S6 Workbench QA | Portable local workshop UI + recoverable jobs | Regression against isolated copy, no owner-DB edits, safe rollbacks |
 | S7 Integration | Cross-domain product and release coherence | Single shared contracts; all gates evidence-backed; no false feature closure |
+| C0 Coordinator | Program-operations coordination and integration reporting | Separate coordinator output; never substitutes for S7 evidence or acceptance |
 | 3D Visual Studio | Real E30 reference mesh ↔ selectable iX system ↔ 2D catalog ↔ mission | Render/orbit/pick/explode, exact catalog drilldown, fallback, rights and device test |
 
 ## First product increment: 3D studio with real catalog reachability
