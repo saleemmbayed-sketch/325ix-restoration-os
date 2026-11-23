@@ -8,6 +8,17 @@ The existing RC13 Python workbench is preserved, with an additive Three.js/GLB v
 
 ## Quick local test — no Drive data required
 
+For the **full RC21 V4 product trial**, sync the private V4 folder and run
+`bash RUN_RC21_FULL.command --v4-root "/absolute/path/to/14_MULTIMODAL_MEDIA_AND_GRAPH"`.
+The launcher checks the complete 805-assembly/13,845-row catalog, makes a one-time
+copy of the existing workshop jobs into `rc21_full_trial_state`, and opens the
+mechanical 3D studio. Run `python3 scripts/prepare_3d_assets.py` first if the
+Three.js kit is absent. `/api/v4/status`, `/api/catalog/coverage`, and
+`/api/evidence/coverage` report what is actually connected. Existing trial jobs
+are resumed on later launches; the original job database remains untouched.
+The AI mechanic additionally requires a running Ollama model and
+`--ollama-model MODEL`. This is a trial, with safety sign-off still pending.
+
 To create a self-contained test ZIP from this checkout, run `python3 scripts/build_local_test_bundle.py`; extract `out/325ix-restoration-os-local-test.zip` and run `python3 scripts/run_local_demo.py` (or `bash RUN_LOCAL_DEMO.command` on macOS). It requires Python 3.10+ only and uses a five-assembly, seven-row fixture with `DEMO-*` part numbers. The bundle includes pinned local renderer modules and three original illustrative mechanical scenes; it excludes the private Drive mirror, SQLite/workshop state, owner photos, private registries, and the unverified M3 reference model. The UI keeps a visible synthetic-demo warning and binds to loopback. See [Local Test Guide](docs/LOCAL_TEST_GUIDE.md).
 
 Run the isolated API/persistence test with `python3 test_local_demo.py`. This synthetic demo tests the UI and workflow only; it is not the 805-assembly V4 catalog, a fitment source, a repair manual, or a safety approval. To test the full catalog, use the private V4/RC13 setup below.
