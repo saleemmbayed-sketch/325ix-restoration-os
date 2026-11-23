@@ -10,6 +10,33 @@ from urllib.error import HTTPError, URLError
 from hashlib import sha1,sha256
 from datetime import datetime,timezone
 import json,os,sys,zipfile,io,argparse
+import ssl
+
+
+def verified_ssl_context():
+    """Use a normal verified TLS context, including macOS Python CA bundles.
+
+    Python.org's macOS builds may ship without the system CA bundle linked into
+    the interpreter. Prefer certifi when it is already installed, then common
+    system bundles. Never disable certificate verification.
+    """
+    candidates=[]
+    try:
+        import certifi
+        candidates.append(certifi.where())
+    except ImportError:
+        pass
+    candidates.extend(('/etc/ssl/cert.pem','/etc/ssl/certs/ca-certificates.crt'))
+    for cafile in candidates:
+        if cafile and Path(cafile).is_file():
+            try:
+                return ssl.create_default_context(cafile=cafile)
+            except (OSError,ssl.SSLError):
+                continue
+    return ssl.create_default_context()
+
+
+TLS_CONTEXT=verified_ssl_context()
 
 ROOT=Path(__file__).resolve().parents[1]
 URLS={
@@ -80,7 +107,7 @@ def get(url):
     for candidate in mirrors:
         try:
             req=Request(candidate,headers={'User-Agent':'BMW-325iX-Local-Viewer/0.2 (licensed reference asset installer)'})
-            with urlopen(req,timeout=22) as res:return res.read()
+            with urlopen(req,timeout=22,context=TLS_CONTEXT) as res:return res.read()
         except (HTTPError,URLError,TimeoutError,OSError) as exc:
             last=exc
             print('  Source failed:',candidate,':',str(exc)[:120],flush=True)
@@ -103,7 +130,7 @@ def install(local_kit=None):
     print('Downloading one verified 3D asset kit from GitHub release…',flush=True)
     try:
         req=Request(KIT_URL,headers={'User-Agent':'BMW-325iX-Local-Viewer/0.3'})
-        with urlopen(req,timeout=75) as res:
+        with urlopen(req,timeout=75,context=TLS_CONTEXT) as res:
             size=res.headers.get('Content-Length')
             if size and int(size)>12500000:raise ValueError('Kit exceeds 12.5 MB budget')
             zip_bytes=res.read(12500001)
@@ -156,3 +183,4 @@ if __name__=='__main__':
     args.add_argument('--kit',help='Path to downloaded 325ix_3d_assets_v1.zip; avoids network')
     opt=args.parse_args()
     sys.exit(install(opt.kit))
+
