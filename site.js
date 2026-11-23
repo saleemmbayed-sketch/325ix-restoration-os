@@ -810,7 +810,7 @@ function showHosted3D(){
  $('twinvisualstatus').textContent='4-door E30 online reference · geometry and installed fitment unverified';
 }
 async function showLocal3D(){
- if(window.ixLocalDemo){await activate2DFallback(false);return;}
+ if(window.ixLocalDemo){await openMechanicalScene('ix_front_axle_workshop');return;}
  saveVisualContext({mode:'local-3d',scene:'',component_id:'',candidate_id:'',candidate_assembly_id:''});
  hideHosted3D();
  const status=await api('/api/3d/status');
@@ -1111,9 +1111,9 @@ function applyRuntimeMode(status){
   const banner=text('aside','LOCAL SYNTHETIC DEMO — catalog rows are fabricated test data. No OEM drawings, real part numbers, repair procedures, fitment evidence or road-use approval are included.','local-demo-banner');
   banner.id='local-demo-banner';main.prepend(banner);
  }
- // The full-car M3 mesh and hosted sedan viewer are intentionally excluded from
- // the downloadable demo; the original local mechanical scenes remain available.
- if($('ix-mode-3d'))$('ix-mode-3d').hidden=true;
+ // The synthetic package includes three selectable mechanical GLBs. The M3
+ // exterior and hosted sedan are excluded, so label this action accurately.
+ if($('ix-mode-3d')){$('ix-mode-3d').hidden=false;$('ix-mode-3d').textContent='3D assemblies';}
  if($('ix-preview-sedan'))$('ix-preview-sedan').hidden=true;
 }
 async function loadVisualTwin(){
@@ -1131,12 +1131,12 @@ async function loadVisualTwin(){
   applyRuntimeMode(status);
   if(await restoreVisualContext(choiceVersion))return;
   if(choiceIsStale())return;
-  if(status.demo_mode){await activate2DFallback(false);return;}
+  if(status.demo_mode){await openMechanicalScene('ix_front_axle_workshop',choiceVersion);return;}
   if(status.ready&&personalModels.body){
     if(!ixStudioLoading)ixStudioLoading=import('/viewer3d.js').then(m=>{window.ixStudio3D=m;return m});
     try{const studio=await ixStudioLoading;if(choiceIsStale())return;await studio.openPersonal('/api/3d/model?slot=body',personalModels.body.format,d,true);if(choiceIsStale())return;activePersonalSlot='body';saveVisualContext({mode:'personal',slot:'body'});}
     catch(e){ixStudioLoading=null;if(!choiceIsStale())showHosted3D();}
-  }else if(!choiceIsStale())showHosted3D(); // Prefer actual four-door geometry over the mismatched M3 reference.
+  }else if(!choiceIsStale())await openMechanicalScene('ix_front_axle_workshop',choiceVersion);
 
  }catch(e){
   if(choiceIsStale())return;
