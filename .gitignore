@@ -6,6 +6,7 @@ workshop_jobs*.sqlite3*
 part_photos.sqlite3*
 actual_part_photos/
 rc12_trial_state/
+rc21_full_trial_state/
 workshop_jobs_backups/
 *.sqlite3-wal
 *.sqlite3-shm
