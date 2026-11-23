@@ -1,0 +1,45 @@
+name: RC21 isolated demo and V4 integration
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - "arena/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rc21-regression:
+    name: RC21 regression suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pinned 3D runtime kit
+        run: python3 scripts/prepare_3d_assets.py
+
+      - name: Run isolated synthetic demo
+        run: python3 test_local_demo.py
+
+      - name: Run visual-to-workflow handoff
+        run: python3 test_front_play_visual_handoff.py
+
+      - name: Run V4 read-only integrity checks
+        run: python3 test_v4_runtime_integrity.py
+
+      - name: Run catalog path and viewer contracts
+        run: |
+          python3 test_runtime_catalog_paths.py
+          python3 test_viewer3d_contract.py
+          python3 test_rc19_mechanical.py
