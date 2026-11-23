@@ -914,7 +914,7 @@ async function openMechanicalScene(slug,expectedChoiceVersion=null){
  $('twinvisualstatus').textContent='Loading '+scene.components.length+' interactive mechanical components';
  if(!status.ready){
    const missing=status.missing?.join(', ')||'Three.js runtime';
-   $('twinvisualstatus').textContent='Offline preview · '+scene.components.length+' selectable components in the inspector';$('ix3d-status').textContent='Component geometry included · renderer kit available';
+   $('twinvisualstatus').textContent='3D renderer files missing: '+missing+' · static assembly preview shown';$('ix3d-status').textContent='3D renderer files missing';
    $('ix3d-stage').hidden=true;$('ix-mech-static').hidden=false;$('ix-mech-preview').src='/'+scene.preview;
    $('ix3d-fallback').hidden=true;
    return;
