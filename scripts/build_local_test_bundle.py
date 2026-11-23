@@ -23,7 +23,7 @@ BUNDLE_NAME = "325ix-restoration-os-local-test"
 EXCLUDED_DIRS = {
     ".git", ".arena", ".cache", ".local", ".venv", "node_modules", "__pycache__",
     "google_drive", "out", "data", "actual_part_photos", "local_models",
-    "rc12_trial_state", "workshop_jobs_backups", "coverage", "dist", "build",
+    "rc12_trial_state", "rc21_full_trial_state", "workshop_jobs_backups", "coverage", "dist", "build",
 }
 EXCLUDED_FILES = {
     "catalog_research_registry.json", "maintenance_manual_index.sqlite3",
