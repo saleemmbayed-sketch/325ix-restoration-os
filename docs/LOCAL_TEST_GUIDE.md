@@ -47,7 +47,7 @@ Keep the terminal open while using the app; press Ctrl+C to stop it. Demo state 
 ## Manual browser smoke test
 
 1. Confirm the orange **LOCAL SYNTHETIC DEMO** banner is visible.
-2. Open **Explore vehicle** and choose **Front axle** in the inspection studio.
+2. Open **Explore vehicle**. The front-axle mechanical scene should load automatically with orbit, zoom, mesh selection, and the **3D assemblies** tab. Switch between engine bay, front axle and AWD driveline. If a static preview appears, read the renderer error shown in the status line and check `/api/3d/status`.
 3. Select **Steering tie rod**, choose a catalog result whose number starts `DEMO-`, and save a test case with a clearly fictional symptom.
 4. Confirm the case opens with **road clearance NOT APPROVED**. Open its part dossier; all records should remain labeled as synthetic and unverified.
 5. Reload the page and confirm the case and visual locator can be resumed.
