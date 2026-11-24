@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import socket
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -92,6 +93,23 @@ def main() -> None:
             assert viewer["demo_mode"] is True
             assert viewer["ready"] is True, viewer["missing"]
             assert viewer["original_mechanical_assets"] is True
+            _, twin_before = request(base, "/api/twin")
+            _, instance = request(base, "/api/twin/component", {
+                "component_type": "Tie rod", "location": "Front axle", "side": "LEFT",
+                "source": "Synthetic QA intake",
+            })
+            assert instance["status"] == "IDENTITY_UNCONFIRMED"
+            _, twin_after = request(base, "/api/twin")
+            assert twin_after["events"][0]["event_type"] == "COMPONENT_INSTANCE_CREATED"
+            assert twin_after["gamification"]["xp"] == twin_before["gamification"]["xp"]
+            with sqlite3.connect(state / "workshop_jobs.sqlite3") as ledger:
+                ledger.executemany(
+                    "INSERT INTO twin_event(created_utc,event_type,entity_type,entity_id,payload_json,source,xp_value) VALUES('fixture','QA_RECORDED','component','1','{}','QA fixture',1)",
+                    [() for _ in range(101)],
+                )
+            _, long_history = request(base, "/api/twin")
+            assert len(long_history["events"]) == 100
+            assert long_history["gamification"]["xp"] == twin_after["gamification"]["xp"] + 101
             _, vehicle = request(base, "/api/vehicle")
             assert vehicle["vin"] == "VIN_NOT_CONFIGURED"
             _, workflow = request(base, "/api/workflow/front-axle")
