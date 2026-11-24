@@ -54,6 +54,9 @@ const errors = [];
     assert.match(await page.locator('.ix-mech-evidence').innerText(), /Research: NOT_RESEARCHED · 0\/0 drawings verified locally/);
     assert.match(await page.locator('.ix-mech-evidence').innerText(), /No exact catalog source URL in this record/);
     assert.equal(await page.locator('.ix-mech-evidence a').count(), 0, 'Synthetic evidence must not link to an unsourced OEM drawing');
+    const stageBox = await page.locator('#ix3d-stage').boundingBox();
+    assert(stageBox && stageBox.width > 800, 'Selected component must preserve a broad 3D stage');
+    assert(!/\{\"/.test(await page.locator('#twinfacts').innerText()), 'Digital twin facts should not expose raw JSON');
     await capture(page, '02-selected-component');
 
     await page.locator('#ix-mech-job-symptom').fill('Synthetic demo symptom for local persistence testing only.');
