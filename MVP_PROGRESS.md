@@ -113,3 +113,9 @@ The app automatically uses `04_SEARCH/325ix_multimodal.sqlite3` and the derived 
 
 - The available copied V4 catalog passes SQLite integrity and contains 805 assemblies / 13,845 rows, but its image manifest reports `MISMATCH` and 0/572 locally verified files. This does not establish the state of the owner's Mac/Drive copy. The launcher reports the degraded state without modifying V4.
 - The full trial launcher now stops if the original job DB path is absent and no existing trial DB is present; `--source-jobs` locates an alternate original, while `--fresh-trial` explicitly permits an empty start. A local fixture verified the missing-source guard, explicit empty opt-in, source copy and existing-trial reuse.
+
+### Digital twin accuracy gate
+
+- Fixed cumulative XP to sum the full persisted event ledger; the activity feed remains the latest 100. Creating an unverified component instance now records `COMPONENT_INSTANCE_CREATED` with zero identification credit, while historical events are preserved.
+- The 3D component panel now opens the physical component intake with a locator label. It deliberately leaves OEM number, observed marking, condition and source empty. Browser and API regressions test that a visual candidate is never silently promoted to installed identity and that XP remains correct beyond 100 events.
+- Still open: actual VIN and installed-component evidence on the owner's device, verified V4 image reconciliation, manual applicability, complete system coverage and qualified physical sign-off. The illustrated model is not yet an accurate as-built representation.
