@@ -46,13 +46,15 @@ def check_v4(root: Path) -> tuple[int, int]:
     return assemblies, parts
 
 
-def copy_once(source: Path, destination: Path) -> None:
+def copy_once(source: Path, destination: Path, allow_empty: bool = False) -> None:
     if destination.exists():
         if not healthy(destination):
             raise ValueError(f'Existing trial database failed integrity check: {destination}')
         return
     if not source.is_file():
-        return
+        if allow_empty:
+            return
+        raise FileNotFoundError(f'Original job database not found: {source}. Pass --source-jobs or --fresh-trial explicitly.')
     with sqlite3.connect(source.as_uri() + '?mode=ro', uri=True, timeout=10) as original:
         with sqlite3.connect(destination) as trial:
             original.backup(trial)
@@ -69,6 +71,7 @@ def main() -> int:
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--ollama-model', help='Optional installed local model')
     parser.add_argument('--no-browser', action='store_true')
+    parser.add_argument('--fresh-trial', action='store_true', help='Explicitly start with empty trial jobs if the source DB is absent')
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535:
         parser.error('Port must be between 1024 and 65535')
@@ -82,7 +85,7 @@ def main() -> int:
         jobs = trial / 'workshop_jobs.sqlite3'
         source = args.source_jobs.expanduser().resolve()
         if source != jobs:
-            copy_once(source, jobs)
+            copy_once(source, jobs, allow_empty=args.fresh_trial)
         port = choose_port(args.port)
     except (OSError, sqlite3.Error, ValueError) as exc:
         parser.error(str(exc))
@@ -100,7 +103,7 @@ def main() -> int:
               'vendor/meshopt_decoder.module.js') if not (ROOT / p).is_file()]
     print(f'RC21 full V4: {assemblies} assemblies / {parts} catalog rows', flush=True)
     print('Read-only V4:', v4, flush=True)
-    print('Trial jobs:', jobs, '(copied once from owner DB when present)', flush=True)
+    print('Trial jobs:', jobs, '(existing trial reused, owner DB copied, or explicit fresh trial)', flush=True)
     print('3D runtime:', 'ready' if not missing else 'missing ' + ', '.join(missing), flush=True)
     print('AI model:', args.ollama_model or 'disabled', flush=True)
     url = f'http://127.0.0.1:{port}/#twin'
