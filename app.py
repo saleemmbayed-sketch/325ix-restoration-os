@@ -108,7 +108,7 @@ REPAIR_PATHS={
 }
 OPTION_FITMENT={'UNVERIFIED','CATALOG_ONLY','PHYSICALLY_CHECKED','VERIFIED_PENDING_SIGNOFF'}
 OPTION_DECISIONS={'PROPOSED','SELECTED_PENDING_SIGNOFF','REJECTED'}
-TWIN_EVENT_TYPES={'CASE_CREATED','PHOTO_CAPTURED','OBSERVATION_RECORDED','MEASUREMENT_RECORDED','PROCEDURE_VERIFIED','COMPONENT_IDENTIFIED','REPAIR_OPTION_RECORDED','QA_RECORDED','QUALIFIED_SIGNOFF_RECORDED','DEVIATION_RECORDED','MILESTONE_RECORDED'}
+TWIN_EVENT_TYPES={'CASE_CREATED','PHOTO_CAPTURED','OBSERVATION_RECORDED','MEASUREMENT_RECORDED','PROCEDURE_VERIFIED','COMPONENT_IDENTIFIED','COMPONENT_INSTANCE_CREATED','REPAIR_OPTION_RECORDED','QA_RECORDED','QUALIFIED_SIGNOFF_RECORDED','DEVIATION_RECORDED','MILESTONE_RECORDED'}
 TWIN_ENTITY_TYPES={'vehicle','case','component','job','part','work_order'}
 TWIN_XP={'CASE_CREATED':5,'PHOTO_CAPTURED':10,'OBSERVATION_RECORDED':10,'MEASUREMENT_RECORDED':20,'PROCEDURE_VERIFIED':25,'COMPONENT_IDENTIFIED':20,'REPAIR_OPTION_RECORDED':10,'QA_RECORDED':30,'QUALIFIED_SIGNOFF_RECORDED':50,'DEVIATION_RECORDED':15,'MILESTONE_RECORDED':25}
 RESTORATION_DOMAINS={
@@ -1202,13 +1202,13 @@ class App(BaseHTTPRequestHandler):
         with self.get_db(False) as db:
             twin=db.execute('SELECT * FROM vehicle_twin WHERE id=1').fetchone()
             events=[dict(x) for x in db.execute('SELECT id,created_utc,event_type,entity_type,entity_id,payload_json,source,xp_value FROM twin_event ORDER BY id DESC LIMIT 100')]
+            xp=int(db.execute('SELECT COALESCE(SUM(xp_value),0) FROM twin_event').fetchone()[0])
         if not twin:return self.send_json(503,{'error':'Vehicle twin is not initialized'})
         data=dict(twin)
         for key in ('factory_state_json','as_installed_state_json','confidence_json'):
             data[key[:-5] if key.endswith('_json') else key]=json.loads(data.pop(key))
         for event in events:
             event['payload']=json.loads(event.pop('payload_json'))
-        xp=sum(int(x.get('xp_value',0)) for x in events)
         return self.send_json(200,{'vehicle':VEHICLE,'twin':data,'events':events,
             'gamification':{'xp':xp,'level':1+xp//100,'next_level_xp':((xp//100)+1)*100,
                 'policy':'Progress rewards documented evidence, measurements and QA only; never speed, risk or software safety approval.'}})
@@ -1253,7 +1253,7 @@ class App(BaseHTTPRequestHandler):
             cur=db.execute('''INSERT INTO component_instance(created_utc,updated_utc,component_type,location,side,oem_part_number,marking,condition,status)
                 VALUES(?,?,?,?,?,?,?,?,?)''',(now(),now(),component_type,location,side,trim(d.get('oem_part_number'),80),trim(d.get('marking'),160),trim(d.get('condition'),500),'IDENTITY_UNCONFIRMED'))
             component_id=cur.lastrowid
-            insert_twin_event(db,'COMPONENT_IDENTIFIED','component',component_id,{'component_type':component_type,'location':location,'side':side,'oem_part_number':trim(d.get('oem_part_number'),80),'marking':trim(d.get('marking'),160)},trim(d.get('source') or 'Workbench component intake',400))
+            insert_twin_event(db,'COMPONENT_INSTANCE_CREATED','component',component_id,{'component_type':component_type,'location':location,'side':side,'oem_part_number':trim(d.get('oem_part_number'),80),'marking':trim(d.get('marking'),160)},trim(d.get('source') or 'Workbench component intake',400))
             db.execute('UPDATE vehicle_twin SET updated_utc=? WHERE id=1',(now(),));db.commit()
         return self.send_json(201,{'component_id':component_id,'status':'IDENTITY_UNCONFIRMED','safety_clearance':'NOT_APPROVED'})
     def new_component_fact(self,id,d):
