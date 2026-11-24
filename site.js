@@ -964,6 +964,7 @@ async function selectMechanicalComponent(key,focus){
  actions.append(isolate,oem);root.append(actions);
  const searchLabel=text('p','Looking up BMW catalog matches…','ix-mech-catalog-state');root.append(searchLabel);
  const resultArea=text('div',null,'ix-mech-matches');root.append(resultArea);
+ const evidencePanel=text('section',null,'ix-mech-evidence');evidencePanel.setAttribute('aria-live','polite');root.append(evidencePanel);
  const jobPanel=text('section',null,'ix-mech-job-panel');root.append(jobPanel);
  renderMechanicalJobForm(jobPanel,c);
  try{
@@ -987,6 +988,7 @@ async function selectMechanicalComponent(key,focus){
     for(const other of resultArea.querySelectorAll('.ix-mech-catalog-result'))other.classList.toggle('selected',other===b);
     $('ix-mech-job-part').textContent=result.part_number||'catalog occurrence selected';
     $('ix-mech-catalog-choice').textContent='Selected BMW catalog occurrence; installed fitment still requires verification';
+    showMechanicalEvidence(result,evidencePanel,token);
    };
    resultArea.append(b);
    const dossier=text('button','Open BMW drawing & part evidence','light');dossier.type='button';
@@ -996,6 +998,29 @@ async function selectMechanicalComponent(key,focus){
   if(restoreCandidate){const candidate=[...resultArea.querySelectorAll('.ix-mech-catalog-result')].find(b=>b.dataset.candidate===restoreCandidate);if(candidate)candidate.click();else saveVisualContext({candidate_id:'',candidate_assembly_id:''})}
   const more=text('button','Browse all system assemblies','light');more.onclick=()=>openMechanicalDrawings(c.system);resultArea.append(more);
  }catch(e){if(token===mechanicalSelectionToken)searchLabel.textContent='Catalog lookup failed: '+e.message}
+}
+async function showMechanicalEvidence(candidate,panel,selectionToken){
+ panel.replaceChildren(text('p','Loading source and drawing evidence…','info'));
+ try{
+  const dossier=await api('/api/part-dossier?id='+encodeURIComponent(candidate.id));
+  if(selectionToken!==mechanicalSelectionToken||mechanicalCandidate?.id!==candidate.id)return;
+  const part=dossier.part||{},curated=dossier.curated||{},figures=dossier.figures||[];
+  panel.replaceChildren(text('span','EVIDENCE / SELECTED CANDIDATE','ix-eyebrow'),
+   text('h4',(part.part_number||'Number unknown')+' · '+(part.description||'Catalog component')),
+   text('p','Catalog occurrence · '+(part.callout_position||'?')+' callout · installed identity unconfirmed','risk'));
+  const review=curated.evidence_status||'NOT_RESEARCHED';
+  panel.append(text('p','Research: '+review+' · '+figures.filter(f=>f.local_available).length+'/'+figures.length+' drawings verified locally','info'));
+  for(const flag of (curated.conflicts||[]))panel.append(text('p','Conflict: '+flag,'risk'));
+  const source=part.anchor||part.source_url;
+  if(source)panel.append(link('Open exact catalog source ↗',source));
+  for(const figure of figures.slice(0,2)){
+   const row=text('div',null,'ix-mech-evidence-figure');
+   if(figure.local_available){const img=document.createElement('img');img.src='/api/diagram?asset='+encodeURIComponent(figure.image_asset_id);img.alt='Catalog assembly drawing; callout pixel location unverified';img.loading='lazy';row.append(img)}
+   else row.append(text('p','Drawing indexed; local image unavailable or unverified.','info'));
+   if(figure.figure_url)row.append(link('Open original drawing ↗',figure.figure_url));panel.append(row);
+  }
+  const more=text('button','Full dossier and photos','light');more.type='button';more.onclick=async()=>{tab('lookup');await openPart(part.id)};panel.append(more);
+ }catch(error){if(selectionToken===mechanicalSelectionToken)panel.replaceChildren(text('p','Evidence unavailable: '+error.message,'risk'))}
 }
 async function openMechanicalDrawings(group){
  const system=window.visualTwinData?.systems?.find(s=>s.id===group);
