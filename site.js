@@ -1010,9 +1010,12 @@ async function showMechanicalEvidence(candidate,panel,selectionToken){
    text('p','Catalog occurrence · '+(part.callout_position||'?')+' callout · installed identity unconfirmed','risk'));
   const review=curated.evidence_status||'NOT_RESEARCHED';
   panel.append(text('p','Research: '+review+' · '+figures.filter(f=>f.local_available).length+'/'+figures.length+' drawings verified locally','info'));
+  if(curated.reviewed_utc||curated.reviewed_at)panel.append(text('p','Reviewed: '+(curated.reviewed_utc||curated.reviewed_at),'meta'));
+  if(dossier.photos?.length)panel.append(text('p',dossier.photos.length+' workshop photo(s) linked to this part number; confirm the photographed instance before use.','info'));
   for(const flag of (curated.conflicts||[]))panel.append(text('p','Conflict: '+flag,'risk'));
   const source=part.anchor||part.source_url;
-  if(source)panel.append(link('Open exact catalog source ↗',source));
+  if(source)panel.append(link('Open catalog assembly source ↗',source));
+  else panel.append(text('p','No exact catalog source URL in this record. Verify the number and assembly before making a fitment decision.','risk'));
   for(const figure of figures.slice(0,2)){
    const row=text('div',null,'ix-mech-evidence-figure');
    if(figure.local_available){const img=document.createElement('img');img.src='/api/diagram?asset='+encodeURIComponent(figure.image_asset_id);img.alt='Catalog assembly drawing; callout pixel location unverified';img.loading='lazy';row.append(img)}
