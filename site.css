@@ -313,3 +313,14 @@ footer{background:#eaf0f4;color:#8193a1;border-top:1px solid #d9e5ec;margin-left
 /* RC20: assembly-level explosion uses existing toolbar; no new framework. */
 #ix-explode-scope{min-width:150px;max-width:210px;height:36px;border-radius:8px}#ix-explode-isolate[aria-pressed="true"]{background:#196883;color:white}#ix-alert-demo{border:1px dashed #b47e4c}#ix-explode-reset{font-weight:650}
 @media(max-width:960px){#ix-explode-scope{min-width:130px;max-width:100%}.ix-studio-tools{flex-wrap:wrap}}
+
+/* Keep the 3D workspace and evidence at usable widths as a case grows. */
+.ix-studio-v2.ix-inspect-mode .ix-studio-layout{grid-template-columns:minmax(0,1fr)}
+.ix-studio-v2.ix-inspect-mode .ix-mech-browser{grid-template-columns:minmax(230px,.8fr) minmax(0,2fr);align-items:start}
+.ix-studio-v2.ix-inspect-mode .ix-mech-browser>span,.ix-studio-v2.ix-inspect-mode .ix-mech-browser>h3,.ix-studio-v2.ix-inspect-mode .ix-mech-browser>p,.ix-studio-v2.ix-inspect-mode .ix-mech-browser>input{grid-column:1/-1}
+.ix-studio-v2.ix-inspect-mode .ix-mech-part-list{grid-column:1;max-height:520px}
+.ix-studio-v2.ix-inspect-mode .ix-mech-component-detail{grid-column:2;min-width:0}
+#twinfacts{grid-template-columns:repeat(2,minmax(0,1fr))}
+#twinfacts .factrow{grid-template-columns:minmax(105px,.8fr) minmax(0,1.4fr);gap:8px 14px}
+#twinfacts .factstatus{grid-column:2;overflow-wrap:normal}
+@media(max-width:680px){.ix-studio-v2.ix-inspect-mode .ix-mech-browser{grid-template-columns:1fr}.ix-studio-v2.ix-inspect-mode .ix-mech-part-list,.ix-studio-v2.ix-inspect-mode .ix-mech-component-detail{grid-column:1}#twinfacts{grid-template-columns:1fr}}
