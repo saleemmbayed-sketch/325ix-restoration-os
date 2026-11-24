@@ -293,6 +293,9 @@ footer{background:#eaf0f4;color:#8193a1;border-top:1px solid #d9e5ec;margin-left
 .ix-mech-catalog-result{display:grid;gap:3px;width:100%!important;justify-content:stretch;text-align:left!important;white-space:normal;background:white!important;color:#203d55!important;padding:9px!important;border:1px solid #d5e3e7!important;border-radius:8px!important;box-shadow:none!important}
 .ix-mech-catalog-result:hover,.ix-mech-catalog-result.selected{border-color:#23839a!important;background:#e8f7f9!important}
 .ix-mech-catalog-result strong{font-size:11px}.ix-mech-catalog-result span{font-size:11px;overflow-wrap:anywhere}.ix-mech-catalog-result small{font-size:10px;color:#708da1}
+.ix-mech-evidence{display:grid;gap:8px;padding:12px;background:#fff;border:1px solid #b8d6df;border-radius:10px}
+.ix-mech-evidence:empty{display:none}.ix-mech-evidence h4{margin:0}.ix-mech-evidence p{margin:0}
+.ix-mech-evidence-figure img{display:block;max-width:100%;max-height:220px;object-fit:contain;background:#f7fafb}
 .ix-mech-job-panel{border-top:1px solid #d2e0e6;padding-top:12px;display:grid;gap:8px}
 .ix-mech-job-panel h4{font-size:15px;margin:0;color:#1f4359}.ix-mech-selection-status{background:#e6eff3;padding:8px 10px;border-radius:7px;color:#355a6f;font-size:11px;font-weight:680}.ix-mech-selection-state{color:#5d7d91;font-size:10px}
 .ix-mech-job-form{display:grid;gap:8px}.ix-mech-job-form textarea,.ix-mech-job-form input{width:100%;background:#fff;border:1px solid #cbdde5;border-radius:8px;padding:10px;font-size:11px;resize:vertical;color:#1f4154}
