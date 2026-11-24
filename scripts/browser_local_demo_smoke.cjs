@@ -41,6 +41,9 @@ const errors = [];
     const number = (await result.locator('strong').innerText()).trim();
     assert.match(number, /^DEMO-/);
     assert(candidateId && assemblyId);
+    await page.locator('.ix-mech-evidence h4').waitFor({ state: 'visible' });
+    assert.match(await page.locator('.ix-mech-evidence').innerText(), /Catalog occurrence.*installed identity unconfirmed/s);
+    assert.match(await page.locator('.ix-mech-evidence').innerText(), /Open exact catalog source/);
 
     await page.locator('#ix-mech-job-symptom').fill('Synthetic demo symptom for local persistence testing only.');
     await page.locator('.ix-mech-job-form select').selectOption('LEFT');
