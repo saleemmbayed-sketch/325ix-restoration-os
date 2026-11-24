@@ -147,6 +147,14 @@ def main():
             status, component = call(base, '/api/twin/component', {'component_type':'Steering tie rod','location':'Front axle','side':'LEFT','marking':'owner-photo-marking','source':'QA component fixture'})
             assert status == 201 and component['status'] == 'IDENTITY_UNCONFIRMED'
             component_id = component['component_id']
+            _, twin_after_component = call(base, '/api/twin')
+            assert twin_after_component['events'][0]['event_type'] == 'COMPONENT_INSTANCE_CREATED'
+            assert twin_after_component['gamification']['xp'] == before_xp + 20
+            with sqlite3.connect(jobs) as ledger:
+                ledger.executemany("INSERT INTO twin_event(created_utc,event_type,entity_type,entity_id,payload_json,source,xp_value) VALUES('fixture','QA_RECORDED','component','1','{}','QA fixture',1)", [() for _ in range(101)])
+            _, long_history = call(base, '/api/twin')
+            assert len(long_history['events']) == 100
+            assert long_history['gamification']['xp'] == twin_after_component['gamification']['xp'] + 101
             status, fact = call(base, f'/api/twin/component/{component_id}/fact', {'layer':'OWNER_REPORTED','field':'condition','value':'Visible boot damage; inspection pending','confidence':'OWNER_REPORTED','source':'Owner photo P-001'})
             assert status == 201 and fact['confidence'] == 'OWNER_REPORTED'
             _, components = call(base, '/api/twin/components')
