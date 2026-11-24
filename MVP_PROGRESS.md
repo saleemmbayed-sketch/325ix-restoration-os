@@ -96,3 +96,26 @@ python3 app.py
 ```
 
 The app automatically uses `04_SEARCH/325ix_multimodal.sqlite3` and the derived `03_MANIFESTS/image_assets_local.jsonl` when present. Mutable job/photo databases are deliberately not part of the release archive.
+
+## RC21 verification checkpoint — 2026-11-24
+
+- PR #6 now contains the isolated synthetic demo and read-only V4 full trial launchers, local 3D engine/axle/AWD models, inline candidate evidence, and a rendered Chromium journey in CI. The RC21 and source/3D workflows passed at commit `792ee0b`; the browser journey rendered the front-axle GLB, selected DEMO-STEER-001, saved case IX-0001, reopened its dossier, reloaded and restored selection, while clearance stayed `NOT_APPROVED`.
+- Follow-up source-gap and review-context panel changes passed both GitHub workflows at commit `c6f490b`, including the rendered Chromium journey. Synthetic rows have no OEM citation; the panel must state that explicitly. A passing synthetic demo does not validate the owner's V4 diagram files, installed fitment, manual authority, Arabic voice, or macOS WebGL.
+- The full V4 launcher checks the 805-assembly/13,845-occurrence catalog and clones the job DB into trial state. The local mirror used for a rehearsal lacked verified images and had inconsistent metadata; the owner's Mac/Drive copy still needs its own read-only health result.
+- Release decision: RC21 remains a trial, not an accepted restoration release. Next gates are the owner's actual V4 health/diagram rendering, device browser inspection of all priority iX journeys, sourced maintenance procedures and qualified physical sign-off. Existing S1 enrichment ownership and S2–S6 rotation remain unchanged.
+
+### RC21 visual review follow-up
+
+- CI now saves three rendered Chromium screenshots (garage, selected component, saved case) as a seven-day artifact. Review of the first capture found a compressed 3D stage, a long blank grid column and raw JSON in narrow twin cells. The revised capture at commit `32a86b6` shows a full-width 3D stage, a separate broad inspection panel and labeled twin facts; the Chromium journey and both workflows passed.
+- The visual remains an illustrative mechanical model with three authored assembly scenes, not a photorealistic whole-car CAD twin. The saved case workflow is still dense and the synthetic dataset cannot demonstrate production evidence coverage. A follow-up copy change is under verification to prevent owner-reported factory-profile fields being presented as source-verified factory records.
+
+### RC21 full V4 trial guard
+
+- The available copied V4 catalog passes SQLite integrity and contains 805 assemblies / 13,845 rows, but its image manifest reports `MISMATCH` and 0/572 locally verified files. This does not establish the state of the owner's Mac/Drive copy. The launcher reports the degraded state without modifying V4.
+- The full trial launcher now stops if the original job DB path is absent and no existing trial DB is present; `--source-jobs` locates an alternate original, while `--fresh-trial` explicitly permits an empty start. A local fixture verified the missing-source guard, explicit empty opt-in, source copy and existing-trial reuse.
+
+### Digital twin accuracy gate
+
+- Fixed cumulative XP to sum the full persisted event ledger; the activity feed remains the latest 100. Creating an unverified component instance now records `COMPONENT_INSTANCE_CREATED` with zero identification credit, while historical events are preserved.
+- The 3D component panel now opens the physical component intake with a locator label. It deliberately leaves OEM number, observed marking, condition and source empty. Browser and API regressions test that a visual candidate is never silently promoted to installed identity and that XP remains correct beyond 100 events.
+- Still open: actual VIN and installed-component evidence on the owner's device, verified V4 image reconciliation, manual applicability, complete system coverage and qualified physical sign-off. The illustrated model is not yet an accurate as-built representation.

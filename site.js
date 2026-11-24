@@ -19,10 +19,39 @@ const workspaces={
  program:['Research operations','Catalog research','Monitor exact-number reviews and unresolved conflicts','View batch'],
  sources:['Source registry','Source and license register','Separate actual examined evidence from discovery leads','Overview']
 };
+const VISUAL_CONTEXT_KEY='325ix-visual-context-v1';
+const VISUAL_MODES=new Set(['hosted','local-3d','oem','personal','mechanical']);
+const MECHANICAL_SCENES=new Set(['ix_m20_engine_bay','ix_front_axle_workshop','ix_awd_driveline_workshop']);
+function safeContextId(value){const id=String(value??'');return /^[A-Za-z0-9_-]{1,96}$/.test(id)?id:''}
+function defaultVisualContext(){return {version:1,workspace:'garage',mode:'',system_id:'',assembly_id:'',part_id:'',scene:'',component_id:'',candidate_id:'',candidate_assembly_id:'',slot:'',mission_job_id:'',front_play_job_id:''}}
+function readVisualContext(){
+ const defaults=defaultVisualContext();
+ try{
+  const raw=JSON.parse(localStorage.getItem(VISUAL_CONTEXT_KEY)||'null');if(!raw||raw.version!==1)return defaults;
+  if(Object.prototype.hasOwnProperty.call(workspaces,raw.workspace))defaults.workspace=raw.workspace;
+  if(VISUAL_MODES.has(raw.mode))defaults.mode=raw.mode;
+  for(const key of ['system_id','assembly_id','part_id','component_id','candidate_id','candidate_assembly_id','slot'])defaults[key]=safeContextId(raw[key]);
+  if(MECHANICAL_SCENES.has(raw.scene))defaults.scene=raw.scene;
+  for(const key of ['mission_job_id','front_play_job_id']){const value=String(raw[key]??'');defaults[key]=value.length>0&&value.length<=10&&Array.from(value).every(ch=>ch>='0'&&ch<='9')?value:'';}
+ }catch(_){/* Browser storage is optional; server-side jobs remain authoritative. */}
+ return defaults;
+}
+let visualContext=readVisualContext();
+function saveVisualContext(patch={}){
+ const next={...visualContext,...patch,version:1};
+ if(!Object.prototype.hasOwnProperty.call(workspaces,next.workspace))next.workspace=visualContext.workspace||'garage';
+ if(!VISUAL_MODES.has(next.mode))next.mode='';
+ for(const key of ['system_id','assembly_id','part_id','component_id','candidate_id','candidate_assembly_id','slot'])next[key]=safeContextId(next[key]);
+ if(!MECHANICAL_SCENES.has(next.scene))next.scene='';
+ for(const key of ['mission_job_id','front_play_job_id']){const value=String(next[key]??'');next[key]=value.length>0&&value.length<=10&&Array.from(value).every(ch=>ch>='0'&&ch<='9')?value:'';}
+ visualContext=next;
+ try{localStorage.setItem(VISUAL_CONTEXT_KEY,JSON.stringify(next))}catch(_){/* Private browsing may deny persistence. */}
+ return next;
+}
 let activeWorkspace='garage';
-function tab(name){
+function tab(name,{fromHistory=false}={}){
  if(!document.getElementById(name)?.classList.contains('page'))return;
- activeWorkspace=name;
+ activeWorkspace=name;saveVisualContext({workspace:name});
  for(const b of document.querySelectorAll('.tab')){
   const current=b.dataset.tab===name;
   b.classList.toggle('active',current);
@@ -38,10 +67,14 @@ function tab(name){
  const advanced=document.querySelector('.ix-nav-more');
  if(advanced?.querySelector('.tab.active'))advanced.open=true;
  document.body.classList.remove('ix-nav-open');$('nav-toggle')?.setAttribute('aria-expanded','false');
- if(/^https?:$/.test(location.protocol))history.replaceState(null,'',location.pathname+location.search+'#'+name);
+ if(/^https?:$/.test(location.protocol)&&location.hash.slice(1)!==name){
+  const url=location.pathname+location.search+'#'+name;
+  if(fromHistory)history.replaceState({workspace:name},'',url);else history.pushState({workspace:name},'',url);
+ }
  if(name==='garage')loadGarage();if(name==='jobs')loadJobs();if(name==='sources')loadSources();if(name==='chat')loadAIStatus();if(name==='twin'){loadTwin();loadVisualTwin()}
  window.scrollTo({top:0,behavior:'instant'});
 }
+window.addEventListener('popstate',()=>{const name=location.hash.slice(1);if(Object.prototype.hasOwnProperty.call(workspaces,name))tab(name,{fromHistory:true})});
 for(const b of document.querySelectorAll('.tab'))b.addEventListener('click',()=>tab(b.dataset.tab));
 function openMissionCreate(){tab('garage');const panel=$('mission-create');panel.open=true;panel.scrollIntoView({block:'center',behavior:'smooth'});$('missionsymptom').focus({preventScroll:true})}
 for(const button of document.querySelectorAll('[data-route]'))button.addEventListener('click',()=>tab(button.dataset.route));
@@ -117,9 +150,9 @@ async function loadGarage(){
   }
  }catch(e){$('missionlist').replaceChildren(text('p','Garage unavailable: '+e.message,'risk'))}
 }
-async function resumeMission(m){currentJob=m.job_id;livingMission=m;tab('mission');await loadLivingMission(m)}
+async function resumeMission(m){currentJob=m.job_id;livingMission=m;saveVisualContext({mission_job_id:m.job_id,workspace:'mission'});tab('mission');await loadLivingMission(m)}
 async function loadLivingMission(m){
- const jobId=m.job_id;const root=$('livingmissionevidence');root.replaceChildren(text('p','Loading connected mission evidence…','info'));
+ const jobId=m.job_id;saveVisualContext({mission_job_id:jobId});const root=$('livingmissionevidence');root.replaceChildren(text('p','Loading connected mission evidence…','info'));
  try{
   lastMissionAI=null;$('missionsaveai').disabled=true;$('missionaianswer').textContent='No mission question asked yet.';$('missionaistatus').textContent='';
   const o=await api('/api/job/'+jobId+'/overview'),job=o.job;
@@ -203,7 +236,7 @@ async function search(){
 }
 $('searchbtn').addEventListener('click',search);$('search').addEventListener('keydown',e=>{if(e.key==='Enter')search()});$('group').addEventListener('change',search);
 function addPartsTable(parts){const tbody=$('partstable').querySelector('tbody');tbody.replaceChildren();for(const p of parts){const tr=text('tr');tr.className='partrow';tr.title='Click to inspect this component';tr.tabIndex=0;tr.addEventListener('click',e=>{if(e.target.tagName!=='A')openPart(p.id)});tr.addEventListener('keydown',e=>{if(e.key==='Enter')openPart(p.id)});for(const v of [p.callout_position,p.part_number,p.description,p.quantity_raw,p.date_condition_raw]){const td=text('td',v||'—');tr.append(td)}if(p.anchor){const a=link('Catalog',p.anchor);tr.lastChild.append(' ',a)}tbody.append(tr)}}
-async function openAssembly(id){try{const d=await api('/api/assembly?id='+encodeURIComponent(id));activeAssembly=d.assembly;
+async function openAssembly(id){try{const d=await api('/api/assembly?id='+encodeURIComponent(id));activeAssembly=d.assembly;saveVisualContext({system_id:d.assembly.group_name,assembly_id:d.assembly.id,part_id:''});
  $('workspace-subtitle').textContent='Selected assembly: '+d.assembly.slug.replaceAll('_',' ')+' · '+d.parts.length+' catalog rows';
  $('detailtitle').textContent=d.assembly.slug.replaceAll('_',' ');$('detailmeta').replaceChildren(text('span',`${d.assembly.group_name} · ${d.parts.length} table rows · `),link('Original catalog page',d.assembly.source_url));
  const target=$('diagrams');target.replaceChildren();for(const f of d.figures){const fig=text('div',null,'diagram');const img=document.createElement('img');img.alt='Exploded diagram (unverified diagram pixel positions)';img.loading='lazy';img.src='/api/diagram?asset='+encodeURIComponent(f.image_asset_id);img.onerror=()=>{
@@ -214,7 +247,7 @@ async function openAssembly(id){try{const d=await api('/api/assembly?id='+encode
 };fig.append(img);const refs=text('div',null,'links');refs.append(text('div','Figure asset: '+f.image_asset_id,'info'),link('View original source image',f.figure_url));fig.append(refs);target.append(fig)}
  addPartsTable(d.parts);$('detailpanel').hidden=false;window.scrollTo({top:$('detailpanel').offsetTop-10,behavior:'smooth'});
 }catch(e){fail(e)}}
-$('clearassembly').addEventListener('click',()=>{$('detailpanel').hidden=true;activeAssembly=null});
+$('clearassembly').addEventListener('click',()=>{$('detailpanel').hidden=true;activeAssembly=null;activePart=null;saveVisualContext({assembly_id:'',part_id:''})});
 $('openjobwithassembly').addEventListener('click',()=>{if(!activeAssembly)return;$('jobgroup').value=activeAssembly.group_name;$('jobassembly').textContent='Selected assembly: '+activeAssembly.slug+' ('+activeAssembly.id+')';tab('jobs')});
 async function loadSources(){try{const list=await api('/api/sources');$('sourcelist').replaceChildren();for(const s of list){const row=text('div',null,'source');row.append(text('div',s.title,'title'),text('div',`${s.id} · ${s.evidence_tier}`,'code'),text('p',s.status+' — '+s.market_caveat),link('Open reference',s.url));$('sourcelist').append(row)}}catch(e){fail(e)}}
 async function loadJobs(){try{const j=await api('/api/jobs');$('joblist').replaceChildren();if(!j.length)$('joblist').append(text('p','No inspection jobs recorded yet.'));for(const x of j){const row=text('div',null,'source');row.append(text('div',`IX-${String(x.id).padStart(4,'0')} · ${x.system.replaceAll('_',' ')} · ${x.status}`,'title'),text('p',x.symptom),text('div',x.risk+' · clearance: '+x.clearance,'code'));const a=text('a','Download job card');a.href='/api/job/'+x.id+'.md';row.append(a);const b=text('button','Add evidence','light');b.style.marginLeft='12px';b.addEventListener('click',()=>{currentJob=x.id;$('newjob').hidden=false;$('newjobtitle').textContent='IX-'+String(x.id).padStart(4,'0')+' · Evidence log';$('jobprompts').replaceChildren();$('jobdownload').replaceChildren(link('Download current job card','/api/job/'+x.id+'.md'));loadCheckpoints(currentJob);window.scrollTo({top:$('newjob').offsetTop-10,behavior:'smooth'})});row.append(b);$('joblist').append(row)}}catch(e){fail(e)}}
@@ -226,7 +259,7 @@ $('jobform').addEventListener('submit',async e=>{e.preventDefault();const d={sys
 $('noteform').addEventListener('submit',async e=>{e.preventDefault();if(!currentJob)return;const d={type:$('notetype').value,value:$('notevalue').value,unit:$('noteunit').value,tool:$('notetool').value,source:$('notesource').value};try{await api('/api/job/'+currentJob+'/observation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});$('notestatus').textContent='Observation saved. Job remains OPEN; no safety clearance has been issued.';$('notevalue').value='';await loadJobs()}catch(e){fail(e)}});
 init();
 
-async function loadTwin(){try{const d=await api('/api/twin');const t=d.twin;const xp=d.gamification.xp;$('twinxp').textContent=xp+' XP · Level '+d.gamification.level;$('twinfacts').replaceChildren();[['VIN',t.vin],['Factory state',JSON.stringify(t.factory_state)],['As-installed state',JSON.stringify(t.as_installed_state)],['Confidence',JSON.stringify(t.confidence)],['Last updated',t.updated_utc]].forEach(([k,v])=>$('twinfacts').append(fieldRow(k,v,'RECORDED')));const progress=Math.min(100,Math.round((xp%100)));$('twinprogress').querySelector('span').style.width=progress+'%';$('twinprogresslabel').textContent=`${xp} evidence points recorded · ${100-(xp%100)} points to next level · rewards never grant safety or fitment approval.`;const root=$('twinevents');root.replaceChildren();if(!d.events.length)root.append(text('p','No twin events recorded yet. Start a case or add structured evidence.','info'));for(const e of d.events.slice(0,30)){const row=text('div',null,'source');row.append(text('div',`${e.event_type.replaceAll('_',' ')} · ${e.entity_type} ${e.entity_id} · +${e.xp_value} XP`,'title'),text('div',JSON.stringify(e.payload),'info'),text('div',`${e.created_utc} · ${e.source}`,'meta'));root.append(row)}}catch(e){$('twinfacts').replaceChildren(text('p','Digital twin unavailable: '+e.message,'risk'))}}
+async function loadTwin(){try{const d=await api('/api/twin');const t=d.twin;const xp=d.gamification.xp;$('twinxp').textContent=xp+' XP · Level '+d.gamification.level;$('twinfacts').replaceChildren(fieldRow('VIN',t.vin,'RECORDED'));for(const [group,data,status] of [['Factory profile',t.factory_state,'CONFIGURATION / VERIFY'],['As installed',t.as_installed_state,'OWNER / INSPECTION'],['Confidence',t.confidence,'EVIDENCE STATE']]){for(const [key,value] of Object.entries(data||{}))$('twinfacts').append(fieldRow(group+' · '+key.replaceAll('_',' '),value,status))}$('twinfacts').append(fieldRow('Last updated',t.updated_utc,'RECORDED'));const progress=Math.min(100,Math.round((xp%100)));$('twinprogress').querySelector('span').style.width=progress+'%';$('twinprogresslabel').textContent=`${xp} evidence points recorded · ${100-(xp%100)} points to next level · rewards never grant safety or fitment approval.`;const root=$('twinevents');root.replaceChildren();if(!d.events.length)root.append(text('p','No twin events recorded yet. Start a case or add structured evidence.','info'));for(const e of d.events.slice(0,30)){const row=text('div',null,'source');row.append(text('div',`${e.event_type.replaceAll('_',' ')} · ${e.entity_type} ${e.entity_id} · +${e.xp_value} XP`,'title'),text('div',JSON.stringify(e.payload),'info'),text('div',`${e.created_utc} · ${e.source}`,'meta'));root.append(row)}}catch(e){$('twinfacts').replaceChildren(text('p','Digital twin unavailable: '+e.message,'risk'))}}
 async function loadTwinComponents(){let root=$('twincomponents');if(!root){root=text('section',null,'panel');root.id='twincomponents';root.innerHTML='<h3>As-built component registry</h3><p class="small">Record component instances without collapsing catalog identity, installed condition or mechanic verification.</p><form id="componentform"><div class="searchrow"><label>Component<input id="componenttype" required placeholder="e.g. front-left steering tie rod"></label><label>Location<input id="componentlocation" placeholder="Front axle / steering rack…"></label><label>Side<select id="componentside"><option value="UNKNOWN">Unknown</option><option value="LEFT">Left</option><option value="RIGHT">Right</option><option value="BOTH">Both</option></select></label></div><div class="searchrow"><label>OEM number<input id="componentpart" placeholder="Optional exact number"></label><label>Marking<input id="componentmarking" placeholder="Stamped marking / serial"></label><label>Condition<input id="componentcondition" placeholder="Observed only"></label></div><label>Source / person<input id="componentsource" required placeholder="Owner photo, mechanic, catalog…"></label><button type="submit">Add component instance</button><span id="componentstatus" class="info" role="status"></span></form><div id="componentlist"></div>';$("twinfacts").after(root);$("componentform").addEventListener('submit',async e=>{e.preventDefault();try{const d=await api('/api/twin/component',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({component_type:$("componenttype").value,location:$("componentlocation").value,side:$("componentside").value,oem_part_number:$("componentpart").value,marking:$("componentmarking").value,condition:$("componentcondition").value,source:$("componentsource").value})});$("componentstatus").textContent=`Saved component ${d.component_id}; identity remains unconfirmed`;e.target.reset();await loadTwinComponents();await loadTwin()}catch(e){$("componentstatus").textContent=e.message;$("componentstatus").className='risk'}})}try{const d=await api('/api/twin/components');const list=$("componentlist");list.replaceChildren();if(!d.components.length)list.append(text('p','No component instances recorded yet.','info'));for(const c of d.components){const row=text('div',null,'source');row.append(text('div',`${c.component_type} · ${c.location||'location unknown'} · ${c.side||'side unknown'}`,'title'),text('div',`OEM ${c.oem_part_number||'unknown'} · marking ${c.marking||'unknown'} · status ${c.status}`,'info'));for(const f of c.facts||[])row.append(text('div',`${f.layer}.${f.field}: ${f.value} · ${f.confidence} · ${f.source}`,'meta'));list.append(row)}const u=d.uncertainty;list.append(text('p',`Uncertainty map: owner ${u.owner_reported||0} · source ${u.source_verified||0} · mechanic ${u.mechanic_verified||0} · conflicting ${u.conflicting||0}`,'code'))}catch(e){if(root)$("componentlist").replaceChildren(text('p','Component registry unavailable: '+e.message,'risk'))}}
 $('twineventform').addEventListener('submit',async e=>{e.preventDefault();try{const payload=JSON.parse($('twineventpayload').value);const d=await api('/api/twin/event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event_type:$('twineventtype').value,entity_type:$('twinevententity').value,payload,source:$('twineventsource').value})});$('twineventstatus').textContent=`Saved · +${d.xp_value} evidence points · safety remains NOT APPROVED`;$('twineventpayload').value='';await loadTwin()}catch(e){$('twineventstatus').textContent=e.message;$('twineventstatus').className='risk'}});
 
@@ -263,7 +296,30 @@ for(const r of d.results){const item=text('div',null,'source');const p=r.provena
 $('manualq').addEventListener('keydown',e=>{if(e.key==='Enter')$('manualbtn').click()});
 // Existing tab() call happens at click time, and this additive listener updates status.
 for(const b of document.querySelectorAll('[data-tab="manuals"]'))b.addEventListener('click',loadManualStatus);
-api('/api/v4/status').then(s=>{$('v4status').textContent=s.connected?`V4 connected: ${s.images_present_locally} of ${s.manifest_assets} diagrams available on this Mac.`:'V4 drawings are complete in Drive; copy the V4 folder locally and start with --v4-root to display them.'}).catch(()=>{});
+function v4StatusSummary(s){
+ if(!s.connected)return s.catalog_assets?`V4 catalog references ${s.catalog_assets} image assets, but no local manifest/media root is connected. No binaries are assumed present.`:'V4 data is not connected locally. No diagram binaries are assumed present.';
+ const verified=s.images_hash_verified??0,total=s.manifest_assets??s.assets_in_manifest??0,notes=[];
+ if(s.images_missing_locally)notes.push(s.images_missing_locally+' reported downloads missing locally');
+ if(s.images_sha256_mismatches)notes.push(s.images_sha256_mismatches+' SHA-256 mismatches');
+ if(s.images_size_mismatches)notes.push(s.images_size_mismatches+' size mismatches');
+ if(s.images_mime_mismatches)notes.push(s.images_mime_mismatches+' MIME/content mismatches');
+ if(s.images_mime_unverifiable)notes.push(s.images_mime_unverifiable+' files with unverified MIME/content');
+ if(s.images_size_unverifiable)notes.push(s.images_size_unverifiable+' files without expected byte counts');
+ if(s.images_hash_unverifiable)notes.push(s.images_hash_unverifiable+' files without verifiable SHA-256');
+ if(s.images_invalid_local_files)notes.push(s.images_invalid_local_files+' invalid local files');
+ if(s.images_unsafe_paths)notes.push(s.images_unsafe_paths+' unsafe manifest paths');
+ if(s.images_missing_manifest_paths)notes.push(s.images_missing_manifest_paths+' missing manifest paths');
+ if(s.not_reported_downloaded_assets)notes.push(s.not_reported_downloaded_assets+' assets not reported downloaded');
+ if(s.catalog_integrity==='MANIFEST_MISSING')notes.push('image manifest missing; '+(s.catalog_assets??0)+' catalog assets not reconciled');
+ else if(['SCHEMA_MISMATCH','ERROR'].includes(s.catalog_integrity))notes.push('catalog/manifest reconciliation failed');
+ else if(['NOT_CHECKED','NOT_CONNECTED'].includes(s.catalog_integrity))notes.push('catalog/manifest reconciliation not completed');
+ else if(s.catalog_integrity==='MISMATCH')notes.push('catalog/manifest mismatch');
+ if(s.catalog_asset_ids_missing_from_manifest)notes.push(s.catalog_asset_ids_missing_from_manifest+' catalog assets absent from manifest');
+ if(s.manifest_asset_ids_missing_from_catalog)notes.push(s.manifest_asset_ids_missing_from_catalog+' manifest assets absent from catalog');
+ if(s.catalog_metadata_mismatches)notes.push(s.catalog_metadata_mismatches+' catalog metadata mismatches');
+ return `V4 image integrity ${s.integrity_status||'UNKNOWN'}: ${verified}/${total} files verified by expected size, SHA-256 and MIME/content${notes.length?' · '+notes.join(' · '):''}.`;
+}
+api('/api/v4/status').then(s=>{$('v4status').textContent=v4StatusSummary(s)}).catch(()=>{});
 
 // V0.4 part-detail workspace: strictly separate drawing, photographed physical part, and evidence.
 let activePart=null;
@@ -273,7 +329,7 @@ async function openPart(id){
   const d=await api('/api/part-dossier?id='+encodeURIComponent(id));
   // Opening a part from the 3D viewer must also reveal its parent assembly.
   if(d.part.assembly_id&&($('detailpanel').hidden||activeAssembly?.id!==d.part.assembly_id))await openAssembly(d.part.assembly_id);
-  activePart=d.part; $('workspace-subtitle').textContent='Selected BMW part: '+(d.part.part_number||'number unknown')+' · '+(d.part.description||'Component')+' · verify variant before fitment';
+  activePart=d.part;saveVisualContext({system_id:d.part.group_name,assembly_id:d.part.assembly_id,part_id:d.part.id}); $('workspace-subtitle').textContent='Selected BMW part: '+(d.part.part_number||'number unknown')+' · '+(d.part.description||'Component')+' · verify variant before fitment';
   const e=d.curated||{};
   $('parttitle').textContent=(d.part.part_number||'Unknown number')+' · '+(e.label||d.part.description||'Component');
   $('partscope').textContent='Callout '+(d.part.callout_position||'?')+' · '+d.part.group_name+' / '+d.part.slug.replaceAll('_',' ')+' · catalog evidence, not certified fitment';
@@ -292,7 +348,7 @@ async function openPart(id){
   const pd=$('partdiagrams');pd.replaceChildren();
   for(const fig of (d.figures||[])){
     const panel=text('div',null,'partdiagramcard');
-    const badge=text('div','PART CALLOUT: '+(d.part.callout_position||'?')+' — exact pixel hotspot not verified','info');
+    const badge=text('div','PART CALLOUT: '+(d.part.callout_position||'?')+' — exact pixel hotspot not verified · local drawing '+(fig.local_available?'verified':'not verified')+' ('+(fig.local_integrity_state||'unknown')+')','info');
     const img=document.createElement('img');img.alt='Exploded assembly drawing for '+d.part.part_number+'; see numbered callout '+d.part.callout_position;
     img.src='/api/diagram?asset='+encodeURIComponent(fig.image_asset_id);img.loading='lazy';
     img.onerror=()=>{
@@ -349,16 +405,16 @@ $('partphoto-add').addEventListener('click',async()=>{
  if(!activePart||!activePart.part_number)return alert('Choose a part with a catalog number first');
  if(!f||!label)return alert('Select a file and enter who supplied the photograph');
  if(f.size>2800000)return alert('Please reduce photo size to 2.8 MB or less');
- const upload=$('partphoto-add');upload.disabled=true;$('partphoto-result').textContent='Saving actual-part photo locally…';
+ const upload=$('partphoto-add');upload.disabled=true;$('partphoto-result').textContent='Saving owner-provided image locally…';
  try{
   const encoded=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(new Error('Cannot read photo'));reader.readAsDataURL(f)});
   await api('/api/part-photo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({part_number:activePart.part_number,kind:$('partphoto-type').value,source_label:label,source_url:$('partphoto-url').value.trim(),filename:f.name,image_base64:encoded})});
-  $('partphoto-result').textContent='Photo saved with attribution. Fitment remains unverified.';
+  $('partphoto-result').textContent='Image saved locally with provenance. Image identity and vehicle fitment remain unverified.';
   const id=activePart.id;await openPart(id);
  }catch(e){$('partphoto-result').textContent=e.message}finally{upload.disabled=false}
 });
 
-api('/api/evidence/coverage').then(s=>{const el=document.createElement('div');el.className='meta';el.textContent=`Live curated evidence: ${s.researched_exact_part_numbers} exact OEM-number dossiers; ${s.physical_photo_reference_count} supplier photo references (external); ${s.alternative_photo_reference_count} alternative photo examples. `+$('v4status').textContent;$('v4status').replaceWith(el);el.id='v4status'}).catch(()=>{});
+api('/api/evidence/coverage').then(s=>{const el=document.createElement('div');el.className='meta';el.textContent=`Live source-reviewed exact-number records: ${s.researched_exact_part_numbers} (VIN fitment not approved); ${s.supplier_image_reference_count} external supplier image references (not installed-part photos); ${s.alternative_photo_reference_count} alternative image references; ${s.owner_uploaded_workshop_actual_part_photo_count} owner-uploaded workshop actual-part photos (identity unverified). `+$('v4status').textContent;$('v4status').replaceWith(el);el.id='v4status'}).catch(()=>{});
 
 // V0.6 full catalog research program; independent from parts catalog and job DB.
 let lastProgramBatch=0;
@@ -366,8 +422,8 @@ async function loadProgramCoverage(){
  try{
   const s=await api('/api/catalog/coverage');
   $('catalogcoverage').textContent=`Catalog: ${s.unique_part_numbers} distinct OEM numbers / ${s.catalog_rows} ETK rows / ${s.assemblies} assemblies / ${s.unique_diagram_assets} drawings. `+
-   `Researched: ${s.researched_exact_number_records}. Unresearched: ${s.unique_part_numbers-s.researched_exact_number_records}. `+
-   `Physical photo references: ${s.supplier_photo_references} (external). Offline verified product photos: ${s.offline_individual_product_photos_verified}. `+
+   `Source-reviewed (fitment unverified): ${s.researched_exact_number_records}. Pending source review: ${s.unique_part_numbers-s.researched_exact_number_records}. `+
+   `External supplier image references (not installed-part photos): ${s.supplier_image_reference_count}. Offline independently verified product photos: ${s.offline_individual_product_photos_verified}. `+
    `Research batches: ${s.batches} × up to ${s.batch_size}. Fitment and full technical specs: unverified unless specifically sourced.`;
  }catch(e){$('catalogcoverage').textContent=e.message}
 }
@@ -400,7 +456,7 @@ async function expertInit(){
  try{
   expertDefinition=await api('/api/expert/front-play');
   $('expertwarning').textContent=expertDefinition.warning;
-  $('expertv4').textContent=expertDefinition.v4.present+' locally available image assets / '+expertDefinition.v4.assets_in_manifest+' manifest entries. Incomplete local pack must be supplied separately.';
+  $('expertv4').textContent=v4StatusSummary(expertDefinition.v4);
   const asm=$('expertassemblies');asm.replaceChildren();
   for(const a of expertDefinition.assemblies){
    const wrap=text('article',null,'expertassembly');
@@ -412,8 +468,16 @@ async function expertInit(){
    wrap.append(open,link('Catalog source',a.source_url));asm.append(wrap)
   }
   const parts=$('expertparts');parts.replaceChildren();
-  for(const p of expertDefinition.parts){const card=text('div',null,'source');card.append(text('strong',p.number+' · '+p.label),text('p',p.source_reviewed?'Source-reviewed exact-number record; fitment still unverified':'Original catalog only; source review pending','info'));
-   if(p.rows.length){const btn=text('button','Inspect component','light');btn.addEventListener('click',async()=>{tab('lookup');await openAssembly(p.rows[0].assembly_id);await openPart(p.rows[0].id)});card.append(btn)}
+  for(const p of expertDefinition.parts){
+   const card=text('div',null,'source');card.append(text('strong',p.number+' · '+p.label),
+    text('p',p.source_reviewed?'Source-reviewed exact-number record; fitment still unverified':'Original catalog only; source review pending','info'),
+    text('p','Raw catalog wording and callout are candidate evidence only. Verify variant, side, installed markings and actual hardware independently.','risk'));
+   if(p.rows.length){
+    for(const occurrence of p.rows){
+     card.append(text('p',`Catalog wording: ${occurrence.description||'not supplied'} · assembly ${occurrence.assembly_id} · callout ${occurrence.callout_position||'?'} · applicability ${occurrence.applicability||'not supplied'} · VIN fitment unverified.`,'meta'));
+     const btn=text('button','Open this catalog occurrence','light');btn.addEventListener('click',async()=>{tab('lookup');await openAssembly(occurrence.assembly_id);await openPart(occurrence.id)});card.append(btn)
+    }
+   }else card.append(text('p','No matching catalog occurrence found; do not treat this number as a part match.','risk'));
    parts.append(card)
   }
   const sources=$('expertsources');sources.replaceChildren();
@@ -430,8 +494,19 @@ async function expertOpen(jobId){
  try{
   if(!expertDefinition)await expertInit();
   const res=await api('/api/expert/front-play/cases?job_id='+encodeURIComponent(jobId));
-  expertJobId=jobId;$('expertcasepanel').hidden=false;$('expertoverview').hidden=false;
+  expertJobId=jobId;saveVisualContext({front_play_job_id:jobId,mission_job_id:jobId,workspace:'expert'});$('expertcasepanel').hidden=false;$('expertoverview').hidden=false;
   const overview=await api('/api/job/'+jobId+'/overview');const ov=$('expertoverview');ov.replaceChildren(text('h3','Case cockpit'),text('p',`Evidence items: ${overview.readiness.evidence_count} · Twin events: ${overview.twin_events.length} · Clearance: ${overview.readiness.clearance}`,'code'));
+  const intake=overview.twin_events.find(x=>x.event_type==='CASE_CREATED')?.payload||{};
+  const visual=intake.visual_reference,candidate=intake.catalog_candidate,assembly=intake.catalog_assembly;
+  if(visual||candidate||assembly){
+   const linked=text('section',null,'notice muted');linked.append(text('strong','Visual workshop handoff · reference only'));
+   if(visual)linked.append(text('p',`3D locator: ${visual.component_label} · ${visual.system.replaceAll('_',' ')}. This is orientation geometry, not proof of the installed component.`,'info'));
+   if(candidate)linked.append(text('p',`Catalog occurrence: ${candidate.part_number} · ${candidate.description}. ${candidate.source_reviewed_exact_number?'Exact-number source review exists;':'Source review not confirmed.'} Fitment and as-installed identity remain unverified.`,'info'));
+   else if(assembly)linked.append(text('p',`Catalog assembly candidate: ${assembly.label}. Applicability and installed fitment remain unverified.`,'info'));
+   const assemblyId=candidate?.assembly_id||assembly?.id||overview.job.assembly_id;
+   if(assemblyId){const open=text('button',candidate?.id?'Open BMW drawing & part dossier':'Open BMW assembly drawing','light');open.type='button';open.addEventListener('click',async()=>{try{tab('lookup');await openAssembly(assemblyId);if(candidate?.id)await openPart(candidate.id)}catch(e){fail(e)}});linked.append(open)}
+   ov.append(linked);
+  }
   const blockers=text('ul');for(const b of overview.readiness.blockers)blockers.append(text('li',b,'risk'));ov.append(text('h4','Current blockers'),blockers);if(overview.specialist_findings.length){ov.append(text('h4','Specialist findings'));for(const f of overview.specialist_findings)ov.append(text('p',`${f.agent_id} · ${f.intent} · ${f.status} · uncertainty: ${f.uncertainty}`,'info'))}
   $('expertcasetitle').textContent='IX-'+String(jobId).padStart(4,'0')+' · '+res.case.side+' · road clearance NOT APPROVED';
   $('expertexport').href='/api/job/'+jobId+'.md';
@@ -561,19 +636,12 @@ function ensureVisualTwinUI(){
  $('twin').prepend(panel);
  $('twinreset').onclick=()=>window.ixStudio3D?.reset();
  $('ix-fullscreen').onclick=async()=>{try{await $('ix-studio-stage').requestFullscreen()}catch(e){$('twinvisualstatus').textContent='Fullscreen unavailable: '+e.message}};
- $('twin2d').onclick=()=>activate2DFallback(false);
- $('ix-preview-sedan').onclick=()=>showHosted3D();
- $('ix-save-model').onclick=savePersonalModel;
- $('ix-view-system-model').onclick=()=>showPersonalModel(activeVisualSystem?.id);
+ $('twin2d').onclick=()=>{markVisualUserChoice();activate2DFallback(false)};
+ $('ix-preview-sedan').onclick=()=>{markVisualUserChoice();showHosted3D()};
+ $('ix-save-model').onclick=()=>{markVisualUserChoice();savePersonalModel()};
+ $('ix-view-system-model').onclick=()=>{markVisualUserChoice();showPersonalModel(activeVisualSystem?.id)};
  setupMechanicalControls(); 
- $('ix-mode-3d').onclick=async()=>{
-   hideHosted3D();
-   const status=await api('/api/3d/status');
-   if(!status.ready){const s=$('ix3d-fallback');s.hidden=false;s.textContent='Local 3D kit missing. Use the free online sedan or original BMW drawings.';await activate2DFallback(false);return;}
-   $('twin-diagram-panel').hidden=true;$('ix3d-stage').hidden=false;$('ix-mode-3d').classList.add('active');$('twin2d').classList.remove('active');
-   if(!window.ixStudio3D)window.ixStudio3D=await import('/viewer3d.js');
-   if(window.visualTwinData){if(personalModels.body){await window.ixStudio3D.openPersonal('/api/3d/model?slot=body',personalModels.body.format,window.visualTwinData,true);activePersonalSlot='body';}else{await window.ixStudio3D.mount(window.visualTwinData);activePersonalSlot=null;}}
- };
+ $('ix-mode-3d').onclick=()=>{markVisualUserChoice();showLocal3D()};
  $('ix-view-select').onchange=e=>document.querySelector(`[data-ix3d-view="${e.target.value}"]`)?.click()||window.ixStudio3D?.positionView?.(e.target.value);
 }
 function visualShort(s){return s.replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase())}
@@ -602,8 +670,12 @@ function renderVisualSystemFinder(systems){
  finder.oninput=show;show();
 }
 let activeVisualSystem=null,activePersonalSlot=null;
+let visualUserChoiceVersion=0;
+function markVisualUserChoice(){return ++visualUserChoiceVersion}
 function chooseVisualSystem(system){
+ markVisualUserChoice();
  const previous=activePersonalSlot;
+ if(activeVisualSystem&&activeVisualSystem.id!==system.id)saveVisualContext({assembly_id:'',part_id:'',candidate_id:'',candidate_assembly_id:''});
  selectVisualSystem(system);
  // Changing systems must not present old assembly geometry as the new system.
  if(previous&&previous!=='body'&&previous!==system.id){
@@ -611,12 +683,26 @@ function chooseVisualSystem(system){
    else activate2DFallback(false);
  }else if($('twin2d')?.classList.contains('active'))loadVisualAssemblies(system,{autoOpen:true});
 }
-async function selectVisualSystem(system){activeVisualSystem=system; $('workspace-subtitle').textContent=system.label+' · '+system.assembly_count+' indexed assemblies · catalog fitment unverified';updatePersonalModelButton();ensureVisualTwinUI();if($('ix-model-slot'))$('ix-model-slot').value=system.id;const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');for(const b of $('ix-system-results').querySelectorAll('button'))b.classList.toggle('active',b.dataset.system===system.id);root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Inspect OEM assemblies');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open restoration mission');mission.className='light';mission.onclick=()=>{tab('garage');const domain=$('missiondomain');if(domain&&restorationDomains.length){const d=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));if(d){domain.value=d.id;syncMissionSystems()}}const s=$('missionsystem');if(s)s.value=system.id};root.append(mission);
+async function openSystemMission(system){
+ markVisualUserChoice();
+ try{
+  const data=await api('/api/missions');
+  const existing=(data.missions||[]).find(m=>m.system===system.id&&m.mission_status==='ACTIVE');
+  if(existing){await resumeMission(existing);return;}
+  tab('garage');
+  const domain=$('missiondomain');const matched=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===system.id));
+  if(domain&&matched){domain.value=matched.id;syncMissionSystems();}
+  const selected=$('missionsystem');if(selected)selected.value=system.id;
+  openMissionCreate();
+ }catch(e){fail(e)}
+}
+async function selectVisualSystem(system){activeVisualSystem=system;saveVisualContext({system_id:system.id}); $('workspace-subtitle').textContent=system.label+' · '+system.assembly_count+' indexed assemblies · catalog fitment unverified';updatePersonalModelButton();ensureVisualTwinUI();if($('ix-model-slot'))$('ix-model-slot').value=system.id;const systemSelect=$('ix3d-system-select');if(systemSelect)systemSelect.value=system.id;for(const n of $('twin-canvas').querySelectorAll('.twin-node'))n.classList.toggle('selected',n.dataset.system===system.id);window.ixStudio3D?.selectSystem(system.id);const root=$('twin-system-list');for(const b of $('ix-system-results').querySelectorAll('button'))b.classList.toggle('active',b.dataset.system===system.id);root.replaceChildren(text('h3',system.label),text('p',`${system.domain_label} · ${system.priority} · ${system.assembly_count} catalog assemblies`,'info'),text('p',system.mission_count?`${system.mission_count} persistent mission(s) already linked.`:'No persistent mission linked yet.','info'),text('div','Use the catalog and 2D fallback for exact callouts; the 3D view does not assert dimensions or fitment.','risk'));const open=text('button','Inspect OEM assemblies');open.onclick=()=>loadVisualAssemblies(system);root.append(open);const mission=text('button','Open or start restoration mission');mission.className='light';mission.onclick=()=>openSystemMission(system);root.append(mission);
  const parts=text('button','Find these parts','light');parts.onclick=()=>{tab('lookup');$('group').value=system.id;$('search').value='';search()};root.append(parts);
  const inspect=text('button','Create inspection job','light');inspect.onclick=()=>{tab('jobs');$('jobgroup').value=system.id;$('symptom').focus()};root.append(inspect)
 }
 let visualSearchToken=0;
 async function loadVisualAssemblies(system,{autoOpen=false}={}){
+ saveVisualContext({mode:'oem',system_id:system.id});
  deactivateMechanicalMode();hideHosted3D();
  const token=++visualSearchToken;
  // An OEM drawing replaces the 3D canvas; it is not appended below the model.
@@ -634,7 +720,7 @@ async function loadVisualAssemblies(system,{autoOpen=false}={}){
    const search=document.createElement('input');search.type='search';search.className='ix-assembly-search';
    search.placeholder='Filter assemblies by name…';search.setAttribute('aria-label','Filter assemblies');
    const list=text('div',null,'visual-assembly-list');
-   const count=text('p',`${d.results.length} indexed assemblies · ${d.results.filter(a=>a.has_local_drawing).length} drawings cached locally`,'info');
+   const count=text('p',`${d.results.length} indexed assemblies · ${d.results.filter(a=>a.has_local_drawing).length} drawings verified locally`,'info');
    const detail=text('section',null,'visual-diagram-detail');detail.id='visual-diagram-detail';
    function filterAssemblies(){
      const q=search.value.trim().toLowerCase();const matches=d.results.filter(a=>(a.slug||a.title||'').toLowerCase().includes(q));
@@ -642,10 +728,10 @@ async function loadVisualAssemblies(system,{autoOpen=false}={}){
      for(const a of matches){
        const card=text('button',null,'visual-assembly');card.type='button';card.dataset.assembly=a.id||a.assembly_id;
        card.append(text('strong',visualShort(a.slug||a.title||'Assembly')),
-          text('small',`${a.part_count} parts · ${a.has_local_drawing?'Drawing cached':'Diagram indexed'}`));
+          text('small',`${a.part_count} parts · ${a.has_local_drawing?'Drawing verified locally':'Diagram indexed, local image unverified or missing'}`));
        card.onclick=()=>loadVisualAssembly(a.id||a.assembly_id);list.append(card);
      }
-     count.textContent=`${matches.length} of ${d.results.length} assemblies · ${d.results.filter(a=>a.has_local_drawing).length} drawings cached locally`;
+     count.textContent=`${matches.length} of ${d.results.length} assemblies · ${d.results.filter(a=>a.has_local_drawing).length} drawings verified locally`;
    }
    search.oninput=filterAssemblies;filterAssemblies();body.append(search,count,list,detail);
    if(autoOpen){
@@ -661,7 +747,10 @@ async function loadVisualAssembly(id){
  const token=++visualAssemblyToken;
  target.replaceChildren(text('p','Loading assembly drawing and callouts…','info'));
  try{
-  const d=await api('/api/assembly?id='+encodeURIComponent(id));if(token!==visualAssemblyToken)return;target.replaceChildren();
+  const d=await api('/api/assembly?id='+encodeURIComponent(id));if(token!==visualAssemblyToken)return;
+  const restorePart=visualContext.assembly_id===d.assembly.id?visualContext.part_id:'';
+  saveVisualContext({mode:'oem',system_id:d.assembly.group_name||visualContext.system_id,assembly_id:d.assembly.id,part_id:restorePart});
+  target.replaceChildren();
   for(const b of document.querySelectorAll('.visual-assembly'))b.classList.toggle('active',b.dataset.assembly===id);
   const wrap=text('div',null,'visual-diagram-wrap');
   const figure=(d.figures||[]).find(f=>f.local_available===true)||d.figures?.[0];
@@ -672,7 +761,7 @@ async function loadVisualAssembly(id){
       img.src='/api/diagram?asset='+encodeURIComponent(figure.image_asset_id);
       img.onerror=()=>{img.remove();media.prepend(text('p','The image file could not be loaded from the local cache.','risk'))};
       media.append(img);
-    }else media.append(text('p','The drawing is indexed but the image file is not in this preview. The numbered parts and original source are still available.','risk'));
+    }else media.append(text('p',`The drawing is indexed, but its local image is not verified (${figure.local_integrity_state||'unknown'}). No unverified local copy is displayed; catalog parts and the original source remain available.`,'risk'));
     if(figure.figure_url)media.append(link('Open original catalog drawing',figure.figure_url));
   }else media.append(text('p','This assembly has no linked drawing. Use the verified part records below.','risk'));
   const rail=text('div',null,'visual-callout-rail');
@@ -682,9 +771,11 @@ async function loadVisualAssembly(id){
    b.onclick=()=>selectVisualPart(p,d.assembly);rail.append(b);
   }
   wrap.append(media,rail);target.append(wrap);
+  if(restorePart){const selected=(d.parts||[]).find(p=>String(p.id)===String(restorePart));if(selected)selectVisualPart(selected,d.assembly);else saveVisualContext({part_id:''})}
  }catch(e){target.replaceChildren(text('p','Assembly could not load: '+e.message,'risk'))}
 }
 async function activate2DFallback(scroll=false,reason=''){
+ saveVisualContext({mode:'oem',system_id:activeVisualSystem?.id||visualContext.system_id});
  deactivateMechanicalMode();activePersonalSlot=null;hideHosted3D();
  ensureVisualTwinUI();
  $('ix3d-stage').hidden=true;
@@ -697,16 +788,19 @@ async function activate2DFallback(scroll=false,reason=''){
  if(!d?.systems?.length){$('twinvisualstatus').textContent='Catalog unavailable';return;}
  const preferred=activeVisualSystem||d.systems.find(s=>s.id==='front_axle'&&s.assembly_count>0)||d.systems.find(s=>s.assembly_count>0)||d.systems[0];
  $('twinvisualstatus').textContent=`OEM drawing mode · ${d.systems.length} catalog systems`;
- await selectVisualSystem(preferred);
- await loadVisualAssemblies(preferred,{autoOpen:true});
+ const saved=readVisualContext();await selectVisualSystem(preferred);
+ if(saved.system_id===preferred.id&&saved.assembly_id){await loadVisualAssemblies(preferred,{autoOpen:false});await loadVisualAssembly(saved.assembly_id)}
+ else await loadVisualAssemblies(preferred,{autoOpen:true});
  if(scroll)$('visualtwin').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function selectVisualPart(p,assembly){const root=$('twin-system-list');root.replaceChildren(text('h3',p.description||'Selected catalog part'),text('p',`${p.part_number||'OEM number not recorded'} · callout ${p.callout_position||'?'} · ${assembly.slug||assembly.title}`,'title'),text('p','Catalog identity is linked. Installed identity, variant fitment and condition still require evidence.','risk'));const b=text('button','Open full part dossier');b.onclick=()=>{tab('lookup');openPart(p.id)};root.append(b)}
+function selectVisualPart(p,assembly){saveVisualContext({mode:'oem',system_id:assembly.group_name||visualContext.system_id,assembly_id:assembly.id||visualContext.assembly_id,part_id:p.id});const root=$('twin-system-list');root.replaceChildren(text('h3',p.description||'Selected catalog part'),text('p',`${p.part_number||'OEM number not recorded'} · callout ${p.callout_position||'?'} · ${assembly.slug||assembly.title}`,'title'),text('p','Catalog identity is linked. Installed identity, variant fitment and condition still require evidence.','risk'));const b=text('button','Open full part dossier');b.onclick=()=>{tab('lookup');openPart(p.id)};root.append(b);const system=window.visualTwinData?.systems?.find(s=>s.id===(assembly.group_name||visualContext.system_id))||activeVisualSystem;if(system){const mission=text('button','Open or start restoration mission','light');mission.onclick=()=>openSystemMission(system);root.append(mission)}}
 
 // Ponytail: private local model slots; the server stores them outside Git, not in the catalog.
 let personalModels={};
 function hideHosted3D(){const e=$('ix3d-hosted');if(e)e.hidden=true;$('ix-preview-sedan')?.classList.remove('active');}
 function showHosted3D(){
+ if(window.ixLocalDemo){activate2DFallback(false);return;}
+ saveVisualContext({mode:'hosted',scene:'',component_id:'',candidate_id:'',candidate_assembly_id:''});
  deactivateMechanicalMode();activePersonalSlot=null;ensureVisualTwinUI();
  const panel=$('ix3d-hosted');panel.hidden=false;
  const iframe=$('ix3d-hosted-frame');
@@ -714,6 +808,20 @@ function showHosted3D(){
  $('twin-diagram-panel').hidden=true;$('ix3d-stage').hidden=true;$('ix3d-fallback').hidden=true;$('ix-preview-sedan').classList.add('active');
  $('ix-mode-3d').classList.remove('active');$('twin2d').classList.remove('active');
  $('twinvisualstatus').textContent='4-door E30 online reference · geometry and installed fitment unverified';
+}
+async function showLocal3D(){
+ if(window.ixLocalDemo){await openMechanicalScene('ix_front_axle_workshop');return;}
+ saveVisualContext({mode:'local-3d',scene:'',component_id:'',candidate_id:'',candidate_assembly_id:''});
+ hideHosted3D();
+ const status=await api('/api/3d/status');
+ if(!status.ready){const note=$('ix3d-fallback');note.hidden=false;note.textContent='Local 3D kit missing. Use the free online sedan or original BMW drawings.';await activate2DFallback(false);return;}
+ $('twin-diagram-panel').hidden=true;$('ix3d-stage').hidden=false;$('ix-mode-3d').classList.add('active');$('twin2d').classList.remove('active');
+ if(!window.ixStudio3D)window.ixStudio3D=await import('/viewer3d.js');
+ if(window.visualTwinData){
+  if(personalModels.body){await window.ixStudio3D.openPersonal('/api/3d/model?slot=body',personalModels.body.format,window.visualTwinData,true);activePersonalSlot='body';}
+  else{await window.ixStudio3D.mount(window.visualTwinData);activePersonalSlot=null;}
+  const selected=window.visualTwinData.systems.find(s=>s.id===visualContext.system_id);if(selected)await selectVisualSystem(selected);
+ }
 }
 async function refreshPersonalModels(){
  try{personalModels=(await api('/api/3d/models')).models||{};}catch(_){personalModels={}}
@@ -743,6 +851,7 @@ async function savePersonalModel(){
 }
 async function showPersonalModel(slot){
  if(!slot||!personalModels[slot])return;
+ saveVisualContext({mode:'personal',slot});
  deactivateMechanicalMode();
  hideHosted3D();const message=$('ix-model-message');
  try{
@@ -771,22 +880,24 @@ function deactivateMechanicalMode(){
 }
 function setupMechanicalControls(){
  if(mechanicalSetup)return;mechanicalSetup=true;
- for(const button of document.querySelectorAll('[data-mech-scene]'))button.onclick=()=>openMechanicalScene(button.dataset.mechScene);
+ for(const button of document.querySelectorAll('[data-mech-scene]'))button.onclick=()=>openMechanicalScene(button.dataset.mechScene,markVisualUserChoice());
  $('ix-bonnet-action').onclick=()=>window.ixStudio3D?.toggleBonnet();
- $('ix-mech-exit').onclick=showHosted3D;
+ $('ix-mech-exit').onclick=()=>{markVisualUserChoice();showHosted3D()};
  $('ix-mech-part-filter').oninput=()=>renderMechanicalComponentList();
 }
 async function getMechanicalInventory(){
  if(!mechanicalInventory)mechanicalInventory=await api('/mechanical_index.json');
  return mechanicalInventory;
 }
-async function openMechanicalScene(slug){
+async function openMechanicalScene(slug,expectedChoiceVersion=null){
+ const choiceIsStale=()=>expectedChoiceVersion!==null&&expectedChoiceVersion!==visualUserChoiceVersion;
  ensureVisualTwinUI();setupMechanicalControls();
- if(!window.visualTwinData)window.visualTwinData=await api('/api/visual/twin');
- const inventory=await getMechanicalInventory();const scene=inventory.scenes.find(s=>s.slug===slug);
+ if(!window.visualTwinData){window.visualTwinData=await api('/api/visual/twin');if(choiceIsStale())return;}
+ const inventory=await getMechanicalInventory();if(choiceIsStale())return;
+ const scene=inventory.scenes.find(s=>s.slug===slug);
  if(!scene){$('twinvisualstatus').textContent='Unknown 3D assembly';return;}
- const status=await api('/api/3d/status');
- mechanicalScene=scene;mechanicalComponent=null;mechanicalCandidate=null;
+ const status=await api('/api/3d/status');if(choiceIsStale())return;
+ saveVisualContext({mode:'mechanical',scene:slug,component_id:'',candidate_id:'',candidate_assembly_id:''});mechanicalScene=scene;mechanicalComponent=null;mechanicalCandidate=null;
  $('visualtwin').classList.add('ix-inspect-mode');$('ix-mech-browser').hidden=false;
  $('ix-mech-system-name').textContent=scene.description;
  $('ix-mech-part-filter').value='';$('ix-mech-component-detail').replaceChildren();renderMechanicalComponentList();
@@ -799,19 +910,23 @@ async function openMechanicalScene(slug){
  $('ix-mech-static').hidden=true;
  $('ix-mode-3d').classList.add('active');$('twin2d').classList.remove('active');
  $('ix-stage-heading').textContent='3D MECHANICAL STUDIO';
+ if(window.matchMedia('(max-width: 760px)').matches)requestAnimationFrame(()=>$('ix-studio-stage').scrollIntoView({behavior:'smooth',block:'start'}));
  $('twinvisualstatus').textContent='Loading '+scene.components.length+' interactive mechanical components';
  if(!status.ready){
    const missing=status.missing?.join(', ')||'Three.js runtime';
-   $('twinvisualstatus').textContent='Offline preview · '+scene.components.length+' selectable components in the inspector';$('ix3d-status').textContent='Component geometry included · renderer kit available';
+   $('twinvisualstatus').textContent='3D renderer files missing: '+missing+' · static assembly preview shown';$('ix3d-status').textContent='3D renderer files missing';
    $('ix3d-stage').hidden=true;$('ix-mech-static').hidden=false;$('ix-mech-preview').src='/'+scene.preview;
    $('ix3d-fallback').hidden=true;
    return;
  }
  try{
    if(!window.ixStudio3D)window.ixStudio3D=await import('/viewer3d.js');
+   if(choiceIsStale())return;
    const result=await window.ixStudio3D.openMechanical(scene,window.visualTwinData);
+   if(choiceIsStale())return;
    $('twinvisualstatus').textContent=scene.components.length+' modeled components · '+result.pickable+' selectable 3D segments · source model generated locally';
  }catch(e){
+   if(choiceIsStale())return;
    $('ix3d-stage').hidden=true;$('ix-mech-static').hidden=false;$('ix-mech-preview').src='/'+scene.preview;
    $('ix3d-fallback').hidden=true;
    $('twinvisualstatus').textContent='Assembly geometry present; renderer error: '+e.message;
@@ -835,7 +950,9 @@ window.ixOnMechanicalComponent=(sceneSlug,key)=>{
 async function selectMechanicalComponent(key,focus){
  if(!mechanicalScene)return;
  const c=mechanicalScene.components.find(x=>x.id===key);if(!c)return;
- mechanicalComponent=c;mechanicalCandidate=null;
+ const restoreCandidate=visualContext.scene===mechanicalScene.slug&&visualContext.component_id===c.id?visualContext.candidate_id:'';
+ const restoreCandidateAssembly=restoreCandidate?visualContext.candidate_assembly_id:'';
+ mechanicalComponent=c;mechanicalCandidate=null;saveVisualContext({mode:'mechanical',scene:mechanicalScene.slug,component_id:c.id,system_id:c.system,candidate_id:restoreCandidate,candidate_assembly_id:restoreCandidateAssembly});
  if(focus)window.ixStudio3D?.focusMechanicalComponent(key);
  else window.ixStudio3D?.selectMechanicalComponent(key,false);
  renderMechanicalComponentList();
@@ -844,9 +961,18 @@ async function selectMechanicalComponent(key,focus){
  const actions=text('div',null,'ix-mech-detail-actions');
  const oem=text('button','See OEM drawings','light');oem.onclick=()=>openMechanicalDrawings(c.system);
  const isolate=text('button','Isolate in 3D','light');isolate.onclick=()=>{const active=window.ixStudio3D?.isolateMechanicalComponent(key);isolate.textContent=active?'Show all parts':'Isolate in 3D'};
- actions.append(isolate,oem);root.append(actions);
+ const record=text('button','Record physical instance','light');record.type='button';record.onclick=async()=>{
+  tab('twin');await loadTwinComponents();
+  $('componenttype').value=c.label;
+  $('componentlocation').value=c.system.replaceAll('_',' ')+' · '+c.label;
+  $('componentpart').value='';$('componentmarking').value='';$('componentcondition').value='';$('componentsource').value='';
+  $('componentstatus').textContent='3D locator only. Enter observed marking, condition and source; catalog match is not installed identity.';
+  $('componentform').scrollIntoView({block:'center',behavior:'smooth'});$('componentmarking').focus({preventScroll:true});
+ };
+ actions.append(isolate,oem,record);root.append(actions);
  const searchLabel=text('p','Looking up BMW catalog matches…','ix-mech-catalog-state');root.append(searchLabel);
  const resultArea=text('div',null,'ix-mech-matches');root.append(resultArea);
+ const evidencePanel=text('section',null,'ix-mech-evidence');evidencePanel.setAttribute('aria-live','polite');root.append(evidencePanel);
  const jobPanel=text('section',null,'ix-mech-job-panel');root.append(jobPanel);
  renderMechanicalJobForm(jobPanel,c);
  try{
@@ -862,19 +988,50 @@ async function selectMechanicalComponent(key,focus){
   const matches=(response.results||[]).slice(0,9);
   searchLabel.textContent=matches.length?`${response.results.length} catalog hits for “${used}” · select an OEM occurrence`:'No matching description. Open the system assembly catalog for part identification.';
   for(const result of matches){
-   const b=text('button',null,'ix-mech-catalog-result');b.type='button';
+   const b=text('button',null,'ix-mech-catalog-result');b.type='button';b.dataset.candidate=String(result.id||'');b.dataset.assembly=String(result.assembly_id||'');
    b.append(text('strong',result.part_number||'Assembly — BMW catalog'),text('span',result.description||result.slug||result.title||'Catalog record'),
     text('small',`${(result.slug||result.title||'').replaceAll('_',' ')} · ${result.date_condition_raw||'date condition not recorded'}`));
    b.onclick=()=>{
-    mechanicalCandidate=result;
-    for(const other of resultArea.querySelectorAll('button'))other.classList.toggle('selected',other===b);
+    mechanicalCandidate=result;saveVisualContext({candidate_id:result.id||'',candidate_assembly_id:result.assembly_id||''});
+    for(const other of resultArea.querySelectorAll('.ix-mech-catalog-result'))other.classList.toggle('selected',other===b);
     $('ix-mech-job-part').textContent=result.part_number||'catalog occurrence selected';
     $('ix-mech-catalog-choice').textContent='Selected BMW catalog occurrence; installed fitment still requires verification';
+    showMechanicalEvidence(result,evidencePanel,token);
    };
    resultArea.append(b);
+   const dossier=text('button','Open BMW drawing & part evidence','light');dossier.type='button';
+   dossier.addEventListener('click',async()=>{try{mechanicalCandidate=result;saveVisualContext({candidate_id:result.id||'',candidate_assembly_id:result.assembly_id||''});b.classList.add('selected');$('ix-mech-job-part').textContent=result.part_number||'catalog occurrence selected';$('ix-mech-catalog-choice').textContent='Selected BMW catalog occurrence; installed fitment still requires verification';tab('lookup');await openAssembly(result.assembly_id);if(result.id)await openPart(result.id)}catch(e){fail(e)}});
+   resultArea.append(dossier);
   }
+  if(restoreCandidate){const candidate=[...resultArea.querySelectorAll('.ix-mech-catalog-result')].find(b=>b.dataset.candidate===restoreCandidate);if(candidate)candidate.click();else saveVisualContext({candidate_id:'',candidate_assembly_id:''})}
   const more=text('button','Browse all system assemblies','light');more.onclick=()=>openMechanicalDrawings(c.system);resultArea.append(more);
  }catch(e){if(token===mechanicalSelectionToken)searchLabel.textContent='Catalog lookup failed: '+e.message}
+}
+async function showMechanicalEvidence(candidate,panel,selectionToken){
+ panel.replaceChildren(text('p','Loading source and drawing evidence…','info'));
+ try{
+  const dossier=await api('/api/part-dossier?id='+encodeURIComponent(candidate.id));
+  if(selectionToken!==mechanicalSelectionToken||mechanicalCandidate?.id!==candidate.id)return;
+  const part=dossier.part||{},curated=dossier.curated||{},figures=dossier.figures||[];
+  panel.replaceChildren(text('span','EVIDENCE / SELECTED CANDIDATE','ix-eyebrow'),
+   text('h4',(part.part_number||'Number unknown')+' · '+(part.description||'Catalog component')),
+   text('p','Catalog occurrence · '+(part.callout_position||'?')+' callout · installed identity unconfirmed','risk'));
+  const review=curated.evidence_status||'NOT_RESEARCHED';
+  panel.append(text('p','Research: '+review+' · '+figures.filter(f=>f.local_available).length+'/'+figures.length+' drawings verified locally','info'));
+  if(curated.reviewed_utc||curated.reviewed_at)panel.append(text('p','Reviewed: '+(curated.reviewed_utc||curated.reviewed_at),'meta'));
+  if(dossier.photos?.length)panel.append(text('p',dossier.photos.length+' workshop photo(s) linked to this part number; confirm the photographed instance before use.','info'));
+  for(const flag of (curated.conflicts||[]))panel.append(text('p','Conflict: '+flag,'risk'));
+  const source=part.anchor||part.source_url;
+  if(source)panel.append(link('Open catalog assembly source ↗',source));
+  else panel.append(text('p','No exact catalog source URL in this record. Verify the number and assembly before making a fitment decision.','risk'));
+  for(const figure of figures.slice(0,2)){
+   const row=text('div',null,'ix-mech-evidence-figure');
+   if(figure.local_available){const img=document.createElement('img');img.src='/api/diagram?asset='+encodeURIComponent(figure.image_asset_id);img.alt='Catalog assembly drawing; callout pixel location unverified';img.loading='lazy';row.append(img)}
+   else row.append(text('p','Drawing indexed; local image unavailable or unverified.','info'));
+   if(figure.figure_url)row.append(link('Open original drawing ↗',figure.figure_url));panel.append(row);
+  }
+  const more=text('button','Full dossier and photos','light');more.type='button';more.onclick=async()=>{tab('lookup');await openPart(part.id)};panel.append(more);
+ }catch(error){if(selectionToken===mechanicalSelectionToken)panel.replaceChildren(text('p','Evidence unavailable: '+error.message,'risk'))}
 }
 async function openMechanicalDrawings(group){
  const system=window.visualTwinData?.systems?.find(s=>s.id===group);
@@ -883,52 +1040,156 @@ async function openMechanicalDrawings(group){
  await loadVisualAssemblies(system,{autoOpen:true});
 }
 function renderMechanicalJobForm(root,c){
- root.replaceChildren(text('span','STEP 03 / REPAIR WORKFLOW','ix-eyebrow'),text('h4','Create an inspection'),
- text('p','A real saved job starts here. Only observed evidence is recorded; never generated from the model.','ix-mech-help'));
+ const frontPlay=c.system==='front_axle'||c.system==='steering';
+ root.replaceChildren(text('span',frontPlay?'STEP 03 / FRONT-WHEEL-PLAY WORKFLOW':'STEP 03 / REPAIR WORKFLOW','ix-eyebrow'),
+  text('h4',frontPlay?'Start guided front-wheel-play inspection':'Create an inspection'),
+  text('p',frontPlay?'Continue into the existing seven-step front-axle/steering workflow. The 3D part is an orientation reference, not installed-part identification.':'A real saved job starts here. Only observed evidence is recorded; never generated from the model.','ix-mech-help'));
  const choice=text('div','No BMW catalog occurrence selected','ix-mech-selection-status');choice.id='ix-mech-job-part';
  const state=text('div','','ix-mech-selection-state');state.id='ix-mech-catalog-choice';root.append(choice,state);
  const form=document.createElement('form');form.className='ix-mech-job-form';
- const symptom=document.createElement('textarea');symptom.id='ix-mech-job-symptom';symptom.rows=2;symptom.required=true;symptom.minLength=4;symptom.placeholder='What needs inspection? Describe the real symptom or objective…';
- const evidence=document.createElement('textarea');evidence.id='ix-mech-job-evidence';evidence.rows=2;evidence.placeholder='Optional observed condition / measurement (not a guess)';
+ let sideSelect=null;
+ if(frontPlay){
+  const sideLabel=text('label','Affected front corner');sideSelect=document.createElement('select');sideSelect.required=true;
+  for(const [value,label] of [['UNKNOWN','Not known yet'],['LEFT','Front left'],['RIGHT','Front right'],['BOTH','Both front sides']]){const option=document.createElement('option');option.value=value;option.textContent=label;sideSelect.append(option)}
+  sideLabel.append(sideSelect);form.append(sideLabel);
+ }
+ const symptom=document.createElement('textarea');symptom.id='ix-mech-job-symptom';symptom.rows=2;symptom.required=true;symptom.minLength=frontPlay?8:4;
+ symptom.placeholder=frontPlay?'Describe only the observed play or looseness; cause unknown.':'What needs inspection? Describe the real symptom or objective…';
+ const evidence=document.createElement('textarea');evidence.id='ix-mech-job-evidence';evidence.rows=2;
+ evidence.placeholder=frontPlay?'Optional observation only; enter numeric measurements with units and tool in the case evidence ledger.':'Optional observed condition / measurement (not a guess)';
  const source=document.createElement('input');source.id='ix-mech-job-source';source.placeholder='Evidence source / mechanic (required if adding evidence)';
- const button=text('button','Save inspection & open mission');button.type='submit';button.className='ix-mech-save';
+ const button=text('button',frontPlay?'Save & open seven-step inspection':'Save inspection & open mission');button.type='submit';button.className='ix-mech-save';
  const status=text('div','','ix-mech-job-status');status.setAttribute('role','status');
  form.append(symptom,evidence,source,button,status);root.append(form);
  form.onsubmit=async ev=>{
   ev.preventDefault();if(mechanicalComponent!==c)return;
   if(evidence.value.trim()&&!source.value.trim()){status.textContent='Enter who observed the condition or the evidence source.';source.focus();return;}
   button.disabled=true;status.textContent='Saving inspection in local workshop database…';
+  let savedJob=null;
   try{
-   const job=await api('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:c.system,assembly_id:mechanicalCandidate?.assembly_id||'',symptom:symptom.value.trim(),context:`Visual inspection: ${mechanicalScene.description}; component: ${c.label}; keyword: ${c.search_terms}; candidate OEM ${mechanicalCandidate?.part_number||'not yet verified'}`})});
+   let job;
+   if(frontPlay){
+    job=await api('/api/expert/front-play/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+     side:sideSelect.value,system:c.system,symptom:symptom.value.trim(),
+     context:'Started from the interactive front-axle visual workshop; selected geometry is orientation-only.',
+     visual_scene:mechanicalScene.slug,visual_component_id:c.id,
+     assembly_id:mechanicalCandidate?.assembly_id||'',candidate_id:mechanicalCandidate?.id||'',part_number:mechanicalCandidate?.part_number||''
+    })});
+   }else{
+    job=await api('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:c.system,assembly_id:mechanicalCandidate?.assembly_id||'',symptom:symptom.value.trim(),context:`Visual inspection: ${mechanicalScene.description}; component: ${c.label}; keyword: ${c.search_terms}; candidate OEM ${mechanicalCandidate?.part_number||'not yet verified'}`})});
+   }
+   savedJob=job;
    if(evidence.value.trim())await api('/api/job/'+job.job_id+'/observation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'inspection',value:evidence.value.trim(),unit:'',tool:'',source:source.value.trim()})});
-   currentJob=job.job_id;const domain=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===c.system));
-   const mission={job_id:job.job_id,domain_id:domain?.id||'other',domain_label:domain?.label||c.system.replaceAll('_',' '),system:c.system,mission_status:'ACTIVE'};
-   await resumeMission(mission);
-  }catch(err){status.textContent='Could not save: '+err.message;button.disabled=false;}
+   currentJob=job.job_id;
+   if(frontPlay){
+    status.textContent='Case saved; opening its persistent seven-step inspection…';
+    tab('expert');await expertInit();await expertOpen(job.job_id);
+   }else{
+    const domain=restorationDomains.find(d=>d.groups?.some(g=>g.group_name===c.system));
+    const mission={job_id:job.job_id,domain_id:domain?.id||'other',domain_label:domain?.label||c.system.replaceAll('_',' '),system:c.system,mission_status:'ACTIVE'};
+    await resumeMission(mission);
+   }
+  }catch(err){
+   status.textContent=savedJob?'Inspection IX-'+String(savedJob.job_id).padStart(4,'0')+' was saved, but follow-up failed: '+err.message+' Refresh the saved-case list; do not submit a duplicate.':'Could not save inspection: '+err.message;
+   button.disabled=Boolean(savedJob);
+  }
  };
 }
 
 let ixStudioLoading=null;
-window.ixSelectVisualSystemById=id=>{const s=window.visualTwinData?.systems?.find(x=>x.id===id);if(s)selectVisualSystem(s)};
+async function restoreCatalogContext(){
+ const saved=readVisualContext();if(!saved.part_id&&!saved.assembly_id)return false;
+ try{if(saved.part_id)await openPart(saved.part_id);else await openAssembly(saved.assembly_id);return true}
+ catch(e){return false}
+}
+async function restoreMissionContext(){
+ const jobId=readVisualContext().mission_job_id;if(!jobId)return false;
+ try{const data=await api('/api/missions');const mission=(data.missions||[]).find(m=>String(m.job_id)===String(jobId));
+  if(!mission){saveVisualContext({mission_job_id:''});return false;}
+  await resumeMission(mission);return true;
+ }catch(e){$('livingmissionevidence')?.replaceChildren(text('p','Saved mission could not be reopened: '+e.message,'risk'));return false;}
+}
+async function restoreExpertContext(jobId){
+ if(!jobId)return false;
+ try{await expertInit();await expertOpen(jobId);return true}catch(_){return false}
+}
+async function restoreVisualContext(expectedChoiceVersion=visualUserChoiceVersion){
+ const choiceIsStale=()=>expectedChoiceVersion!==visualUserChoiceVersion;
+ const saved=readVisualContext();
+ const system=window.visualTwinData?.systems?.find(s=>s.id===saved.system_id);
+ try{
+  if(system)await selectVisualSystem(system);
+  if(choiceIsStale())return true;
+  if(saved.mode==='mechanical'&&saved.scene){
+   await openMechanicalScene(saved.scene,expectedChoiceVersion);
+   if(choiceIsStale())return true;
+   if(saved.component_id){saveVisualContext({component_id:saved.component_id,candidate_id:saved.candidate_id,candidate_assembly_id:saved.candidate_assembly_id});await selectMechanicalComponent(saved.component_id,false);if(choiceIsStale())return true;}
+   return true;
+  }
+  if(saved.mode==='oem'&&system){
+   await selectVisualSystem(system);if(choiceIsStale())return true;
+   await loadVisualAssemblies(system,{autoOpen:false});if(choiceIsStale())return true;
+   const context=readVisualContext();if(context.assembly_id)await loadVisualAssembly(context.assembly_id);
+   return true;
+  }
+  if(saved.mode==='personal'&&saved.slot&&personalModels[saved.slot]){await showPersonalModel(saved.slot);if(choiceIsStale())return true;if(system)await selectVisualSystem(system);return true;}
+  if(saved.mode==='local-3d'){await showLocal3D();if(choiceIsStale())return true;if(system)await selectVisualSystem(system);return true;}
+  if(saved.mode==='hosted'){if(choiceIsStale())return true;showHosted3D();if(system)await selectVisualSystem(system);return true;}
+ }catch(e){if(choiceIsStale())return true;$('twinvisualstatus').textContent='Could not restore visual context: '+e.message;$('twinvisualstatus').className='risk';return true;}
+ return false;
+}
+window.ixSelectVisualSystemById=id=>{const s=window.visualTwinData?.systems?.find(x=>x.id===id);if(s){if(activeVisualSystem&&activeVisualSystem.id!==id)saveVisualContext({assembly_id:'',part_id:'',candidate_id:'',candidate_assembly_id:''});selectVisualSystem(s)}};
+function applyRuntimeMode(status){
+ window.ixLocalDemo=Boolean(status?.demo_mode);
+ if(!window.ixLocalDemo)return;
+ const main=$('workbench-main');
+ if(main&&!$('local-demo-banner')){
+  const banner=text('aside','LOCAL SYNTHETIC DEMO — catalog rows are fabricated test data. No OEM drawings, real part numbers, repair procedures, fitment evidence or road-use approval are included.','local-demo-banner');
+  banner.id='local-demo-banner';main.prepend(banner);
+ }
+ // The synthetic package includes three selectable mechanical GLBs. The M3
+ // exterior and hosted sedan are excluded, so label this action accurately.
+ if($('ix-mode-3d')){$('ix-mode-3d').hidden=false;$('ix-mode-3d').textContent='3D assemblies';}
+ if($('ix-preview-sedan'))$('ix-preview-sedan').hidden=true;
+}
 async function loadVisualTwin(){
+ const choiceVersion=visualUserChoiceVersion;
+ const choiceIsStale=()=>choiceVersion!==visualUserChoiceVersion;
  ensureVisualTwinUI();
  try{
-  const d=await api('/api/visual/twin');renderVisualTwin(d);await refreshPersonalModels();
+  const d=await api('/api/visual/twin');if(choiceIsStale())return;renderVisualTwin(d);await refreshPersonalModels();
+  if(choiceIsStale())return;
   // Check the complete local import graph before importing any Three.js module.
   // A failed nested import otherwise manifests misleadingly as "Failed to fetch viewer3d.js".
   let status;
   try{status=await api('/api/3d/status')}catch(e){status={ready:false,missing:['3D status endpoint: '+e.message]}}
+  if(choiceIsStale())return;
+  applyRuntimeMode(status);
+  if(await restoreVisualContext(choiceVersion))return;
+  if(choiceIsStale())return;
+  if(status.demo_mode){await openMechanicalScene('ix_front_axle_workshop',choiceVersion);return;}
   if(status.ready&&personalModels.body){
     if(!ixStudioLoading)ixStudioLoading=import('/viewer3d.js').then(m=>{window.ixStudio3D=m;return m});
-    try{const studio=await ixStudioLoading;await studio.openPersonal('/api/3d/model?slot=body',personalModels.body.format,d,true);activePersonalSlot='body';}
-    catch(e){ixStudioLoading=null;showHosted3D();}
-  }else showHosted3D(); // Prefer actual four-door geometry over the mismatched M3 reference.
+    try{const studio=await ixStudioLoading;if(choiceIsStale())return;await studio.openPersonal('/api/3d/model?slot=body',personalModels.body.format,d,true);if(choiceIsStale())return;activePersonalSlot='body';saveVisualContext({mode:'personal',slot:'body'});}
+    catch(e){ixStudioLoading=null;if(!choiceIsStale())showHosted3D();}
+  }else if(!choiceIsStale())await openMechanicalScene('ix_front_axle_workshop',choiceVersion);
 
  }catch(e){
+  if(choiceIsStale())return;
   $('twinvisualstatus').textContent='Visual twin unavailable: '+e.message;
   $('twinvisualstatus').className='risk';
  }
 }
 
-// Restore the visible workspace on reload without changing the underlying job state.
-const initialWorkspace=location.hash.slice(1);if(initialWorkspace&&workspaces[initialWorkspace])tab(initialWorkspace);
+// Restore the last workspace and evidence context on refresh/reopen. The SQLite
+// job remains authoritative; this browser key stores only local UI locators/IDs.
+const startupContext=readVisualContext();
+const requestedWorkspace=location.hash.slice(1);
+const initialWorkspace=Object.prototype.hasOwnProperty.call(workspaces,requestedWorkspace)?requestedWorkspace:startupContext.workspace;
+if(initialWorkspace&&workspaces[initialWorkspace]){
+ tab(initialWorkspace);
+ if(initialWorkspace==='lookup')restoreCatalogContext();
+ if(initialWorkspace==='mission')restoreMissionContext();
+ if(initialWorkspace==='expert'&&startupContext.front_play_job_id)restoreExpertContext(startupContext.front_play_job_id);
+}
+api('/api/3d/status').then(applyRuntimeMode).catch(()=>{});

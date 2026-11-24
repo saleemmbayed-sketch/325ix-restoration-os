@@ -33,6 +33,7 @@ These are **inspection guidance references only**; the service-information text 
 
 ## Release QA state
 
-- Code and backend API tests can be rerun on a copy of the catalogue with `python3 test_rc070.py`.
+- The disposable installer/API/rollback suite requires an isolated V0.6-style baseline: `python3 test_rc070.py --baseline /path/to/disposable-baseline`. It must contain `app.py`, `sources.json`, `data/325ix_assemblies.sqlite3`, and a disposable `workshop_jobs.sqlite3`; never pass the owner's live workshop folder. The test copies it into a temporary directory before installation.
+- Latest sandbox run: **47 PASS / 0 FAIL** using a disposable legacy-schema fixture adapted from the read-only V4 catalog and a synthetic PNG. The overlay acceptance count is 85 exact-number source-provenance records, not VIN or fitment approval.
 - A synthetic image route check does NOT prove the actual BMW V4 pack has been installed or rendered on the owner's Mac.
 - Real 8-GB Intel Monterey browser, keyboard and image asset testing, qualified mechanic workflow review, and model-appropriate original BMW repair procedure remain P0 gates before workshop approval.

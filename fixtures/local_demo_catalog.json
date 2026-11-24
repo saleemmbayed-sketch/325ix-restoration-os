@@ -1,0 +1,21 @@
+{
+  "fixture_version": 1,
+  "notice": "SYNTHETIC LOCAL TEST DATA ONLY. These are not BMW OEM part numbers, drawings, fitment records, repair instructions, or evidence from any real vehicle.",
+  "assemblies": [
+    {"id": "demo-front-axle", "group_name": "front_axle", "slug": "demo_front_axle_carrier", "description": "Synthetic front axle assembly for local UI testing"},
+    {"id": "demo-steering-linkage", "group_name": "steering", "slug": "demo_steering_linkage", "description": "Synthetic steering linkage assembly for local UI testing"},
+    {"id": "demo-front-brakes", "group_name": "brakes", "slug": "demo_front_brakes", "description": "Synthetic brake assembly for local UI testing"},
+    {"id": "demo-transfer-case", "group_name": "transfer_box_electric_gearbox", "slug": "demo_transfer_case", "description": "Synthetic AWD transfer assembly for local UI testing"},
+    {"id": "demo-electrical-system", "group_name": "vehicle_electrical_system", "slug": "demo_electrical_system", "description": "Synthetic electrical assembly for local UI testing"}
+  ],
+  "parts": [
+    {"id": "demo-front-strut-left", "assembly_id": "demo-front-axle", "part_number": "DEMO-FRONT-001", "description": "Synthetic front strut placeholder", "callout_position": "1", "quantity_raw": "1", "date_condition_raw": "DEMO ONLY", "supplement": "Synthetic test row; no vehicle applicability", "anchor": "", "notes": "Not an OEM part or real catalog record."},
+    {"id": "demo-front-arm-left", "assembly_id": "demo-front-axle", "part_number": "DEMO-FRONT-002", "description": "Synthetic wishbone placeholder", "callout_position": "2", "quantity_raw": "1", "date_condition_raw": "DEMO ONLY", "supplement": "Synthetic test row; no vehicle applicability", "anchor": "", "notes": "Not an OEM part or real catalog record."},
+    {"id": "demo-steer-tie-left", "assembly_id": "demo-steering-linkage", "part_number": "DEMO-STEER-001", "description": "Synthetic steering tie rod", "callout_position": "1", "quantity_raw": "1", "date_condition_raw": "DEMO ONLY", "supplement": "Synthetic test row; no vehicle applicability", "anchor": "", "notes": "Not an OEM part or real catalog record."},
+    {"id": "demo-steer-boot", "assembly_id": "demo-steering-linkage", "part_number": "DEMO-STEER-002", "description": "Synthetic steering rack boot", "callout_position": "2", "quantity_raw": "2", "date_condition_raw": "DEMO ONLY", "supplement": "Synthetic test row; no vehicle applicability", "anchor": "", "notes": "Not an OEM part or real catalog record."},
+    {"id": "demo-brake-disc", "assembly_id": "demo-front-brakes", "part_number": "DEMO-BRAKE-001", "description": "Synthetic brake disc placeholder", "callout_position": "1", "quantity_raw": "2", "date_condition_raw": "DEMO ONLY", "supplement": "Synthetic test row; no vehicle applicability", "anchor": "", "notes": "Not an OEM part or real catalog record."},
+    {"id": "demo-transfer-output", "assembly_id": "demo-transfer-case", "part_number": "DEMO-AWD-001", "description": "Synthetic transfer output placeholder", "callout_position": "1", "quantity_raw": "1", "date_condition_raw": "DEMO ONLY", "supplement": "Synthetic test row; no vehicle applicability", "anchor": "", "notes": "Not an OEM part or real catalog record."},
+    {"id": "demo-electrical-relay", "assembly_id": "demo-electrical-system", "part_number": "DEMO-ELEC-001", "description": "Synthetic electrical relay placeholder", "callout_position": "1", "quantity_raw": "1", "date_condition_raw": "DEMO ONLY", "supplement": "Synthetic test row; no vehicle applicability", "anchor": "", "notes": "Not an OEM part or real catalog record."}
+  ],
+  "figures": []
+}

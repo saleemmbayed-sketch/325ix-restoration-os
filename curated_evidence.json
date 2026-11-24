@@ -1,7 +1,22 @@
 {
-  "schema_version": "0.6",
-  "scope": "BMW 325iX exact part-number research overlay; not OEM certification",
-  "verified_count": 23,
+  "schema_version": "0.40",
+  "scope": "Exact-number source-reviewed overlays; not VIN-specific fitment certification",
+  "verified_count": 85,
+  "source_reviewed_count": 85,
+  "count_semantics": "Source-provenance screen only; no VIN-specific fitment, engineering-specification, condition, or safety approval.",
+  "source_snapshot": {
+    "file_name": "CURATED_EVIDENCE_V40.json",
+    "sha256": "bb9db3b9582173f9401318d68066b12a255d74be77561eef5061a5156d387e08",
+    "as_of": "2026-11-23T08:25:00Z",
+    "prior_snapshot": "CURATED_EVIDENCE_V39.json",
+    "input_record_count": 173,
+    "eligible_record_count": 85,
+    "excluded_by_reason": {
+      "missing_record_evidence_status": 76,
+      "missing_record_part_number_and_review_timestamp": 12
+    },
+    "import_policy": "Exact 11-digit registry/catalog key + explicit matching record part_number + explicit record evidence_status + parseable reviewed_utc or reviewed_at + status-bearing HTTPS source; original fields preserved, no fitment/specification approval inferred."
+  },
   "evidence": {
     "31101130503": {
       "label": "Front control arm rubber mounting — centered, 325iX",
@@ -954,6 +969,1948 @@
       "record_type": "SECONDARY_PART_EVIDENCE",
       "source_authority": "SOURCED_NOT_BMW_CERTIFIED",
       "reviewed_utc": "2026-11-21"
+    },
+    "31331133542": {
+      "part_number": "31331133542",
+      "label": "Front coil spring — M-Technic, restricted early-production listing",
+      "kind": "FRONT_COIL_SPRING",
+      "orientation": "NOT_VERIFIED",
+      "sources": [
+        {
+          "label": "Exact-number supplier/dealer-style catalogue",
+          "url": "https://www.hubauer-shop.de/en/coil-spring-31331133542.html",
+          "status": "DATE_AND_MARKET_EXCLUSION_RISK"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Supplier evidence",
+          "value": "Exact number, E30 325iX model listed, M-Technic and Japan national-version conditions, until 1987/09; not established for December 1987 Swiss vehicle",
+          "status": "SOURCE_REPORTED_NOT_BMW_VIN_CERTIFIED",
+          "source_url": "https://www.hubauer-shop.de/en/coil-spring-31331133542.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Seller catalog lists restricted market/date; not demonstrated applicable to 1987-12 Swiss ECE car."
+      ],
+      "inspection_questions": [
+        "Check original BMW ETK against VIN, production date, market and option codes before ordering.",
+        "Document actual installed component and dimensions where applicable."
+      ],
+      "evidence_status": "DATE_AND_MARKET_EXCLUSION_RISK; VIN_FITMENT_UNVERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SUPPLIER_OR_ETK_DERIVED_NOT_BMW_VIN_CERTIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "31331133544": {
+      "part_number": "31331133544",
+      "label": "Front coil spring — 325iX 1988–1991 seller catalogue",
+      "kind": "FRONT_COIL_SPRING",
+      "orientation": "NOT_VERIFIED",
+      "sources": [
+        {
+          "label": "Exact-number supplier/dealer-style catalogue",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331133544.html",
+          "status": "SELLER_MODEL_YEAR_ONLY"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Supplier evidence",
+          "value": "Exact number, 325ix 1988–1991 seller fitment; no BMW spring-rate or Swiss-market build confirmation",
+          "status": "SOURCE_REPORTED_NOT_BMW_VIN_CERTIFIED",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-coil_spring-31331133544.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Check original BMW ETK against VIN, production date, market and option codes before ordering.",
+        "Document actual installed component and dimensions where applicable."
+      ],
+      "evidence_status": "SELLER_MODEL_YEAR_ONLY; VIN_FITMENT_UNVERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SUPPLIER_OR_ETK_DERIVED_NOT_BMW_VIN_CERTIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "81229407103": {
+      "part_number": "81229407103",
+      "label": "Brake-pad paste — superseded historical number",
+      "kind": "BRAKE_SERVICE_CONSUMABLE",
+      "orientation": "NOT_VERIFIED",
+      "sources": [
+        {
+          "label": "Exact-number supplier/dealer-style catalogue",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-brake_pad_paste-81229407103.html",
+          "status": "SUPERSESSION_SELLER_CATALOG"
+        },
+        {
+          "label": "ECS previous revision cross-reference",
+          "url": "https://www.ecstuning.com/b-genuine-bmw-parts/anti-squeal-brake-pad-paste-priced-per-packet-no-longer-available/83192158851/",
+          "status": "PREVIOUS_REVISION_LISTED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Supplier evidence",
+          "value": "Exact number, seller catalog identifies replacement 83192158851 and discontinued status",
+          "status": "SOURCE_REPORTED_NOT_BMW_VIN_CERTIFIED",
+          "source_url": "https://www.bmwpartsdeal.com/parts/bmw-brake_pad_paste-81229407103.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Check original BMW ETK against VIN, production date, market and option codes before ordering.",
+        "Document actual installed component and dimensions where applicable."
+      ],
+      "evidence_status": "SUPERSESSION_SELLER_CATALOG; VIN_FITMENT_UNVERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SUPPLIER_OR_ETK_DERIVED_NOT_BMW_VIN_CERTIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "83192158851": {
+      "part_number": "83192158851",
+      "label": "BMW brake-pad paste 3 g — later service number",
+      "kind": "BRAKE_SERVICE_CONSUMABLE",
+      "orientation": "NOT_VERIFIED",
+      "sources": [
+        {
+          "label": "Exact-number supplier/dealer-style catalogue",
+          "url": "https://www.hubauer-shop.de/en/brake-pad-paste-83192158851.html",
+          "status": "PRODUCT_AND_SUPERSESSION_LISTED"
+        },
+        {
+          "label": "BMW Parts Deal supersession",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-brake_pad_paste-83192158851.html",
+          "status": "REPLACES_81229407103"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Supplier evidence",
+          "value": "Exact number, BMW original product listing 3 g; replacement of earlier number corroborated by BMW Parts Deal; not a historical factory-installed component",
+          "status": "SOURCE_REPORTED_NOT_BMW_VIN_CERTIFIED",
+          "source_url": "https://www.hubauer-shop.de/en/brake-pad-paste-83192158851.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Check original BMW ETK against VIN, production date, market and option codes before ordering.",
+        "Document actual installed component and dimensions where applicable."
+      ],
+      "evidence_status": "PRODUCT_AND_SUPERSESSION_LISTED; VIN_FITMENT_UNVERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SUPPLIER_OR_ETK_DERIVED_NOT_BMW_VIN_CERTIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "31211130549": {
+      "part_number": "31211130549",
+      "label": "Front wheel hub — 325iX",
+      "kind": "FRONT_WHEEL_HUB",
+      "orientation": "NOT_VERIFIED",
+      "sources": [
+        {
+          "label": "Exact-number supplier/dealer-style catalogue",
+          "url": "https://www.turnermotorsport.com/p-20788-31211130549-genuine-bmw-part/",
+          "status": "EXACT_NUMBER_325IX_SELLER_LISTING"
+        },
+        {
+          "label": "Hubauer ETK-derived 325ixA wheel hub diagram",
+          "url": "https://www.hubauer-shop.de/it/carparts/classic/3-classic/1501-e30-m20/325ixa-4-doors-front-axle-1501/1501-310198-radlage/",
+          "status": "EXACT_NUMBER_IXA_VARIANT; MANUAL_SWISS_NOT_PROVEN"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Supplier evidence",
+          "value": "Exact number, Genuine BMW front hub specifically marketed for E30 325iX; no installed-part verification",
+          "status": "SOURCE_REPORTED_NOT_BMW_VIN_CERTIFIED",
+          "source_url": "https://www.turnermotorsport.com/p-20788-31211130549-genuine-bmw-part/",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Check original BMW ETK against VIN, production date, market and option codes before ordering.",
+        "Document actual installed component and dimensions where applicable."
+      ],
+      "evidence_status": "EXACT_NUMBER_325IX_SELLER_LISTING; VIN_FITMENT_UNVERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SUPPLIER_OR_ETK_DERIVED_NOT_BMW_VIN_CERTIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "31331124449": {
+      "part_number": "31331124449",
+      "label": "Front strut bump stop — broad BMW applications",
+      "kind": "STRUT_BUMP_STOP",
+      "orientation": "NOT_VERIFIED",
+      "sources": [
+        {
+          "label": "Exact-number supplier/dealer-style catalogue",
+          "url": "https://www.fcpeuro.com/products/bmw-suspension-strut-bumper-front-540i-528i-525i-31331124449oe",
+          "status": "EXACT_NUMBER_PRODUCT_NO_IX_FIT"
+        },
+        {
+          "label": "Febi aftermarket cross reference",
+          "url": "https://www.fcpeuro.com/products/bmw-foam-bump-stop-febi-31331124449",
+          "status": "AFTERMARKET_OE_NUMBER_CROSS_REFERENCE_NOT_FITMENT"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Supplier evidence",
+          "value": "Exact OE number, genuine BMW product; independent aftermarket alternatives listed but 325iX applicability not proven",
+          "status": "SOURCE_REPORTED_NOT_BMW_VIN_CERTIFIED",
+          "source_url": "https://www.fcpeuro.com/products/bmw-suspension-strut-bumper-front-540i-528i-525i-31331124449oe",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Check original BMW ETK against VIN, production date, market and option codes before ordering.",
+        "Document actual installed component and dimensions where applicable."
+      ],
+      "evidence_status": "EXACT_NUMBER_PRODUCT_NO_IX_FIT; VIN_FITMENT_UNVERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SUPPLIER_OR_ETK_DERIVED_NOT_BMW_VIN_CERTIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "31331128522": {
+      "part_number": "31331128522",
+      "label": "Spring pad 9 mm — orientation conflict",
+      "kind": "SPRING_PAD",
+      "orientation": "NOT_VERIFIED",
+      "sources": [
+        {
+          "label": "Exact-number supplier/dealer-style catalogue",
+          "url": "https://www.emiauto.eu/en/front-axle/15264-genuine-bmw-spring-pad-upper-31331128522.html",
+          "status": "CATALOG_ORIENTATION_CONFLICT"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Supplier evidence",
+          "value": "Exact number and 9MM listed; source calls UPPER while imported master says LOWER; 325iX model variants listed; physical position unresolved",
+          "status": "SOURCE_REPORTED_NOT_BMW_VIN_CERTIFIED",
+          "source_url": "https://www.emiauto.eu/en/front-axle/15264-genuine-bmw-spring-pad-upper-31331128522.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "Imported master says lower; supplier catalogue says upper."
+      ],
+      "inspection_questions": [
+        "Check original BMW ETK against VIN, production date, market and option codes before ordering.",
+        "Document actual installed component and dimensions where applicable."
+      ],
+      "evidence_status": "CATALOG_ORIENTATION_CONFLICT; VIN_FITMENT_UNVERIFIED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "SUPPLIER_OR_ETK_DERIVED_NOT_BMW_VIN_CERTIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "31321130308": {
+      "part_number": "31321130308",
+      "label": "BOGE front shock absorber insert — historical 325iX catalogue entry through 09/1986",
+      "kind": "STRUT_INSERT",
+      "orientation": "PAIR",
+      "sources": [
+        {
+          "label": "RealOEM 325iX EUR front spring strut diagram 31_0140",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0140&id=1571-EUR---E30-BMW-325ix",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_BOGE_BRAND_IN_MODEL_CATALOG; UP_TO_09_1986; DATE_EXCLUDES_1987_12_BUILD"
+        },
+        {
+          "label": "Auto-Szrot generic BMW part-number index",
+          "url": "https://www.auto-szrot.com/katalog-firmowy-BMW-37",
+          "status": "EXACT_NUMBER_INDEX_ONLY; NO_PART_IDENTITY_OR_FITMENT"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue cutoff",
+          "value": "Up to 09/1986 in RealOEM 325iX diagram; vehicle production 1987-12-10",
+          "status": "DATE_MISMATCH_DO_NOT_APPROVE_FITMENT",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0140&id=1571-EUR---E30-BMW-325ix",
+          "note": "Historical date boundaries are catalogue claims, not a physical measurement."
+        },
+        {
+          "name": "Related insert",
+          "value": "31321133563 shown as later catalogue option; not a proven supersession",
+          "status": "RELATED_CATALOG_ENTRY_ONLY",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0140&id=1571-EUR---E30-BMW-325ix",
+          "note": "Do not infer interchangeable dimensions."
+        }
+      ],
+      "conflicts": [
+        "Historical part appears in 325iX model catalogue but catalogue cutoff predates the owner vehicle; retain for historical completeness, reject automatic VIN fitment."
+      ],
+      "inspection_questions": [
+        "Verify any historical service substitutions against original BMW dated parts documentation and actual installed strut dimensions.",
+        "Do not approve installation on December 1987 vehicle based on generic 325iX catalogue appearance."
+      ],
+      "evidence_status": "EXACT_NUMBER_BMW_MODEL_CATALOG; DATE_EXCLUDED_FOR_OWNER_BUILD",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "REALOEM_BMW_CATALOG_REPRODUCTION_NOT_DIRECT_BMW_VIN_CONFIRMATION"
+    },
+    "31521210935": {
+      "part_number": "31521210935",
+      "label": "Tapered roller bearing — front differential",
+      "kind": "BEARING",
+      "orientation": "UNKNOWN",
+      "sources": [
+        {
+          "label": "PFI FERSA M88048/10 interchange catalogue",
+          "url": "https://pfibearings.com/product/m88048-10/",
+          "status": "EXACT_BMW_NUMBER_IN_BEARING_MANUFACTURER_INTERCHANGE; NOT_BMW_FITMENT_CERTIFICATION"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Manufacturer interchange",
+          "value": "PFI FERSA M88048/10",
+          "status": "MANUFACTURER_CROSS_REFERENCE_NOT_DIMENSIONALLY_VERIFIED",
+          "source_url": "https://pfibearings.com/product/m88048-10/"
+        }
+      ],
+      "conflicts": [
+        "Cross-brand interchange is not proof of front differential bearing geometry, preload or 325iX fitment."
+      ],
+      "inspection_questions": [
+        "Check actual installed part, BMW ETK production applicability, and dimensions before any fitment decision."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_CERTIFIED",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_OR_INDEPENDENT_CATALOG_NOT_BMW_VIN_CONFIRMATION"
+    },
+    "31521211442": {
+      "part_number": "31521211442",
+      "label": "Historical front differential shaft seal",
+      "kind": "SHAFT_SEAL",
+      "orientation": "UNKNOWN",
+      "sources": [
+        {
+          "label": "Hubauer BMW parts catalogue",
+          "url": "https://www.hubauer-shop.de/en/shaft-seal-31521212516.html",
+          "status": "EXACT_OLD_NUMBER_IN_DEALER_SUPERSESSION_CHAIN_TO_31521212516"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Dealer supersession listing does not establish dimensions or installation procedure."
+      ],
+      "inspection_questions": [
+        "Check actual installed part, BMW ETK production applicability, and dimensions before any fitment decision."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_CERTIFIED",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_OR_INDEPENDENT_CATALOG_NOT_BMW_VIN_CONFIRMATION"
+    },
+    "31521212516": {
+      "part_number": "31521212516",
+      "label": "Front differential shaft seal — later BMW number",
+      "kind": "SHAFT_SEAL",
+      "orientation": "UNKNOWN",
+      "sources": [
+        {
+          "label": "Hubauer original BMW part catalogue",
+          "url": "https://www.hubauer-shop.de/en/shaft-seal-31521212516.html",
+          "status": "EXACT_NUMBER_DEALER_LISTING; 325IX_2_AND_4_DOOR_MODEL_FAMILY; OLD_31521211442"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Dealer lists 325iX 2/4 door from 1986; VIN-specific position and fitment not independently checked."
+      ],
+      "inspection_questions": [
+        "Check actual installed part, BMW ETK production applicability, and dimensions before any fitment decision."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_CERTIFIED",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_OR_INDEPENDENT_CATALOG_NOT_BMW_VIN_CONFIRMATION"
+    },
+    "31601226815": {
+      "part_number": "31601226815",
+      "label": "Exchange left front ABS output shaft",
+      "kind": "OUTPUT_SHAFT",
+      "orientation": "LEFT",
+      "sources": [
+        {
+          "label": "BMWFans BMW parts catalogue",
+          "url": "https://de.bmwfans.info/parts-catalog/31601226815/",
+          "status": "EXACT_NUMBER_LEFT_ABS_OUTPUT_SHAFT; CATALOG_PRODUCTION_FROM_1988_09"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue production start",
+          "value": "September 1988",
+          "status": "LATER_THAN_OWNER_BUILD",
+          "source_url": "https://de.bmwfans.info/parts-catalog/31601226815/"
+        }
+      ],
+      "conflicts": [
+        "Catalogue production from September 1988 is later than owner build; retrofit/supersession and ABS configuration unverified."
+      ],
+      "inspection_questions": [
+        "Check actual installed part, BMW ETK production applicability, and dimensions before any fitment decision."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_CERTIFIED",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_OR_INDEPENDENT_CATALOG_NOT_BMW_VIN_CONFIRMATION"
+    },
+    "31501211837": {
+      "part_number": "31501211837",
+      "label": "Front differential assembly 3.73:1",
+      "kind": "FRONT_DIFFERENTIAL",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "BMW-derived catalogue",
+          "url": "https://bmwfans.info/parts-catalog/31501211837/",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_DESCRIPTION_VISIBLE"
+        },
+        {
+          "label": "Schmiedmann used unit",
+          "url": "https://www.schmiedmann.de/de/bmw-E30/getriebe-hinterachsgetriebe-mpg88-catu-ol",
+          "status": "USED_LISTING_3_73; NOT_INSTALLED_PROOF"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Source finding",
+          "value": "BMWFans historical catalogue: 41:11, 3.73 ratio; European LHD manual 325iX listed, production from 09/1986; reconditioned number 31501211836",
+          "status": "SOURCE_REPORTED_NOT_VIN_CERTIFIED",
+          "source_url": "https://bmwfans.info/parts-catalog/31501211837/",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "3.73 front ratio must be checked against installed rear final drive; earlier dossiers include 3.64 and 3.91 variants."
+      ],
+      "inspection_questions": [
+        "Confirm original and currently installed assembly part number, production variant and front/rear differential matching before any repair or purchase."
+      ],
+      "evidence_status": "CATALOG_NUMBER_RATIO_APPLICATION_LISTED; VIN_AND_INSTALLED_RATIO_UNCONFIRMED",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DERIVED_CATALOGUE_AND_SOURCE_SPECIFIC_CLAIMS"
+    },
+    "31531210721": {
+      "part_number": "31531210721",
+      "label": "Front differential bevel gear shaft",
+      "kind": "BEVEL_GEAR_SHAFT",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "BMW-derived catalogue",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0185&id=1581-EUR---E30-BMW-325ix",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_DESCRIPTION_VISIBLE"
+        },
+        {
+          "label": "BMW Parts Deal listing",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-bevel_gear_shaft-31531210721.html",
+          "status": "DEALER_LISTING_1988_1991_US; 1987_SWISS_UNCONFIRMED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Source finding",
+          "value": "RealOEM 325iX front differential exploded parts list identifies exact shaft number; image is exploded diagram, not product photograph",
+          "status": "SOURCE_REPORTED_NOT_VIN_CERTIFIED",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0185&id=1581-EUR---E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Confirm original and currently installed assembly part number, production variant and front/rear differential matching before any repair or purchase."
+      ],
+      "evidence_status": "EXACT_NUMBER_CATALOGUED; VIN_FITMENT_UNCONFIRMED",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DERIVED_CATALOGUE_AND_SOURCE_SPECIFIC_CLAIMS"
+    },
+    "31531210929": {
+      "part_number": "31531210929",
+      "label": "Front differential tapered roller bearing",
+      "kind": "TAPERED_ROLLER_BEARING",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "BMW-derived catalogue",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0185&id=1581-EUR---E30-BMW-325ix",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_DESCRIPTION_VISIBLE"
+        },
+        {
+          "label": "FERSA manufacturer interchange",
+          "url": "https://heavy-duty.fersa.com/es/as-lm-29749-10.html",
+          "status": "BEARING_MANUFACTURER_CROSS_REFERENCE; DIMENSIONS_NOMINAL_NOT_VERIFIED_IN_ASSEMBLY"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Source finding",
+          "value": "RealOEM specifies 65x38x18 mm and quantity 2; FERSA lists LM29749/10 cross-reference, nominal 38.1 x 65.09 x 18.03 mm",
+          "status": "SOURCE_REPORTED_NOT_VIN_CERTIFIED",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0185&id=1581-EUR---E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "BMW-derived catalogue rounds dimensions to 65x38x18 mm; FERSA nominal dimensions 65.09x38.1x18.03 mm. Verify bearing markings, fit and preload before interchange."
+      ],
+      "inspection_questions": [
+        "Confirm original and currently installed assembly part number, production variant and front/rear differential matching before any repair or purchase."
+      ],
+      "evidence_status": "CATALOG_NUMBER_AND_NOMINAL_SIZE; CROSS_REFERENCE_NOT_INSTALLATION_APPROVAL",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DERIVED_CATALOGUE_AND_SOURCE_SPECIFIC_CLAIMS"
+    },
+    "31531211343": {
+      "part_number": "31531211343",
+      "label": "Front differential case",
+      "kind": "DIFFERENTIAL_CASE",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "BMW-derived catalogue",
+          "url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0185&id=1581-EUR---E30-BMW-325ix",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_DESCRIPTION_VISIBLE"
+        },
+        {
+          "label": "BMW Parts Deal exploded catalogue",
+          "url": "https://www.bmwpartsdeal.com/parts-list/1988-bmw-325ix-sedan_e30/front_rear_axle/front_axle_differential_separate_component_all_wheel_drive_v.html",
+          "status": "DEALER_CATALOGUE_1988_SEDAN; 1987_SWISS_UNCONFIRMED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Source finding",
+          "value": "RealOEM 325iX front differential exploded diagram identifies differential case as item 01, quantity 1; discontinued in catalogue",
+          "status": "SOURCE_REPORTED_NOT_VIN_CERTIFIED",
+          "source_url": "https://www.realoem.com/bmw/enUS/showparts?diagId=31_0185&id=1581-EUR---E30-BMW-325ix",
+          "note": ""
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Confirm original and currently installed assembly part number, production variant and front/rear differential matching before any repair or purchase."
+      ],
+      "evidence_status": "EXACT_NUMBER_CATALOGUED; VIN_FITMENT_UNCONFIRMED",
+      "reviewed_utc": "2026-11-22",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DERIVED_CATALOGUE_AND_SOURCE_SPECIFIC_CLAIMS"
+    },
+    "32311155121": {
+      "part_number": "32311155121",
+      "label": "Upper steering spindle",
+      "kind": "STEERING_SPINDLE",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW dealer-derived ETK listing",
+          "url": "https://www.hubauer-shop.de/en/steering-spindle-upper-32311155121.html",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_VARIANT_CONDITIONS_REVIEWED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue applicability",
+          "value": "Exact BMW number and E30 325iX model entries; listing states production until 1987/11",
+          "status": "DEALER_ETK_REPORTED_NOT_VIN_CERTIFIED",
+          "source_url": "https://www.hubauer-shop.de/en/steering-spindle-upper-32311155121.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "No VIN-specific confirmation; variant and historical date conditions must be checked before ordering."
+      ],
+      "inspection_questions": [
+        "Confirm actual installed steering assembly and original vehicle options against VIN-specific BMW ETK."
+      ],
+      "evidence_status": "PRODUCTION_CUTOFF_1987_11_EXCLUDES_1987_12_PENDING_BMW_VIN_ETK",
+      "reviewed_utc": "2026-11-22T05:31:50+01:00",
+      "record_type": "DEALER_CATALOG_EVIDENCE",
+      "source_authority": "BMW_DEALER_DERIVED_CATALOG_NOT_DIRECT_VIN_CONFIRMATION"
+    },
+    "32321156457": {
+      "part_number": "32321156457",
+      "label": "Steering lock",
+      "kind": "STEERING_LOCK",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW dealer-derived ETK listing",
+          "url": "https://www.hubauer-shop.de/pl/steering-lock-32321156457.html",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_VARIANT_CONDITIONS_REVIEWED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue applicability",
+          "value": "Exact BMW number; dealer shows Japan-market/airbag conditions and replacement chain involving 32321155347 and 32321156458",
+          "status": "DEALER_ETK_REPORTED_NOT_VIN_CERTIFIED",
+          "source_url": "https://www.hubauer-shop.de/pl/steering-lock-32321156457.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "No VIN-specific confirmation; variant and historical date conditions must be checked before ordering."
+      ],
+      "inspection_questions": [
+        "Confirm actual installed steering assembly and original vehicle options against VIN-specific BMW ETK."
+      ],
+      "evidence_status": "JAPAN_AIRBAG_CONDITION_NOT_PROVEN_FOR_SWISS_VEHICLE",
+      "reviewed_utc": "2026-11-22T05:31:50+01:00",
+      "record_type": "DEALER_CATALOG_EVIDENCE",
+      "source_authority": "BMW_DEALER_DERIVED_CATALOG_NOT_DIRECT_VIN_CONFIRMATION"
+    },
+    "32321156458": {
+      "part_number": "32321156458",
+      "label": "Steering lock",
+      "kind": "STEERING_LOCK",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW dealer-derived ETK listing",
+          "url": "https://www.hubauer-shop.de/pl/steering-lock-32321156458.html",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_VARIANT_CONDITIONS_REVIEWED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue applicability",
+          "value": "Exact BMW number; dealer indicates Japan-market/airbag conditions, 1984/01–1988/01 and replacement relationship with 32321156457",
+          "status": "DEALER_ETK_REPORTED_NOT_VIN_CERTIFIED",
+          "source_url": "https://www.hubauer-shop.de/pl/steering-lock-32321156458.html",
+          "note": ""
+        }
+      ],
+      "conflicts": [
+        "No VIN-specific confirmation; variant and historical date conditions must be checked before ordering."
+      ],
+      "inspection_questions": [
+        "Confirm actual installed steering assembly and original vehicle options against VIN-specific BMW ETK."
+      ],
+      "evidence_status": "DATE_OVERLAPS_BUT_JAPAN_VARIANT_NOT_PROVEN_FOR_SWISS_VEHICLE",
+      "reviewed_utc": "2026-11-22T05:31:50+01:00",
+      "record_type": "DEALER_CATALOG_EVIDENCE",
+      "source_authority": "BMW_DEALER_DERIVED_CATALOG_NOT_DIRECT_VIN_CONFIRMATION"
+    },
+    "34311154918": {
+      "part_number": "34311154918",
+      "label": "Brake master cylinder",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "BMW Parts Deal",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-brake_master_cylinder-34311154918.html",
+          "status": "EXACT_NUMBER_BMW_DEALER_RWD_MODELS_ONLY"
+        },
+        {
+          "label": "Turner Motorsport",
+          "url": "https://www.turnermotorsport.com/p-8083-34311154918-genuine-bmw-part/",
+          "status": "SELLER_CUTOFF_1987_05_RWD_ONLY"
+        },
+        {
+          "label": "Peninsula BM",
+          "url": "https://shop.peninsulabm.com/collections/steering-suspension-brakes/products/bmw-brake-master-cylinder-e30-34311154918",
+          "status": "SELLER_325IX_TO_1987_05"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Seller lists 325iX only to May 1987, earlier than vehicle production; BMW Parts Deal excludes 325iX."
+      ],
+      "inspection_questions": [
+        "Confirm installed component and exact 1987 Swiss ECE LHD manual 325iX equipment against VIN and physical evidence before any replacement."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_ETK_DERIVED_AND_SELLER_DISTINGUISHED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34321155787": {
+      "part_number": "34321155787",
+      "label": "Four-way brake pipe spacer",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK",
+          "url": "https://www.hubauer-shop.de/en/spacer-4-part-34326777692.html",
+          "status": "EXACT_OLD_NUMBER_IN_SUCCESSION"
+        },
+        {
+          "label": "RealOEM",
+          "url": "https://www.realoem.com/bmw/es/partxref?diagId=34_2360&id=JH11-EUR-09-2018-F48-BMW-X1_16d&mg=34&q=34326777692&series=MOSP&sg=17",
+          "status": "EXACT_SUPERSESSION_CHAIN"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Historical number superseded by 34326777692; successor fitment not automatically approved."
+      ],
+      "inspection_questions": [
+        "Confirm installed component and exact 1987 Swiss ECE LHD manual 325iX equipment against VIN and physical evidence before any replacement."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_ETK_DERIVED_AND_SELLER_DISTINGUISHED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34321156013": {
+      "part_number": "34321156013",
+      "label": "Brake pipe retaining bracket",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "BMWFans",
+          "url": "https://de.bmwfans.info/parts-catalog/34321156013/",
+          "status": "EXACT_NUMBER_ETK_DERIVED"
+        },
+        {
+          "label": "BMW parts dealer Poland",
+          "url": "https://sklep.auto-voll.pl/item-Uchwyt-przewodu-hamulcowego-34321156013.html",
+          "status": "EXACT_NUMBER_SELLER_325IX_LISTED"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "ETK-derived production Feb 1986 to Oct 2010; generic 325iX listing not VIN-specific."
+      ],
+      "inspection_questions": [
+        "Confirm installed component and exact 1987 Swiss ECE LHD manual 325iX equipment against VIN and physical evidence before any replacement."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_ETK_DERIVED_AND_SELLER_DISTINGUISHED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34321159888": {
+      "part_number": "34321159888",
+      "label": "Front brake hose",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK",
+          "url": "https://www.hubauer-shop.de/en/brake-hose-34321159888.html",
+          "status": "EXACT_NUMBER_ETK_325IX_E30"
+        },
+        {
+          "label": "BMW Parts Deal",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-brake_hose-34321159888.html",
+          "status": "EXACT_NUMBER_DEALER_1988_1991_325IX"
+        },
+        {
+          "label": "FCP Euro",
+          "url": "https://www.fcpeuro.com/products/bmw-brake-hose-34321159888",
+          "status": "EXACT_NUMBER_SELLER_325IX"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Hubauer 325iX model start 1986 while BMW Parts Deal year list starts 1988; verify 1987 production and installed brake hose before ordering.",
+        "Predecessor 34321156334; replacement chain is catalogue evidence, not installation authorization."
+      ],
+      "inspection_questions": [
+        "Confirm installed component and exact 1987 Swiss ECE LHD manual 325iX equipment against VIN and physical evidence before any replacement."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_ETK_DERIVED_AND_SELLER_DISTINGUISHED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34321160027": {
+      "part_number": "34321160027",
+      "label": "Front brake pipe bracket, LHD conditional",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK",
+          "url": "https://www.hubauer-shop.de/es/brake-pipe-bracket-34321160027.html",
+          "status": "EXACT_NUMBER_ETK_LHD_CONDITIONAL"
+        },
+        {
+          "label": "Hubauer E30 brake pipe diagram",
+          "url": "https://www.hubauer-shop.de/it/brake-hose-34321159888.html",
+          "status": "EXACT_NUMBER_IN_DIAGRAM_POSITION_06"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Hubauer indicates LHD and without catalytic converter equipment condition; vehicle catalyst configuration unverified."
+      ],
+      "inspection_questions": [
+        "Confirm installed component and exact 1987 Swiss ECE LHD manual 325iX equipment against VIN and physical evidence before any replacement."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_ETK_DERIVED_AND_SELLER_DISTINGUISHED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34326777692": {
+      "part_number": "34326777692",
+      "label": "Four-way brake-pipe spacer / line holder",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived catalogue",
+          "url": "https://www.hubauer-shop.de/en/spacer-4-part-34326777692.html",
+          "status": "EXACT_NUMBER_BMW_DEALER_CATALOG; E30 GENERIC FROM 1991 IN LISTING"
+        },
+        {
+          "label": "FCP Euro Genuine BMW cross-reference",
+          "url": "https://www.fcpeuro.com/products/bmw-spacer-4-part-34326777692",
+          "status": "EXACT_NUMBER_GENUINE_BMW_SELLER; PREDECESSORS_LISTED"
+        },
+        {
+          "label": "Turner Motorsport",
+          "url": "https://www.turnermotorsport.com/p-63229-34326777692-genuine-bmw-part/",
+          "status": "EXACT_NUMBER_SELLER_E30_CHASSIS_GENERIC"
+        }
+      ],
+      "facts": [
+        {
+          "value": "Four-way brake-pipe spacer",
+          "source": "Hubauer BMW catalogue"
+        },
+        {
+          "value": "Historical cross-references: 34321155787, 34321121209, 34301165383",
+          "source": "Hubauer and FCP Euro"
+        }
+      ],
+      "conflicts": [
+        "Hubauer E30 application start June 1991 is later than 1987-12-10; supersession is not proof of as-built fitment."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify VIN-level ETK applicability, as-built equipment and installed part before ordering or brake-system service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_AND_SELLER_DISTINGUISHED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34331154250": {
+      "part_number": "34331154250",
+      "label": "Brake servo component, ATE designation in ETK diagram; precise identity unresolved",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "BMW Parts Deal 1989 325i convertible brake servo diagram",
+          "url": "https://www.bmwpartsdeal.com/parts-list/1989-bmw-325i-convertible_e30/brakes_pedals/power_brake_unit_depression.html",
+          "status": "EXACT_NUMBER_DIAGRAM_POSITION_08; ATE; DIFFERENT_E30_VARIANT"
+        }
+      ],
+      "facts": [
+        {
+          "value": "Diagram position 08, ATE",
+          "source": "BMW Parts Deal 1989 325i convertible catalogue"
+        }
+      ],
+      "conflicts": [
+        "No manufacturer part description or 1987 Swiss 325iX fitment established; do not infer the exact component function from diagram alone."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify VIN-level ETK applicability, as-built equipment and installed part before ordering or brake-system service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_AND_SELLER_DISTINGUISHED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34406751588": {
+      "part_number": "34406751588",
+      "label": "Spiral pin with compression spring, parking brake, L=28 mm",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived catalogue",
+          "url": "https://www.hubauer-shop.de/fr/spiral-pin-with-compression-spring-34406751588.html",
+          "status": "EXACT_NUMBER_BMW_DEALER_CATALOG; E30_325IX_2_DOOR_4_DOOR_GENERIC_FROM_1986"
+        },
+        {
+          "label": "BMW Parts Deal",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-spiral_pin_with_compression_spring-34406751588.html",
+          "status": "EXACT_NUMBER_BMW_DEALER_LISTING; 325IX_1988_TO_1991_ONLY"
+        },
+        {
+          "label": "Turner Motorsport",
+          "url": "https://www.turnermotorsport.com/p-63582-34406751588-genuine-bmw-part/",
+          "status": "EXACT_NUMBER_SELLER_325IX_LISTED"
+        }
+      ],
+      "facts": [
+        {
+          "value": "Nominal length 28 mm",
+          "source": "Hubauer ETK-derived description; not independently measured"
+        },
+        {
+          "value": "Replaces 34401112567 according to Hubauer",
+          "source": "Hubauer"
+        }
+      ],
+      "conflicts": [
+        "BMW Parts Deal 325iX 1988-1991 range versus Hubauer 325iX from 1986; 1987 VIN-specific applicability not certified."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify VIN-level ETK applicability, as-built equipment and installed part before ordering or brake-system service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_AND_SELLER_DISTINGUISHED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34219061651": {
+      "part_number": "34219061651",
+      "label": "Exchange rear brake-caliper set, asbestos-free, left/right",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "BMW-derived PartSouq catalogue",
+          "url": "https://partsouq.com/en/catalog/genuine/parts?c=BMW202501&gid=561&vid=47279",
+          "status": "EXACT_NUMBER_ETK_DERIVED_DIAGRAM_OTHER_E30_VARIANT"
+        }
+      ],
+      "facts": [],
+      "conflicts": [
+        "Worklist incorrectly calls this a left-only caliper; diagram lists exchange set left/right."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify 1987-12-10 Swiss ECE LHD 325iX VIN-level ETK, installed assembly and any supersession before ordering or service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_OR_SELLER_EXPLICITLY_CLASSIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34321155786": {
+      "part_number": "34321155786",
+      "label": "Brake-pipe bracket / holder",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "Ucando BMW part listing",
+          "url": "https://www.ucando.pl/p/uchwyt-bmw-34321155786/UC-PQJA4GKJ4ME-IT",
+          "status": "EXACT_NUMBER_SELLER_ONLY"
+        }
+      ],
+      "facts": [],
+      "conflicts": [
+        "No manufacturer/dealer diagram or 325iX date-specific position corroboration."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify 1987-12-10 Swiss ECE LHD 325iX VIN-level ETK, installed assembly and any supersession before ordering or service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SELLER_ONLY; MANUFACTURER_CORROBORATION_MISSING; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_OR_SELLER_EXPLICITLY_CLASSIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34411100122": {
+      "part_number": "34411100122",
+      "label": "Parking-brake compression spring",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived catalogue",
+          "url": "https://www.hubauer-shop.de/it/compression-spring-34411100122.html",
+          "status": "EXACT_NUMBER_BMW_DEALER_ETK_DERIVED; 325IX_TOURING_FROM_1988"
+        }
+      ],
+      "facts": [],
+      "conflicts": [
+        "325iX Touring 1988 listing does not establish Swiss December 1987 sedan applicability."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify 1987-12-10 Swiss ECE LHD 325iX VIN-level ETK, installed assembly and any supersession before ordering or service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_OR_SELLER_EXPLICITLY_CLASSIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34411102308": {
+      "part_number": "34411102308",
+      "label": "Parking-brake tension spring",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived catalogue",
+          "url": "https://www.hubauer-shop.de/es/tension-spring-34411102308.html",
+          "status": "EXACT_NUMBER_BMW_DEALER_ETK_DERIVED"
+        }
+      ],
+      "facts": [],
+      "conflicts": [
+        "Later 34411121518 described as replacement; supersession and 1987 fitment not VIN-certified."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify 1987-12-10 Swiss ECE LHD 325iX VIN-level ETK, installed assembly and any supersession before ordering or service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_OR_SELLER_EXPLICITLY_CLASSIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34411121900": {
+      "part_number": "34411121900",
+      "label": "Brake pedal return tension spring",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "BMW specialist reseller",
+          "url": "https://www.recambiosyaccesoriosbmw.com/de/products/oem-brake-pedal-return-spring-34411121900-fur-bmw-e21-e30-e12-e24-e23-z1-original-bmw",
+          "status": "EXACT_NUMBER_SELLER_DESCRIPTION"
+        }
+      ],
+      "facts": [],
+      "conflicts": [
+        "Seller states supersession to 34411151641 from 1981 and not retroactively interchangeable; contradictory generic E30 fitment needs ETK reconciliation."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify 1987-12-10 Swiss ECE LHD 325iX VIN-level ETK, installed assembly and any supersession before ordering or service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_OR_SELLER_EXPLICITLY_CLASSIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34411159467": {
+      "part_number": "34411159467",
+      "label": "Parking-brake shoe set, asbestos-free",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "FCP Euro ATE cross-reference",
+          "url": "https://www.fcpeuro.com/products/bmw-brake-shoe-set-ate-34411159467",
+          "status": "EXACT_NUMBER_AFTERMARKET_OE_CROSS_REFERENCE"
+        }
+      ],
+      "facts": [],
+      "conflicts": [
+        "ATE 650149 cross-reference and 34411118053 / 34411157823 listed; aftermarket 160x25 dimensions not BMW factory specification."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify 1987-12-10 Swiss ECE LHD 325iX VIN-level ETK, installed assembly and any supersession before ordering or service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_OR_SELLER_EXPLICITLY_CLASSIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "34511156396": {
+      "part_number": "34511156396",
+      "label": "ABS accelerator sensor",
+      "kind": "BRAKE_SYSTEM",
+      "sources": [
+        {
+          "label": "BMW Parts Deal dealer catalogue",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-accelerator_sensor-34511156396.html",
+          "status": "EXACT_NUMBER_BMW_DEALER_CATALOG; 325IX_1988_TO_1991"
+        }
+      ],
+      "facts": [],
+      "conflicts": [
+        "Dealer 1988-1991 generic 325iX range does not certify 1987-12-10 Swiss VIN or installed ABS configuration."
+      ],
+      "photos": [],
+      "inspection_questions": [
+        "Verify 1987-12-10 Swiss ECE LHD 325iX VIN-level ETK, installed assembly and any supersession before ordering or service."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "fitment_approval": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_OR_SELLER_EXPLICITLY_CLASSIFIED",
+      "reviewed_utc": "2026-11-22"
+    },
+    "07119981047": {
+      "part_number": "07119981047",
+      "label": "Grooved ball bearing",
+      "kind": "BALL_BEARING",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "BMW Parts Deal exact-number product catalogue",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-grooved_ball_bearing-07119981047.html",
+          "status": "EXACT_11_DIGIT_NUMBER_AND_PART_TYPE; 1988-1991_325IX_SELLER_FITMENT"
+        },
+        {
+          "label": "Timken bearing interchange guide",
+          "url": "https://www.pooleyinc.com/wp-content/uploads/BearingInterchangeGuide7536.pdf",
+          "status": "EXACT_NUMBER_INTERCHANGE_CROSS_REFERENCE_105CB; NOT_DIMENSIONAL_FITMENT_CERTIFICATION"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "1988 start in seller fitment does not establish December 1987 Swiss vehicle applicability."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "07119981054": {
+      "part_number": "07119981054",
+      "label": "Needle bearing",
+      "kind": "NEEDLE_BEARING",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "BMWsklep ETK-derived E30 325iX ECE transfer case",
+          "url": "https://czesci.bmwsklep.pl/lozysko-igielkowe-07119981054",
+          "status": "EXACT_NUMBER_E30_325IX_ECE_TRANSFER_CASE_DIAGRAM; SUPERSEDES_07119981053"
+        },
+        {
+          "label": "Timken interchange guide",
+          "url": "https://www.pooleyinc.com/wp-content/uploads/BearingInterchangeGuide7536.pdf",
+          "status": "EXACT_NUMBER_CROSS_REFERENCE_107WB; NO_VERIFIED_INSTALLATION_SPEC"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Supersession and aftermarket bearing interchange do not certify fit or internal construction."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "07119981063": {
+      "part_number": "07119981063",
+      "label": "Grooved ball bearing 45×75×16 mm",
+      "kind": "BALL_BEARING",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW parts catalogue",
+          "url": "https://www.hubauer-shop.de/it/grooved-ball-bearing-07119981063.html",
+          "status": "EXACT_NUMBER_45X75X16_TRANSFER_CASE_POSITION_08; E30_325IX_4DOOR_FROM_1986"
+        },
+        {
+          "label": "FCP Euro Genuine BMW catalogue",
+          "url": "https://www.fcpeuro.com/products/bmw-grooved-ball-bearing-45x75x16-07119981063",
+          "status": "EXACT_NUMBER_NOMINAL_DIMENSIONS_AND_325IX_LISTING"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Nominal dimensions do not verify internal clearance, seals, load rating or installed bearing specification."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "07119981724": {
+      "part_number": "07119981724",
+      "label": "Grooved ball bearing 45×75×10 mm",
+      "kind": "BALL_BEARING",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "FCP Euro Genuine BMW catalogue",
+          "url": "https://www.fcpeuro.com/products/bmw-grooved-ball-bearing-45x75x10-07119981724",
+          "status": "EXACT_NUMBER_45X75X10_325IX_POSITION_28; SELLER_BACKORDERED"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "325iX generic listing not VIN-specific; bearing internal specifications unverified."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "26201226183": {
+      "part_number": "26201226183",
+      "label": "Front input/drive shaft L=648 mm",
+      "kind": "DRIVE_SHAFT",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived catalogue",
+          "url": "https://www.hubauer-shop.de/fr/drive-shaft-front-26201226183.html",
+          "status": "EXACT_NUMBER_648MM; PRODUCTION_FROM_1989_01; REPLACEMENT_RELATION_26201701117"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "January 1989 part-production restriction conflicts with December 1987 vehicle original configuration; do not approve."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "27111226314": {
+      "part_number": "27111226314",
+      "label": "Transfer case shaft seal 40×52×7 mm",
+      "kind": "SHAFT_SEAL",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived catalogue",
+          "url": "https://www.hubauer-shop.de/it/shaft-seal-27111226314.html",
+          "status": "EXACT_NUMBER_40X52X7_TRANSFER_CASE_POSITION_06"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Material, lip geometry and shaft wear requirements not verified."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "27211224630": {
+      "part_number": "27211224630",
+      "label": "Transfer case drive shaft",
+      "kind": "DRIVE_SHAFT",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "BMW Parts Deal Genuine BMW catalogue",
+          "url": "https://www.bmwpartsdeal.com/parts/bmw-drive_shaft-27211224630.html",
+          "status": "EXACT_NUMBER_DRIVE_SHAFT; 1988-1991_325IX_LISTED"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Dealer seller application starts 1988, does not certify December 1987 production."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "27211224632": {
+      "part_number": "27211224632",
+      "label": "Transfer case shaft seal 32×47×7 mm",
+      "kind": "SHAFT_SEAL",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Classic BMW Centre eBay listing",
+          "url": "https://www.ebay.de/itm/158281903088",
+          "status": "EXACT_NUMBER_AND_32X47X7_SELLER_CLAIM_ONLY; NOS_NLA_CLAIM"
+        },
+        {
+          "label": "BMW spare-parts index",
+          "url": "https://www.bmw-spare-parts.com/bmw-cars/price/87200",
+          "status": "EXACT_NUMBER_SHAFT_SEAL_PART_CATEGORY; AVAILABILITY_UNVERIFIED"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Seller dimensional specification not independently corroborated by BMW technical document; no interchange approved."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "27211224636": {
+      "part_number": "27211224636",
+      "label": "Transfer case shaft seal 35×47×7 mm",
+      "kind": "SHAFT_SEAL",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived transfer-case diagram",
+          "url": "https://www.hubauer-shop.de/de/wellendichtring-27211224636.html",
+          "status": "EXACT_NUMBER_35X47X7_TRANSFER_CASE_POSITION_23"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Lip material and installed orientation not established."
+      ],
+      "inspection_questions": [
+        "Check VIN-specific ETK applicability and physically identify installed component before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T22:29:00+01:00"
+    },
+    "27211224637": {
+      "part_number": "27211224637",
+      "label": "Transfer-case needle cage",
+      "kind": "NEEDLE_CAGE",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived transfer case",
+          "url": "https://www.hubauer-shop.de/es/needle-cage-27211224637.html",
+          "status": "EXACT_NUMBER_DIAGRAM_POSITION_16_E30_325IX_1986_ONWARD"
+        },
+        {
+          "label": "Turner Motorsport Genuine BMW listing",
+          "url": "https://www.turnermotorsport.com/p-53899-27211224637-genuine-bmw-part/",
+          "status": "EXACT_NUMBER_SELLER_325IX_M20_APPLICATION"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify original Swiss ECE December 1987 VIN-specific ETK, installed transfer-case assembly and physical part before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T23:26:00+01:00"
+    },
+    "27211224634": {
+      "part_number": "27211224634",
+      "label": "Transfer-case collar nut",
+      "kind": "COLLAR_NUT",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived transfer case",
+          "url": "https://www.hubauer-shop.de/de/bundmutter-27211224634.html",
+          "status": "EXACT_NUMBER_DIAGRAM_POSITION_25"
+        },
+        {
+          "label": "FCP Euro Genuine BMW listing",
+          "url": "https://www.fcpeuro.com/products/bmw-collar-nut-27211224634",
+          "status": "EXACT_NUMBER_SELLER_325IX_APPLICATION"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify original Swiss ECE December 1987 VIN-specific ETK, installed transfer-case assembly and physical part before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T23:26:00+01:00"
+    },
+    "27211224680": {
+      "part_number": "27211224680",
+      "label": "Transfer-case bush 14×16×20",
+      "kind": "BUSH",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived transfer case",
+          "url": "https://www.hubauer-shop.de/en/bush-27211224680.html",
+          "status": "EXACT_NUMBER_DIAGRAM_POSITION_02_DIMENSIONS_14X16X20_E30_325IX_1986_ONWARD"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Catalog page also contains generic E30 June 1991 statement; model-specific 325iX 1986 line retained separately."
+      ],
+      "inspection_questions": [
+        "Verify original Swiss ECE December 1987 VIN-specific ETK, installed transfer-case assembly and physical part before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T23:26:00+01:00"
+    },
+    "27211226472": {
+      "part_number": "27211226472",
+      "label": "Transfer-case support washer 35.3×50×2",
+      "kind": "SUPPORT_WASHER",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived transfer case",
+          "url": "https://www.hubauer-shop.de/es/support-27211226472.html",
+          "status": "EXACT_NUMBER_POSITION_20_DIMENSIONS_35_3X50X2_PRODUCTION_FROM_1987_02_SUPERSEDES_27211224681"
+        },
+        {
+          "label": "Cars245 BMW catalog reseller",
+          "url": "https://cars245.com/de/catalog/manufacturer-bmw/car-bmw.290/100000.genuine-bmw-parts/100001.bmw-parts/112700.transfer-box-electric-gearbox/",
+          "status": "EXACT_NUMBER_SELLER_SUPERSESSION_NON_RETROACTIVE_INTERCHANGE_CLAIM"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [
+        "Seller labels replacement as non-retroactively interchangeable; applicability of predecessor to installed transfer case must be checked."
+      ],
+      "inspection_questions": [
+        "Verify original Swiss ECE December 1987 VIN-specific ETK, installed transfer-case assembly and physical part before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T23:26:00+01:00"
+    },
+    "27241224660": {
+      "part_number": "27241224660",
+      "label": "Transfer-case shaft seal 44×60×10",
+      "kind": "SHAFT_SEAL",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived transfer case",
+          "url": "https://www.hubauer-shop.de/de/wellendichtring-27211224636.html",
+          "status": "EXACT_NUMBER_IN_EXPLODED_DIAGRAM_POSITION_27_DIMENSIONS_44X60X10"
+        },
+        {
+          "label": "Cars245 BMW catalog reseller",
+          "url": "https://cars245.com/de/catalog/manufacturer-bmw/car-bmw.290/100000.genuine-bmw-parts/100001.bmw-parts/112700.transfer-box-electric-gearbox/",
+          "status": "EXACT_NUMBER_SELLER_44X60X10_E30_325IX"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify original Swiss ECE December 1987 VIN-specific ETK, installed transfer-case assembly and physical part before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T23:26:00+01:00"
+    },
+    "27241224662": {
+      "part_number": "27241224662",
+      "label": "Transfer-case snap ring",
+      "kind": "SNAP_RING",
+      "orientation": "NOT_APPLICABLE",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived transfer case",
+          "url": "https://www.hubauer-shop.de/de/bundmutter-27211224634.html",
+          "status": "EXACT_NUMBER_IN_EXPLODED_DIAGRAM_POSITION_26"
+        }
+      ],
+      "photos": [],
+      "facts": [],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify original Swiss ECE December 1987 VIN-specific ETK, installed transfer-case assembly and physical part before ordering or repair."
+      ],
+      "evidence_status": "EXACT_NUMBER_SOURCE_REVIEWED; VIN_FITMENT_NOT_APPROVED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_at": "2026-11-22T23:26:00+01:00"
+    },
+    "33321137641": {
+      "part_number": "33321137641",
+      "label": "Rear trailing arm LEFT D=91 mm",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_NOT_BMW_FACTORY_CERTIFICATION",
+      "sources": [
+        {
+          "label": "BMW dealer ETK-derived listing",
+          "url": "https://www.hubauer-shop.de/en/trailing-arm-left-33321137641.html",
+          "status": "EXACT_11_DIGIT_NUMBER_MATCH_DEALER_CATALOG"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Dealer catalogue evidence",
+          "value": "BMW 325iX four-door listed from 1986; 91 mm dealer-reported dimension",
+          "status": "DEALER_CATALOG_REPORTED",
+          "source_url": "https://www.hubauer-shop.de/en/trailing-arm-left-33321137641.html"
+        },
+        {
+          "name": "Historical part-number relation",
+          "value": "33321133269",
+          "status": "DEALER_SUPERSESSION_REPORTED_VERIFY_DIRECTION_AND_INTERCHANGEABILITY",
+          "source_url": "https://www.hubauer-shop.de/en/trailing-arm-left-33321137641.html"
+        }
+      ],
+      "conflicts": [],
+      "photos": [],
+      "evidence_status": "EXACT_NUMBER_SOURCE_RESEARCHED_NOT_VIN_CERTIFIED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_utc": "2026-11-23T06:27:00Z",
+      "batch": "B0004"
+    },
+    "33321137642": {
+      "part_number": "33321137642",
+      "label": "Rear trailing arm RIGHT D=91 mm",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_NOT_BMW_FACTORY_CERTIFICATION",
+      "sources": [
+        {
+          "label": "BMW dealer ETK-derived listing",
+          "url": "https://www.hubauer-shop.de/es/trailing-arm-right-33321137642.html",
+          "status": "EXACT_11_DIGIT_NUMBER_MATCH_DEALER_CATALOG"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Dealer catalogue evidence",
+          "value": "325iX four-door from 1986 in model list; another seller lists part introduction 1989-09, so original 1987 applicability unresolved",
+          "status": "DEALER_CATALOG_REPORTED",
+          "source_url": "https://www.hubauer-shop.de/es/trailing-arm-right-33321137642.html"
+        },
+        {
+          "name": "Historical part-number relation",
+          "value": "33321133270",
+          "status": "DEALER_SUPERSESSION_REPORTED_VERIFY_DIRECTION_AND_INTERCHANGEABILITY",
+          "source_url": "https://www.hubauer-shop.de/es/trailing-arm-right-33321137642.html"
+        }
+      ],
+      "conflicts": [
+        "Production-date conflict: Emiauto states from 1989-09 versus Hubauer broad 325iX four-door model range from 1986",
+        "Master CSV mislabels right trailing arm as left"
+      ],
+      "photos": [],
+      "evidence_status": "EXACT_NUMBER_SOURCE_RESEARCHED_NOT_VIN_CERTIFIED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_utc": "2026-11-23T06:27:00Z",
+      "batch": "B0004"
+    },
+    "33329058822": {
+      "part_number": "33329058822",
+      "label": "Eccentric rubber mounting set D=30 mm",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_NOT_BMW_FACTORY_CERTIFICATION",
+      "sources": [
+        {
+          "label": "BMW dealer ETK-derived listing",
+          "url": "https://www.hubauer-shop.de/pl/set-rubber-mounting-eccentric-33329058822.html",
+          "status": "EXACT_11_DIGIT_NUMBER_MATCH_DEALER_CATALOG"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Dealer catalogue evidence",
+          "value": "Eccentric version D=30 mm; catalogue conditions mention ABS and Japan variant; no Swiss VIN confirmation",
+          "status": "DEALER_CATALOG_REPORTED",
+          "source_url": "https://www.hubauer-shop.de/pl/set-rubber-mounting-eccentric-33329058822.html"
+        },
+        {
+          "name": "Historical part-number relation",
+          "value": "33321123105",
+          "status": "DEALER_SUPERSESSION_REPORTED_VERIFY_DIRECTION_AND_INTERCHANGEABILITY",
+          "source_url": "https://www.hubauer-shop.de/pl/set-rubber-mounting-eccentric-33329058822.html"
+        }
+      ],
+      "conflicts": [
+        "Variant conditions require source diagram and VIN options verification"
+      ],
+      "photos": [],
+      "evidence_status": "EXACT_NUMBER_SOURCE_RESEARCHED_NOT_VIN_CERTIFIED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_utc": "2026-11-23T06:27:00Z",
+      "batch": "B0004"
+    },
+    "33329061945": {
+      "part_number": "33329061945",
+      "label": "Rubber mounting set D=30 mm",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_NOT_BMW_FACTORY_CERTIFICATION",
+      "sources": [
+        {
+          "label": "BMW dealer ETK-derived listing",
+          "url": "https://www.hubauer-shop.de/pl/set-rubber-mounting-33329061945.html",
+          "status": "EXACT_11_DIGIT_NUMBER_MATCH_DEALER_CATALOG"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Dealer catalogue evidence",
+          "value": "Non-eccentric D=30 mm; catalogue lists variant/ABS conditions; exact installed variant unknown",
+          "status": "DEALER_CATALOG_REPORTED",
+          "source_url": "https://www.hubauer-shop.de/pl/set-rubber-mounting-33329061945.html"
+        },
+        {
+          "name": "Historical part-number relation",
+          "value": "33321137564",
+          "status": "DEALER_SUPERSESSION_REPORTED_VERIFY_DIRECTION_AND_INTERCHANGEABILITY",
+          "source_url": "https://www.hubauer-shop.de/pl/set-rubber-mounting-33329061945.html"
+        }
+      ],
+      "conflicts": [
+        "Master CSV labels both mounting sets eccentric; dealer identifies this number as non-eccentric"
+      ],
+      "photos": [],
+      "evidence_status": "EXACT_NUMBER_SOURCE_RESEARCHED_NOT_VIN_CERTIFIED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_utc": "2026-11-23T06:27:00Z",
+      "batch": "B0004"
+    },
+    "33416762317": {
+      "part_number": "33416762317",
+      "label": "Angular-contact wheel bearing 42×75×37 mm",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_NOT_BMW_FACTORY_CERTIFICATION",
+      "sources": [
+        {
+          "label": "BMW dealer ETK-derived listing",
+          "url": "https://www.hubauer-shop.de/it/angular-contact-ball-bearingradial-33416762317.html",
+          "status": "EXACT_11_DIGIT_NUMBER_MATCH_DEALER_CATALOG"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Dealer catalogue evidence",
+          "value": "Dealer lists E30 325iX two-door from 1986; dimensions 42×75×37 mm from dealer listing; sedan applicability needs explicit validation",
+          "status": "DEALER_CATALOG_REPORTED",
+          "source_url": "https://www.hubauer-shop.de/it/angular-contact-ball-bearingradial-33416762317.html"
+        },
+        {
+          "name": "Historical part-number relation",
+          "value": "33417749628",
+          "status": "DEALER_SUPERSESSION_REPORTED_VERIFY_DIRECTION_AND_INTERCHANGEABILITY",
+          "source_url": "https://www.hubauer-shop.de/it/angular-contact-ball-bearingradial-33416762317.html"
+        }
+      ],
+      "conflicts": [],
+      "photos": [],
+      "evidence_status": "EXACT_NUMBER_SOURCE_RESEARCHED_NOT_VIN_CERTIFIED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_utc": "2026-11-23T06:27:00Z",
+      "batch": "B0004"
+    },
+    "33521133564": {
+      "part_number": "33521133564",
+      "label": "Rear shock absorber OE reference",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "AFTERMARKET_CROSS_REFERENCE_ONLY",
+      "sources": [
+        {
+          "label": "Aftermarket OE cross-reference",
+          "url": "https://www.pkwteile.ch/oen/33521133564",
+          "status": "EXACT_11_DIGIT_OE_CROSS_REFERENCE_SELLER"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Cross-reference",
+          "value": "Bilstein B4 19-019819 and KYB 443207 are seller-listed alternatives; these are aftermarket product specifications, not BMW factory specifications",
+          "status": "SELLER_CLAIM_NOT_FITMENT_CERTIFIED",
+          "source_url": "https://www.pkwteile.ch/oen/33521133564"
+        }
+      ],
+      "conflicts": [
+        "No BMW ETK exact-number application confirmation obtained in this run"
+      ],
+      "photos": [],
+      "evidence_status": "EXACT_NUMBER_SOURCE_RESEARCHED_NOT_VIN_CERTIFIED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_utc": "2026-11-23T07:26:00Z",
+      "batch": "B0004"
+    },
+    "33531136386": {
+      "part_number": "33531136386",
+      "label": "Rear spring pad 7.5 mm",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_NOT_BMW_FACTORY_CERTIFICATION",
+      "sources": [
+        {
+          "label": "Hubauer BMW-derived catalogue",
+          "url": "https://www.hubauer-shop.de/es/spring-pad-33531136386.html",
+          "status": "EXACT_11_DIGIT_NUMBER_MATCH_DEALER_CATALOG"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Nominal thickness",
+          "value": "7.5 mm",
+          "status": "DEALER_CATALOG_REPORTED",
+          "source_url": "https://www.hubauer-shop.de/es/spring-pad-33531136386.html"
+        },
+        {
+          "name": "Model listing",
+          "value": "325iX E30 four-door from 1986, 2-door from 1986; variant and spring requirements still unverified",
+          "status": "DEALER_CATALOG_REPORTED_NOT_VIN_APPROVED",
+          "source_url": "https://www.hubauer-shop.de/es/spring-pad-33531136386.html"
+        },
+        {
+          "name": "Predecessor",
+          "value": "33531127218 (catalogue sequence; replacement direction requires validation)",
+          "status": "DEALER_SUPERSESSION_REPORTED",
+          "source_url": "https://www.hubauer-shop.de/es/spring-pad-33531136386.html"
+        }
+      ],
+      "conflicts": [],
+      "photos": [],
+      "evidence_status": "EXACT_NUMBER_SOURCE_RESEARCHED_NOT_VIN_CERTIFIED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_utc": "2026-11-23T07:26:00Z",
+      "batch": "B0004"
+    },
+    "33551130349": {
+      "part_number": "33551130349",
+      "label": "Rear anti-roll-bar rubber mounting 14.5 mm",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "BMW_DEALER_ETK_DERIVED_NOT_BMW_FACTORY_CERTIFICATION",
+      "sources": [
+        {
+          "label": "Hubauer BMW-derived catalogue",
+          "url": "https://www.hubauer-shop.de/es/stabilizer-rubber-mounting-33551130349.html",
+          "status": "EXACT_11_DIGIT_NUMBER_MATCH_DEALER_CATALOG"
+        }
+      ],
+      "facts": [
+        {
+          "name": "Nominal stabilizer diameter",
+          "value": "14.5 mm; diagram position 02",
+          "status": "DEALER_CATALOG_REPORTED",
+          "source_url": "https://www.hubauer-shop.de/es/stabilizer-rubber-mounting-33551130349.html"
+        },
+        {
+          "name": "Model listing",
+          "value": "325iX E30 four-door from 1986; sports suspension / M-Technic and market conditions must be checked",
+          "status": "DEALER_CATALOG_REPORTED_NOT_VIN_APPROVED",
+          "source_url": "https://www.hubauer-shop.de/es/stabilizer-rubber-mounting-33551130349.html"
+        },
+        {
+          "name": "Historical reference",
+          "value": "33551126780; catalogue language is inconsistent about replacement direction",
+          "status": "DEALER_SUPERSESSION_DIRECTION_UNRESOLVED",
+          "source_url": "https://www.hubauer-shop.de/es/stabilizer-rubber-mounting-33551130349.html"
+        }
+      ],
+      "conflicts": [
+        "Dealer language variants give inconsistent supersession direction"
+      ],
+      "photos": [],
+      "evidence_status": "EXACT_NUMBER_SOURCE_RESEARCHED_NOT_VIN_CERTIFIED",
+      "vin_fitment_status": "NOT_APPROVED",
+      "reviewed_utc": "2026-11-23T07:26:00Z",
+      "batch": "B0004"
+    },
+    "12311722979": {
+      "part_number": "12311722979",
+      "label": "Grooved ball bearing; alternator-related aftermarket cross-reference",
+      "kind": "COMPONENT",
+      "orientation": "UNCONFIRMED",
+      "sources": [
+        {
+          "label": "GNT Motor aftermarket catalogue",
+          "url": "https://gntmotor.com/product/p/zc052024",
+          "status": "SELLER_CROSS_REFERENCE_ONLY"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue identification",
+          "value": "Grooved ball bearing; alternator-related aftermarket cross-reference",
+          "status": "SELLER_CROSS_REFERENCE_ONLY",
+          "source_url": "https://gntmotor.com/product/p/zc052024",
+          "note": "GNT lists 17 x 47 x 14 mm for its ZC052024 product; not established as BMW OEM specification."
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify installed assembly identification, production date and variant against VIN and physical component before fitment."
+      ],
+      "evidence_status": "SOURCE_REVIEWED_NOT_FITMENT_APPROVED",
+      "fitment_status": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_ETK_DERIVED_OR_SELLER_AS_LABELED",
+      "reviewed_utc": "2026-11-23T08:25:00Z"
+    },
+    "13541747519": {
+      "part_number": "13541747519",
+      "label": "Accelerator Bowden cable bearing, black",
+      "kind": "COMPONENT",
+      "orientation": "UNCONFIRMED",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived dealer catalogue",
+          "url": "https://www.hubauer-shop.de/es/bearing-accelator-bowden-cable-13541747519.html",
+          "status": "EXACT_NUMBER_DEALER_LISTING"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue identification",
+          "value": "Accelerator Bowden cable bearing, black",
+          "status": "EXACT_NUMBER_DEALER_LISTING",
+          "source_url": "https://www.hubauer-shop.de/es/bearing-accelator-bowden-cable-13541747519.html",
+          "note": "Dealer indicates predecessor 13541274070; cruise-control option context; E30 model-level mention is not VIN validation."
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify installed assembly identification, production date and variant against VIN and physical component before fitment."
+      ],
+      "evidence_status": "SOURCE_REVIEWED_NOT_FITMENT_APPROVED",
+      "fitment_status": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_ETK_DERIVED_OR_SELLER_AS_LABELED",
+      "reviewed_utc": "2026-11-23T08:25:00Z"
+    },
+    "23121205340": {
+      "part_number": "23121205340",
+      "label": "Manual gearbox output shaft seal 40 x 55 x 8 mm",
+      "kind": "COMPONENT",
+      "orientation": "UNCONFIRMED",
+      "sources": [
+        {
+          "label": "Hubauer BMW ETK-derived dealer catalogue",
+          "url": "https://www.hubauer-shop.de/es/shaft-seal-23121205340.html",
+          "status": "EXACT_NUMBER_DEALER_LISTING"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue identification",
+          "value": "Manual gearbox output shaft seal 40 x 55 x 8 mm",
+          "status": "EXACT_NUMBER_DEALER_LISTING",
+          "source_url": "https://www.hubauer-shop.de/es/shaft-seal-23121205340.html",
+          "note": "Dealer chronological replacement 23121205342; direction and specific installed gearbox to confirm."
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify installed assembly identification, production date and variant against VIN and physical component before fitment."
+      ],
+      "evidence_status": "SOURCE_REVIEWED_NOT_FITMENT_APPROVED",
+      "fitment_status": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_ETK_DERIVED_OR_SELLER_AS_LABELED",
+      "reviewed_utc": "2026-11-23T08:25:00Z"
+    },
+    "23121205342": {
+      "part_number": "23121205342",
+      "label": "Manual gearbox output shaft seal 40 x 55 x 8 mm",
+      "kind": "COMPONENT",
+      "orientation": "UNCONFIRMED",
+      "sources": [
+        {
+          "label": "RM European aftermarket seller catalogue",
+          "url": "https://www.rmeuropean.com/Products/23121205342-MFG30.aspx",
+          "status": "EXACT_NUMBER_SELLER_LISTING"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue identification",
+          "value": "Manual gearbox output shaft seal 40 x 55 x 8 mm",
+          "status": "EXACT_NUMBER_SELLER_LISTING",
+          "source_url": "https://www.rmeuropean.com/Products/23121205342-MFG30.aspx",
+          "note": "Elring Klinger product 242.993; seller-reported dimension; 325iX model-level catalogue claims not as-installed fitment."
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify installed assembly identification, production date and variant against VIN and physical component before fitment."
+      ],
+      "evidence_status": "SOURCE_REVIEWED_NOT_FITMENT_APPROVED",
+      "fitment_status": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_ETK_DERIVED_OR_SELLER_AS_LABELED",
+      "reviewed_utc": "2026-11-23T08:25:00Z"
+    },
+    "23121209311": {
+      "part_number": "23121209311",
+      "label": "Manual gearbox input shaft seal 35 x 52 x 7 mm",
+      "kind": "COMPONENT",
+      "orientation": "UNCONFIRMED",
+      "sources": [
+        {
+          "label": "BMWFans ETK-derived parts catalogue",
+          "url": "https://bmwfans.info/parts-catalog/23121209311",
+          "status": "EXACT_NUMBER_ETK_DERIVED"
+        }
+      ],
+      "photos": [],
+      "facts": [
+        {
+          "name": "Catalogue identification",
+          "value": "Manual gearbox input shaft seal 35 x 52 x 7 mm",
+          "status": "EXACT_NUMBER_ETK_DERIVED",
+          "source_url": "https://bmwfans.info/parts-catalog/23121209311",
+          "note": "BMWFans lists old number 23121220619; BMW Parts Deal lists 1988-1991 325iX US years, not proof for Swiss December 1987 vehicle."
+        }
+      ],
+      "conflicts": [],
+      "inspection_questions": [
+        "Verify installed assembly identification, production date and variant against VIN and physical component before fitment."
+      ],
+      "evidence_status": "SOURCE_REVIEWED_NOT_FITMENT_APPROVED",
+      "fitment_status": "NOT_APPROVED",
+      "record_type": "SECONDARY_PART_EVIDENCE",
+      "source_authority": "DEALER_ETK_DERIVED_OR_SELLER_AS_LABELED",
+      "reviewed_utc": "2026-11-23T08:25:00Z"
     }
   }
 }

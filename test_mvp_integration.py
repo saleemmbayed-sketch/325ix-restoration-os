@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
-"""Reproducible local integration check for the front-axle MVP demo."""
-import base64, json, pathlib, sqlite3, subprocess, sys, tempfile, time, urllib.request
+"""Read-only V4 catalog integration test with all mutable test state isolated."""
+import argparse, base64, hashlib, json, os, pathlib, socket, sqlite3, subprocess, sys, tempfile, time, urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent
+
+def unused_loopback_port():
+    with socket.socket() as sock:
+        sock.bind(('127.0.0.1', 0))
+        return int(sock.getsockname()[1])
+
+def sha256_file(path):
+    digest=hashlib.sha256()
+    with pathlib.Path(path).open('rb') as source:
+        for block in iter(lambda: source.read(1024*1024),b''):
+            digest.update(block)
+    return digest.hexdigest()
 
 def call(base, path, body=None):
     data = None if body is None else json.dumps(body).encode()
@@ -13,6 +25,20 @@ def call(base, path, body=None):
         return response.status, (json.loads(raw) if 'json' in response.headers.get('content-type','') else raw.decode())
 
 def main():
+    default_v4 = ROOT/'google_drive'/'14_MULTIMODAL_MEDIA_AND_GRAPH'
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--v4-root', type=pathlib.Path,
+                        default=default_v4 if default_v4.is_dir() else None,
+                        help='Local read-only 14_MULTIMODAL_MEDIA_AND_GRAPH folder')
+    args = parser.parse_args()
+    if args.v4_root is None or not args.v4_root.is_dir():
+        parser.error('Provide --v4-root pointing to the local V4 data folder; private data is not bundled')
+    v4_root = args.v4_root.expanduser().resolve()
+    catalog_path=v4_root/'04_SEARCH'/'325ix_multimodal.sqlite3'
+    if not catalog_path.is_file():parser.error('V4 catalog is missing: '+str(catalog_path))
+    source_paths=sorted(path for path in v4_root.rglob('*') if path.is_file() and not path.is_symlink())
+    if catalog_path not in source_paths:parser.error('V4 catalog is not a regular file inside the mirror')
+    source_fingerprints={path:sha256_file(path) for path in source_paths}
     assert 'id="mission"' in (ROOT/'index.html').read_text(encoding='utf-8')
     assert 'loadLivingMission' in (ROOT/'site.js').read_text(encoding='utf-8')
     assert 'id="missionevidenceform"' in (ROOT/'index.html').read_text(encoding='utf-8')
@@ -47,8 +73,17 @@ def main():
         manual_index = pathlib.Path(td) / 'manual_index.sqlite3'
         indexed = subprocess.run([sys.executable, 'index_manuals.py', '--input', str(manual_input), '--output', str(manual_index)], cwd=ROOT, capture_output=True, text=True)
         assert indexed.returncode == 0, indexed.stderr
-        proc = subprocess.Popen([sys.executable, 'app.py', '--port', '8878', '--jobs', str(jobs), '--manual-index', str(manual_index)], cwd=ROOT)
-        base = 'http://127.0.0.1:8878'
+        photo_db = pathlib.Path(td) / 'part_photos.sqlite3'
+        photo_root = pathlib.Path(td) / 'actual_part_photos'
+        port = unused_loopback_port()
+        command = [sys.executable, 'app.py', '--port', str(port), '--v4-root', str(v4_root),
+                   '--jobs', str(jobs), '--manual-index', str(manual_index),
+                   '--photo-db', str(photo_db), '--photo-root', str(photo_root)]
+        env = os.environ.copy()
+        env.pop('BMW_325IX_VIN', None)
+        env.pop('BMW_325IX_ENGINE_NUMBER', None)
+        proc = subprocess.Popen(command, cwd=ROOT, env=env)
+        base = f'http://127.0.0.1:{port}'
         try:
             for _ in range(40):
                 try:
@@ -112,6 +147,14 @@ def main():
             status, component = call(base, '/api/twin/component', {'component_type':'Steering tie rod','location':'Front axle','side':'LEFT','marking':'owner-photo-marking','source':'QA component fixture'})
             assert status == 201 and component['status'] == 'IDENTITY_UNCONFIRMED'
             component_id = component['component_id']
+            _, twin_after_component = call(base, '/api/twin')
+            assert twin_after_component['events'][0]['event_type'] == 'COMPONENT_INSTANCE_CREATED'
+            assert twin_after_component['gamification']['xp'] == before_xp + 20
+            with sqlite3.connect(jobs) as ledger:
+                ledger.executemany("INSERT INTO twin_event(created_utc,event_type,entity_type,entity_id,payload_json,source,xp_value) VALUES('fixture','QA_RECORDED','component','1','{}','QA fixture',1)", [() for _ in range(101)])
+            _, long_history = call(base, '/api/twin')
+            assert len(long_history['events']) == 100
+            assert long_history['gamification']['xp'] == twin_after_component['gamification']['xp'] + 101
             status, fact = call(base, f'/api/twin/component/{component_id}/fact', {'layer':'OWNER_REPORTED','field':'condition','value':'Visible boot damage; inspection pending','confidence':'OWNER_REPORTED','source':'Owner photo P-001'})
             assert status == 201 and fact['confidence'] == 'OWNER_REPORTED'
             _, components = call(base, '/api/twin/components')
@@ -202,7 +245,7 @@ def main():
             assert any(x['type']=='measurement' for x in reopened['observations'])
             assert 'NOT_APPROVED' in export and 'REPAIR_EXISTING' in export
             proc.terminate(); proc.wait(timeout=5)
-            proc=subprocess.Popen([sys.executable, 'app.py', '--port', '8878', '--jobs', str(jobs)], cwd=ROOT)
+            proc=subprocess.Popen(command, cwd=ROOT, env=env)
             for _ in range(40):
                 try: call(base, '/api/vehicle'); break
                 except Exception: time.sleep(.1)
@@ -215,7 +258,11 @@ def main():
             assert twin_after_restart['gamification']['xp'] >= before_xp + 20
             _, missions_after_restart = call(base, '/api/missions')
             assert {x['domain_id'] for x in missions_after_restart['missions']} >= {'awd_drivetrain','electrical','suspension_steering'}
-            print('PASS: real catalog/graph, manual provenance/citations/conflicts, digital twin events/gamification, repair-first options, specialist registry, workflow, persistence, measurement ledger, restart recovery, export')
+            current_source_paths=sorted(path for path in v4_root.rglob('*') if path.is_file() and not path.is_symlink())
+            assert current_source_paths==source_paths, 'V4 mirror file set changed during integration test'
+            for path,digest in source_fingerprints.items():
+                assert sha256_file(path)==digest, 'Read-only V4 input changed during integration test: '+str(path)
+            print(f'PASS: full V4 integration with {len(source_paths)} read-only mirror files fingerprinted; isolated manual/photo/job state, persistence/restart/export, and unchanged source data')
         finally:
             proc.terminate(); proc.wait(timeout=5)
 

@@ -51,6 +51,10 @@ details{padding:10px;border-radius:10px;border:1px solid #d0e1eb;margin:13px 0}s
 .missioncheck{display:grid;gap:7px;padding:12px 0;border-bottom:1px solid var(--edge)}.missioncheck:last-child{border-bottom:0}.missioncheck textarea,.missioncheck input,.missioncheck select{width:100%}.missioncheck button{justify-self:start}#livingmissionfeed{margin-top:18px}#missionaianswer{min-height:150px;max-height:420px}.wide{flex:2!important}
 @media(max-width:900px){.missionsteps{grid-template-columns:repeat(2,minmax(0,1fr))}.missioncolumns{grid-template-columns:1fr}}
 @media(max-width:700px){.launchpad{grid-template-columns:1fr}.launchpad button{justify-self:start}}
+/* Downloadable local test bundle: keep synthetic fixture status visible on every page. */
+.local-demo-banner{position:sticky;top:0;z-index:30;margin:0 auto 14px;max-width:1490px;padding:12px 18px;border:2px solid #9c4c11;border-radius:10px;background:#fff0d5;color:#612d06;font-weight:850;letter-spacing:.01em;box-shadow:0 3px 14px #40200822}
+.ix-studio-toolbar .ix-mode-btn[hidden]{display:none!important}
+
 /* 24-hour visual twin slice: orientation aid, not dimensional CAD */
 .visual-twin{overflow:hidden}.twin-toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}.twin-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,.75fr);gap:16px;align-items:start}.twin-stage{background:radial-gradient(circle at 50% 30%,#f7fbfd,#e4eef4);border:1px solid #bfd4df;border-radius:14px;padding:10px;min-height:450px}.twin-stage svg{width:100%;height:auto;min-height:380px}.twin-node{cursor:pointer;outline:none}.twin-node rect{fill:#2d6784;stroke:#d9edf5;stroke-width:3;filter:drop-shadow(0 3px 3px #17384a55);transition:.15s}.twin-node text{fill:white;font-size:13px;font-weight:700;pointer-events:none}.twin-node .twin-node-sub{font-size:9px;font-weight:500;fill:#d9edf5}.twin-node:hover rect,.twin-node:focus rect{fill:#3d8bab;stroke:#fff}.twin-node.selected rect{fill:#d27a2c;stroke:#fff;stroke-width:5}.twin-inspector{border:1px solid #c8dce6;border-radius:12px;padding:16px;background:#fbfdff;min-height:300px}.twin-inspector h3{margin:0 0 7px}.twin-inspector button{display:block;width:100%;margin:8px 0;text-align:left}.twin-legend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 4px 2px;color:#5c7382;font-size:11px}.legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#2d6784;margin-right:4px}.legend-dot.active{background:#d27a2c}.legend-dot.unknown{background:#b7c3ca}.twin-diagram-panel{margin-top:16px;border-top:2px solid #c7dce7;padding-top:14px}.visual-assembly-list{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}.visual-assembly{width:auto!important;display:inline-block!important}.visual-diagram-wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.8fr);gap:16px;margin-top:12px}.visual-diagram-image{width:100%;max-height:520px;object-fit:contain;background:white;border:1px solid #c8dce6;border-radius:9px;padding:8px}.visual-callout-rail{display:grid;gap:7px;align-content:start;max-height:520px;overflow:auto}.visual-callout-rail button{text-align:left}.visual-callout-rail h4{margin:0}.visual-callout-rail p{margin:0}.visual-twin .risk{margin:10px 0}.visual-twin a{display:block;margin:7px 0;font-size:12px}@media(max-width:850px){.twin-layout,.visual-diagram-wrap{grid-template-columns:1fr}.twin-stage svg{min-height:300px}.twin-inspector{min-height:0}}
 
@@ -81,7 +85,7 @@ body:has(#twin.page:not([hidden])) main {max-width:1490px;}
 .ix-studio-tools .ix3d-explode-label{margin:0;font-size:12px;font-weight:700;color:#45657d}
 .ix-studio-tools .ix3d-explode-label input{width:84px}
 .ix-studio-tools .ix-wire{font-size:12px;font-weight:650;color:#50677a}
-.ix-studio-layout{grid-template-columns:minmax(0,3.05fr) minmax(280px,1fr);gap:16px;align-items:stretch}
+.ix-studio-layout{grid-template-columns:minmax(0,3.05fr) minmax(280px,1fr);gap:16px;align-items:start}
 .ix-studio-stage{background:#0b1727;border-color:#1b2b41;min-height:570px;border-radius:14px;padding:0;box-shadow:0 12px 32px #081b2a16;position:relative;overflow:hidden}
 .ix-studio-stage .ix3d-stage{height:505px;min-height:505px}
 .ix-studio-stage .ix3d-hud{position:absolute;left:22px;top:20px;z-index:3}
@@ -117,7 +121,7 @@ body:has(#twin.page:not([hidden])) main {max-width:1490px;}
 .ix-studio-inspector .ix3d-advanced{margin-top:18px;font-size:12px}
 .ix-studio-v2 #twin-canvas{display:none!important}
 @media(max-width:1000px){.ix-studio-layout{grid-template-columns:1fr}.ix-studio-inspector{min-height:0}.ix-studio-head{flex-wrap:wrap}.ix-studio-stage{min-height:450px}}
-@media(max-width:680px){.ix-studio-v2{padding:14px!important}.ix-studio-stage .twin-diagram-panel{padding:16px 10px}.ix-oem-instage .visual-diagram-wrap{grid-template-columns:1fr}.ix-studio-toolbar{gap:10px}.ix-studio-tools .ix-wire{display:none}.ix-ref-chip{white-space:normal}}
+@media(max-width:680px){.ix-studio-v2{padding:14px!important}.ix-studio-stage{min-height:0;scroll-margin-top:78px}.ix-studio-stage .ix3d-stage{height:360px;min-height:360px}.ix-studio-stage .twin-diagram-panel{padding:16px 10px}.ix-oem-instage .visual-diagram-wrap{grid-template-columns:1fr}.ix-studio-toolbar{gap:10px}.ix-studio-tools .ix-wire{display:none}.ix-ref-chip{white-space:normal}}
 /* OEM diagram mode does not expose inactive 3D-only controls. */
 .ix-studio-v2:has(#twin2d.active) .ix-studio-tools{display:none}
 
@@ -289,6 +293,9 @@ footer{background:#eaf0f4;color:#8193a1;border-top:1px solid #d9e5ec;margin-left
 .ix-mech-catalog-result{display:grid;gap:3px;width:100%!important;justify-content:stretch;text-align:left!important;white-space:normal;background:white!important;color:#203d55!important;padding:9px!important;border:1px solid #d5e3e7!important;border-radius:8px!important;box-shadow:none!important}
 .ix-mech-catalog-result:hover,.ix-mech-catalog-result.selected{border-color:#23839a!important;background:#e8f7f9!important}
 .ix-mech-catalog-result strong{font-size:11px}.ix-mech-catalog-result span{font-size:11px;overflow-wrap:anywhere}.ix-mech-catalog-result small{font-size:10px;color:#708da1}
+.ix-mech-evidence{display:grid;gap:8px;padding:12px;background:#fff;border:1px solid #b8d6df;border-radius:10px}
+.ix-mech-evidence:empty{display:none}.ix-mech-evidence h4{margin:0}.ix-mech-evidence p{margin:0}
+.ix-mech-evidence-figure img{display:block;max-width:100%;max-height:220px;object-fit:contain;background:#f7fafb}
 .ix-mech-job-panel{border-top:1px solid #d2e0e6;padding-top:12px;display:grid;gap:8px}
 .ix-mech-job-panel h4{font-size:15px;margin:0;color:#1f4359}.ix-mech-selection-status{background:#e6eff3;padding:8px 10px;border-radius:7px;color:#355a6f;font-size:11px;font-weight:680}.ix-mech-selection-state{color:#5d7d91;font-size:10px}
 .ix-mech-job-form{display:grid;gap:8px}.ix-mech-job-form textarea,.ix-mech-job-form input{width:100%;background:#fff;border:1px solid #cbdde5;border-radius:8px;padding:10px;font-size:11px;resize:vertical;color:#1f4154}
@@ -306,3 +313,14 @@ footer{background:#eaf0f4;color:#8193a1;border-top:1px solid #d9e5ec;margin-left
 /* RC20: assembly-level explosion uses existing toolbar; no new framework. */
 #ix-explode-scope{min-width:150px;max-width:210px;height:36px;border-radius:8px}#ix-explode-isolate[aria-pressed="true"]{background:#196883;color:white}#ix-alert-demo{border:1px dashed #b47e4c}#ix-explode-reset{font-weight:650}
 @media(max-width:960px){#ix-explode-scope{min-width:130px;max-width:100%}.ix-studio-tools{flex-wrap:wrap}}
+
+/* Keep the 3D workspace and evidence at usable widths as a case grows. */
+.ix-studio-v2.ix-inspect-mode .ix-studio-layout{grid-template-columns:minmax(0,1fr)}
+.ix-studio-v2.ix-inspect-mode .ix-mech-browser{grid-template-columns:minmax(230px,.8fr) minmax(0,2fr);align-items:start}
+.ix-studio-v2.ix-inspect-mode .ix-mech-browser>span,.ix-studio-v2.ix-inspect-mode .ix-mech-browser>h3,.ix-studio-v2.ix-inspect-mode .ix-mech-browser>p,.ix-studio-v2.ix-inspect-mode .ix-mech-browser>input{grid-column:1/-1}
+.ix-studio-v2.ix-inspect-mode .ix-mech-part-list{grid-column:1;max-height:520px}
+.ix-studio-v2.ix-inspect-mode .ix-mech-component-detail{grid-column:2;min-width:0}
+#twinfacts{grid-template-columns:repeat(2,minmax(0,1fr))}
+#twinfacts .factrow{grid-template-columns:minmax(105px,.8fr) minmax(0,1.4fr);gap:8px 14px}
+#twinfacts .factstatus{grid-column:2;overflow-wrap:normal}
+@media(max-width:680px){.ix-studio-v2.ix-inspect-mode .ix-mech-browser{grid-template-columns:1fr}.ix-studio-v2.ix-inspect-mode .ix-mech-part-list,.ix-studio-v2.ix-inspect-mode .ix-mech-component-detail{grid-column:1}#twinfacts{grid-template-columns:1fr}}

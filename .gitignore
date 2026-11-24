@@ -6,6 +6,7 @@ workshop_jobs*.sqlite3*
 part_photos.sqlite3*
 actual_part_photos/
 rc12_trial_state/
+rc21_full_trial_state/
 workshop_jobs_backups/
 *.sqlite3-wal
 *.sqlite3-shm
@@ -31,7 +32,13 @@ models/previews/*
 vendor/
 # Machine-local source archives, editor and temp files.
 *.zip
+google_drive/
 .env
 *.log
 # Personal-use 3D models, original source licensing and private attributions.
 local_models/
+# Generated local-test ZIPs and synthetic runtime state.
+/out/
+/local_demo_state/
+demo_catalog.sqlite3
+/3D_RELEASE_STATUS.json
