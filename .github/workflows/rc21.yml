@@ -57,4 +57,13 @@ jobs:
             if curl -fsS http://127.0.0.1:8877/api/3d/status >/dev/null; then break; fi
             sleep 0.2
           done
-          NODE_PATH=/tmp/ixdeps/node_modules WORKBENCH_URL=http://127.0.0.1:8877 node scripts/browser_local_demo_smoke.cjs
+          CI_CAPTURE_DIR=/tmp/ix-ci-captures NODE_PATH=/tmp/ixdeps/node_modules WORKBENCH_URL=http://127.0.0.1:8877 node scripts/browser_local_demo_smoke.cjs
+
+      - name: Save browser journey screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc21-browser-journey
+          path: /tmp/ix-ci-captures/*.png
+          if-no-files-found: ignore
+          retention-days: 7
