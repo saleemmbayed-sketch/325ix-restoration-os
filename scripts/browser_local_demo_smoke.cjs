@@ -83,6 +83,11 @@ const errors = [];
     await page.locator('#ix-mech-browser').waitFor({ state: 'visible' });
     await page.locator('#ix-mech-part-list [data-component="tie_rod"].selected').waitFor({ state: 'visible' });
     await page.locator(`.ix-mech-catalog-result[data-candidate="${candidateId}"].selected`).waitFor({ state: 'visible' });
+    await page.locator('#ix-mech-component-detail button').filter({ hasText: 'Record physical instance' }).click();
+    await page.locator('#componentform').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#componentpart').inputValue(), '', 'Candidate number must not become an installed part');
+    assert.equal(await page.locator('#componentmarking').inputValue(), '', 'Physical marking requires observation');
+    assert.match(await page.locator('#componentstatus').innerText(), /3D locator only/);
     if (errors.length) throw new Error('Browser errors: ' + errors.slice(0, 8).join(' | '));
 
     console.log(`PASS local demo browser: local front axle GLB → ${number} → IX-${String(caseId).padStart(4, '0')} → dossier/reload → restored selection; safety remains NOT_APPROVED`);
