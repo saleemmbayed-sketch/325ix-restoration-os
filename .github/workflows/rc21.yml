@@ -43,3 +43,18 @@ jobs:
           python3 test_runtime_catalog_paths.py
           python3 test_viewer3d_contract.py
           python3 test_rc19_mechanical.py
+
+      - name: Browser journey with local 3D and saved case
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/ixdeps --ignore-scripts --no-save --no-audit --no-fund playwright@1.57.0
+          /tmp/ixdeps/node_modules/.bin/playwright install chromium
+          python3 scripts/run_local_demo.py --port 8877 --no-browser --state-dir /tmp/ix-ci-demo &
+          demo_pid=$!
+          trap 'kill "$demo_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:8877/api/3d/status >/dev/null; then break; fi
+            sleep 0.2
+          done
+          NODE_PATH=/tmp/ixdeps/node_modules WORKBENCH_URL=http://127.0.0.1:8877 node scripts/browser_local_demo_smoke.cjs
