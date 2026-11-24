@@ -961,7 +961,15 @@ async function selectMechanicalComponent(key,focus){
  const actions=text('div',null,'ix-mech-detail-actions');
  const oem=text('button','See OEM drawings','light');oem.onclick=()=>openMechanicalDrawings(c.system);
  const isolate=text('button','Isolate in 3D','light');isolate.onclick=()=>{const active=window.ixStudio3D?.isolateMechanicalComponent(key);isolate.textContent=active?'Show all parts':'Isolate in 3D'};
- actions.append(isolate,oem);root.append(actions);
+ const record=text('button','Record physical instance','light');record.type='button';record.onclick=async()=>{
+  tab('twin');await loadTwinComponents();
+  $('componenttype').value=c.label;
+  $('componentlocation').value=c.system.replaceAll('_',' ')+' · '+c.label;
+  $('componentpart').value='';$('componentmarking').value='';$('componentcondition').value='';$('componentsource').value='';
+  $('componentstatus').textContent='3D locator only. Enter observed marking, condition and source; catalog match is not installed identity.';
+  $('componentform').scrollIntoView({block:'center',behavior:'smooth'});$('componentmarking').focus({preventScroll:true});
+ };
+ actions.append(isolate,oem,record);root.append(actions);
  const searchLabel=text('p','Looking up BMW catalog matches…','ix-mech-catalog-state');root.append(searchLabel);
  const resultArea=text('div',null,'ix-mech-matches');root.append(resultArea);
  const evidencePanel=text('section',null,'ix-mech-evidence');evidencePanel.setAttribute('aria-live','polite');root.append(evidencePanel);
