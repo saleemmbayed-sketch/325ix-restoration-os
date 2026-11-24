@@ -2,6 +2,13 @@
    Start scripts/run_local_demo.py first. The test blocks hosted 3D and uses loopback only. */
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
+const fs = require('node:fs');
+const path = require('node:path');
+const captureDir = process.env.CI_CAPTURE_DIR;
+if (captureDir) fs.mkdirSync(captureDir, { recursive: true });
+async function capture(page, name) {
+  if (captureDir) await page.screenshot({ path: path.join(captureDir, name + '.png'), fullPage: true });
+}
 
 const base = (process.env.WORKBENCH_URL || 'http://127.0.0.1:8765').replace(/\/$/, '');
 const errors = [];
@@ -25,6 +32,7 @@ const errors = [];
 
     await page.goto(base + '/#twin', { waitUntil: 'domcontentloaded' });
     await page.locator('#local-demo-banner').waitFor({ state: 'visible' });
+    await capture(page, '01-garage');
     assert.match(await page.locator('#local-demo-banner').innerText(), /synthetic demo/i);
     await page.locator('[data-mech-scene="ix_front_axle_workshop"]').waitFor({ state: 'visible' });
     await page.locator('[data-mech-scene="ix_front_axle_workshop"]').click();
@@ -46,6 +54,7 @@ const errors = [];
     assert.match(await page.locator('.ix-mech-evidence').innerText(), /Research: NOT_RESEARCHED · 0\/0 drawings verified locally/);
     assert.match(await page.locator('.ix-mech-evidence').innerText(), /No exact catalog source URL in this record/);
     assert.equal(await page.locator('.ix-mech-evidence a').count(), 0, 'Synthetic evidence must not link to an unsourced OEM drawing');
+    await capture(page, '02-selected-component');
 
     await page.locator('#ix-mech-job-symptom').fill('Synthetic demo symptom for local persistence testing only.');
     await page.locator('.ix-mech-job-form select').selectOption('LEFT');
@@ -53,6 +62,7 @@ const errors = [];
     await page.locator('#expertcasepanel').waitFor({ state: 'visible' });
     await page.waitForFunction(() => document.querySelector('#expertcasetitle')?.textContent.includes('road clearance NOT APPROVED'));
     assert((await page.locator('#expertoverview').innerText()).includes(number));
+    await capture(page, '03-saved-case');
     const caseId = (await page.locator('#expertcasetitle').innerText()).match(/IX-(\d+)/)?.[1];
     assert(caseId, 'Synthetic local case should have a visible persistent ID');
 
