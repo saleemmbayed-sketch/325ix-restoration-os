@@ -44,6 +44,7 @@ const errors = [];
     await page.locator('.ix-mech-evidence h4').waitFor({ state: 'visible' });
     assert.match(await page.locator('.ix-mech-evidence').innerText(), /Catalog occurrence.*installed identity unconfirmed/s);
     assert.match(await page.locator('.ix-mech-evidence').innerText(), /Research: NOT_RESEARCHED · 0\/0 drawings verified locally/);
+    assert.match(await page.locator('.ix-mech-evidence').innerText(), /No exact catalog source URL in this record/);
     assert.equal(await page.locator('.ix-mech-evidence a').count(), 0, 'Synthetic evidence must not link to an unsourced OEM drawing');
 
     await page.locator('#ix-mech-job-symptom').fill('Synthetic demo symptom for local persistence testing only.');
