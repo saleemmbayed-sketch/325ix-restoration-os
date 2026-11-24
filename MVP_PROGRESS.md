@@ -108,3 +108,8 @@ The app automatically uses `04_SEARCH/325ix_multimodal.sqlite3` and the derived 
 
 - CI now saves three rendered Chromium screenshots (garage, selected component, saved case) as a seven-day artifact. Review of the first capture found a compressed 3D stage, a long blank grid column and raw JSON in narrow twin cells. The revised capture at commit `32a86b6` shows a full-width 3D stage, a separate broad inspection panel and labeled twin facts; the Chromium journey and both workflows passed.
 - The visual remains an illustrative mechanical model with three authored assembly scenes, not a photorealistic whole-car CAD twin. The saved case workflow is still dense and the synthetic dataset cannot demonstrate production evidence coverage. A follow-up copy change is under verification to prevent owner-reported factory-profile fields being presented as source-verified factory records.
+
+### RC21 full V4 trial guard
+
+- The available copied V4 catalog passes SQLite integrity and contains 805 assemblies / 13,845 rows, but its image manifest reports `MISMATCH` and 0/572 locally verified files. This does not establish the state of the owner's Mac/Drive copy. The launcher reports the degraded state without modifying V4.
+- The full trial launcher now stops if the original job DB path is absent and no existing trial DB is present; `--source-jobs` locates an alternate original, while `--fresh-trial` explicitly permits an empty start. A local fixture verified the missing-source guard, explicit empty opt-in, source copy and existing-trial reuse.
